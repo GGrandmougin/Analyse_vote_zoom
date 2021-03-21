@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Mask, Grids;
+  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire;
 
 type
   TForm1 = class(TForm)
@@ -25,7 +25,7 @@ type
     Label1: TLabel;
     Ldebut: TLabel;
     MaskEdit1: TMaskEdit;
-    Edit2: TEdit;
+    Efic_msg: TEdit;
     Label2: TLabel;
     Lduree: TLabel;
     MaskEdit2: TMaskEdit;
@@ -106,13 +106,33 @@ type
     Edit24: TEdit;
     Pchoix_msg: TPanel;
     Lmessages: TLabel;
+    Pdebug: TPanel;
+    Icroix: TImage;
+    Ifl_ext: TImage;
+    procedure traite_params;
     procedure FormCreate(Sender: TObject);
     procedure LAnalyseClick(Sender: TObject);
     procedure ButtonAClick(Sender: TObject);
+    procedure FormClose(Sender: TObject; var Action: TCloseAction);
+    procedure place_ifl_ext;
+    procedure IcroixMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure IcroixMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure IcroixMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Ifl_extMouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure Ifl_extMouseMove(Sender: TObject; Shift: TShiftState; X,
+      Y: Integer);
+    procedure Ifl_extMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Déclarations privées }
   public
     { Déclarations publiques }
+    mx, my : integer ;
+    en_deplacement: boolean;
   end;
 
 var
@@ -128,6 +148,7 @@ var
    i, l : integer;
    ok : boolean;
 begin
+   aux1 := taux.create;
    l := 25;
    fic_strgrd :=  ExtractFilePath(paramstr(0)) + 'rejets_row';
    // ligne pouvoirs, pour, contre , abs, non exprimé, ID incorrecte ,  incorrect : nom, prenom, n°, région, suffrage, > pouvoirs , 2 nb, 2 choix
@@ -143,6 +164,10 @@ begin
          StringGrid1.Cells[i, StringGrid1.ColCount - 1 ] := '*' ;
       end;
    end;
+   caption := 'Analyse des votes par messages Zoom       version ' + Aux1.getversion + '      GG';
+   Efic_msg.Text := Aux1.get_fichier_msg;
+   place_ifl_ext;
+   traite_params;
 end;
 
 procedure TForm1.LAnalyseClick(Sender: TObject);
@@ -166,6 +191,7 @@ begin
    Ettlabs.Text := '';
 end;
 
+
 {
 stringlist.loadfromfile(fichier_entree);
 for i := stringlist.count -1 downto 0 do begin
@@ -178,5 +204,104 @@ for i := stringlist.count -1 downto 0 do begin
 
 end
 }
+
+procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
+begin
+   Aux1.Free;
+end;
+
+procedure TForm1.place_ifl_ext;
+begin
+   Ifl_ext.Left := Pdebug.Width - 30;
+   Ifl_ext.Top := Pdebug.Height - 30;
+end;
+
+procedure TForm1.IcroixMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+begin
+   mx := x ;
+   my := y ;
+   en_deplacement := false;
+end;
+
+procedure TForm1.IcroixMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+   dx , dy : integer;
+begin
+   if (ssLeft in Shift) and  not en_deplacement then begin
+      en_deplacement := true;
+      dx := x  - mx;
+      dy := y  - my;
+      Pdebug.Left := Pdebug.Left + dx;
+      pdebug.Top := Pdebug.Top + dy;
+      Application.ProcessMessages;
+      en_deplacement := false;
+   end;
+end;
+
+procedure TForm1.IcroixMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+var
+   dx , dy : integer;
+begin
+   if  not en_deplacement then begin
+      en_deplacement := true;
+      dx := x  - mx;
+      dy := y  - my;
+      Pdebug.Left := Pdebug.Left + dx;
+      pdebug.Top := Pdebug.Top + dy;
+      Application.ProcessMessages;
+      en_deplacement := false;
+   end;
+end;
+
+procedure TForm1.Ifl_extMouseDown(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+   mx := x ;
+   my := y ;
+   en_deplacement := false;
+end;
+
+procedure TForm1.Ifl_extMouseMove(Sender: TObject; Shift: TShiftState; X, Y: Integer);
+var
+   dx , dy : integer;
+begin
+   if (ssLeft in Shift) and  not en_deplacement then begin
+      en_deplacement := true;
+      dx := x  - mx;
+      dy := y  - my;
+      Pdebug.Width := Pdebug.Width + dx;
+      pdebug.Height := Pdebug.Height + dy;
+      place_ifl_ext;
+      Application.ProcessMessages;
+      en_deplacement := false;
+   end;
+end;
+
+procedure TForm1.Ifl_extMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+   dx , dy : integer;
+begin
+   if not en_deplacement then begin
+      en_deplacement := true;
+      dx := x  - mx;
+      dy := y  - my;
+      Pdebug.Width := Pdebug.Width + dx;
+      pdebug.Height := Pdebug.Height + dy;
+      place_ifl_ext;
+      Application.ProcessMessages;
+      en_deplacement := false;
+   end;
+end;
+
+procedure TForm1.traite_params;
+var
+   i : Integer;
+begin
+   for i := 1 to ParamCount do begin
+      if paramstr(i) = 'debug' then Pdebug.Visible := true;
+
+   end;
+end;
 
 end.

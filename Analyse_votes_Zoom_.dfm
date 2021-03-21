@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 487
-  Top = 275
+  Left = 495
+  Top = 173
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -11,11 +11,13 @@ object Form1: TForm1
   Font.Name = 'MS Sans Serif'
   Font.Style = []
   OldCreateOrder = False
+  Position = poScreenCenter
+  OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
   TextHeight = 13
   object PEntrees: TPanel
-    Left = 8
+    Left = 12
     Top = 16
     Width = 401
     Height = 145
@@ -110,7 +112,7 @@ object Form1: TForm1
       TabOrder = 0
       Text = '14:41:30'
     end
-    object Edit2: TEdit
+    object Efic_msg: TEdit
       Left = 8
       Top = 104
       Width = 377
@@ -184,7 +186,7 @@ object Form1: TForm1
     end
   end
   object PAction: TPanel
-    Left = 420
+    Left = 424
     Top = 16
     Width = 141
     Height = 145
@@ -2236,6 +2238,48 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 5
       end
+    end
+  end
+  object Pdebug: TPanel
+    Left = 176
+    Top = 128
+    Width = 321
+    Height = 193
+    BorderWidth = 3
+    BorderStyle = bsSingle
+    TabOrder = 4
+    Visible = False
+    object Icroix: TImage
+      Left = 0
+      Top = 0
+      Width = 25
+      Height = 25
+      Picture.Data = {
+        07544269746D6170A2000000424DA2000000000000003E000000280000001900
+        0000190000000100010000000000640000000000000000000000020000000000
+        000000000000FFFFFF000000000000080000001C0000002A0000004900000008
+        00000008000000080000000800000808080010080400200802007FFFFF002008
+        020010080400080808000008000000080000000800000008000000490000002A
+        0000001C00000008000000000000}
+      OnMouseDown = IcroixMouseDown
+      OnMouseMove = IcroixMouseMove
+      OnMouseUp = IcroixMouseUp
+    end
+    object Ifl_ext: TImage
+      Left = 290
+      Top = 162
+      Width = 25
+      Height = 25
+      Picture.Data = {
+        07544269746D6170A2000000424DA2000000000000003E000000280000001900
+        0000190000000100010000000000640000000000000000000000020000000000
+        000000000000FFFFFF00000000000000000000003E000000060000000A000000
+        1200000022000000400000008000000100000002000000040000000800000010
+        0000002000000040000000800000010000002200000024000000280000003000
+        00003E0000000000000000000000}
+      OnMouseDown = Ifl_extMouseDown
+      OnMouseMove = Ifl_extMouseMove
+      OnMouseUp = Ifl_extMouseUp
     end
   end
 end

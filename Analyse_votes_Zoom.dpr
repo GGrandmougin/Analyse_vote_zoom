@@ -2,7 +2,8 @@ program Analyse_votes_Zoom;
 
 uses
   Forms,
-  Analyse_votes_Zoom_ in 'Analyse_votes_Zoom_.pas' {Form1};
+  Analyse_votes_Zoom_ in 'Analyse_votes_Zoom_.pas' {Form1},
+  Auxiliaire in 'Auxiliaire.pas';
 
 {$R *.res}
 
