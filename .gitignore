@@ -67,3 +67,21 @@ __recovery/
 
 # Boss dependency manager vendor folder https://github.com/HashLoad/boss
 modules/
+
+# Lazarus compiler-generated binaries
+*.ppu
+*.compiled
+*.obj
+*.bak
+lib/
+
+# Autre
+*.txt
+*.gif
+_*.*
+tests/
+essais/
+infos/
+msg_M/
+msj_rejetes/
+pouvoirs/
