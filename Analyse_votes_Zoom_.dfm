@@ -2325,9 +2325,31 @@ object Form1: TForm1
       Top = 16
       Width = 113
       Height = 17
+      Hint = 
+        'selectionne le dernier fichier  des message zoom dans le r'#233'perto' +
+        'ire standard'
       Caption = 'Btst_fic_msg'
       TabOrder = 4
       OnClick = Btst_fic_msgClick
+    end
+    object Bch_msg: TButton
+      Left = 0
+      Top = 32
+      Width = 49
+      Height = 17
+      Hint = 'charge le fichier des messages zoom'
+      Caption = 'Bch_msg'
+      TabOrder = 5
+      OnClick = Bch_msgClick
+    end
+    object Baff_msg: TButton
+      Left = 56
+      Top = 32
+      Width = 73
+      Height = 17
+      Hint = 'affiche les messages  charg'#233's'
+      Caption = 'Baff_msg'
+      TabOrder = 6
     end
   end
 end

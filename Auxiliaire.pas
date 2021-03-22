@@ -8,12 +8,31 @@ uses
    IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils ;
 
 type
+  tparticipant = class
+    nom, prenom, region : string;
+    numero : integer;
+    pouvoirs : Byte	;
+    constructor create;
+    destructor destroy;  override;
+  end;
+  tmessage = class
+    particpant : tparticipant;
+    choix : string ;
+    nombre : Byte	;
+    en_erreur : boolean;
+    constructor create;
+    destructor destroy;  override;
+  end;
   taux = class
+    messages : tstringlist;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
+    procedure charge_fic_msg(fic : string);
     constructor create;
     destructor destroy;  override;
   private
+
+  public
 
   end;
 
@@ -48,6 +67,11 @@ begin
    except
       //pour ne pas ajouter l'erreur à l'erreur
    end;
+end;
+
+procedure taux.charge_fic_msg(fic: string);
+begin
+  //
 end;
 
 constructor taux.create;
@@ -93,7 +117,6 @@ end;
 function taux.get_fichier_msg(rep : string): string;
 var
   sr: TSearchRec ;
-  //ok : boolean;
   dt_rep : integer;
 begin
    if debug then begin memo_tests.Add(''); memo_tests.Add(rep) end;
@@ -109,10 +132,37 @@ begin
          end;
       until FindNext(sr) <> 0;
       FindClose(sr);
+      if result <> '' then result := rep + result + '\meeting_saved_chat.txt' ;
       if debug then memo_tests.Add('-> ' + result);
    end;
 end;
 
 
+
+{ tparticipant }
+
+constructor tparticipant.create;
+begin
+//
+end;
+
+destructor tparticipant.destroy;
+begin
+//
+  inherited;
+end;
+
+{ tmessage }
+
+constructor tmessage.create;
+begin
+//
+end;
+
+destructor tmessage.destroy;
+begin
+//
+  inherited;
+end;
 
 end.

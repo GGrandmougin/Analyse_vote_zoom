@@ -120,6 +120,8 @@ type
     Pifl_ext: TPanel;
     Mtest: TMemo;
     Btst_fic_msg: TButton;
+    Bch_msg: TButton;
+    Baff_msg: TButton;
     procedure traite_params;
     procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
@@ -141,6 +143,7 @@ type
       Shift: TShiftState; X, Y: Integer);
     procedure Btst_presClick(Sender: TObject);
     procedure Btst_fic_msgClick(Sender: TObject);
+    procedure Bch_msgClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -220,19 +223,6 @@ begin
    Ettlabs.Text := '';
 end;
 
-
-{
-stringlist.loadfromfile(fichier_entree);
-for i := stringlist.count -1 downto 0 do begin
-   st := stringreplace(stringlist.lines[i] , 'à tout le monde'  , '', []);
-   if len(st) = len(stringlist.lines[i]) then begin
-      delete(i);
-   end else begin
-      stringlist.lines[i] := st;
-   end;
-
-end
-}
 
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
@@ -347,4 +337,21 @@ begin
    Mtest.Lines.Add( Aux1.get_fichier_msg(rep_msg_def));
 end;
 
+procedure TForm1.Bch_msgClick(Sender: TObject);
+begin
+   aux1.charge_fic_msg(Efic_msg.Text);
+end;
+
+{
+stringlist.loadfromfile(fichier_entree);
+for i := stringlist.count -1 downto 0 do begin
+   st := stringreplace(stringlist.lines[i] , 'à tout le monde'  , '', []);
+   if len(st) = len(stringlist.lines[i]) then begin
+      delete(i);
+   end else begin
+      stringlist.lines[i] := st;
+   end;
+
+end
+}
 end.
