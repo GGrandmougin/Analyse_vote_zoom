@@ -3,15 +3,14 @@ unit Auxiliaire;
 interface
 
 uses
-   SysUtils, ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
+   ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils ;
 
 type
   taux = class
     function getversion: String;
-    function get_fichier_msg : string;
-    //procedure initialise;
+    function get_fichier_msg(rep : string) : string;
     constructor create;
     destructor destroy;  override;
   private
@@ -23,20 +22,13 @@ var
   Aux1 : taux;
   dir_exe : string;
   dir_trv : string;
-
+  rep_msg_def: string;
+  memo_tests : tstrings;
+  debug : boolean;
 implementation
 
 var
    ficlog : string;
-   
-{procedure taux.initialise;
-begin
-   dir_exe := extractfilepath(paramstr(0));
-   dir_trv := dir_exe + 'docs_votes';
-   forcedirectories(dir_trv);
-   ficlog := dir_trv + 'infos.log';
-end;}
-
 
 
 procedure log_infos(mess : string; typ : integer = 0);
@@ -64,6 +56,7 @@ begin
    dir_trv := dir_exe + 'docs_votes';
    forcedirectories(dir_trv);
    ficlog := dir_trv + 'infos.log';
+   rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
 end;
 
 destructor taux.destroy;
@@ -97,26 +90,27 @@ Begin
    end;
 end;
 
-{function taux.get_fichier_msg: string;
+function taux.get_fichier_msg(rep : string): string;
 var
   sr: TSearchRec ;
-  ok : boolean;
+  //ok : boolean;
+  dt_rep : integer;
 begin
-   ok := false;
-   if FindFirst(rep + '*.txt', 0, sr) = 0 then begin
+   if debug then begin memo_tests.Add(''); memo_tests.Add(rep) end;
+   dt_rep := 0;
+   if FindFirst(rep + '*.*', faDirectory, sr) = 0 then begin
       repeat
-         ok := true;
-         traite_fichier(rep + sr.Name, sr.Time, sr.Size);
+         if Length(sr.Name)>= 20 then begin
+            if debug then memo_tests.Add(sr.name + ' ' + datetimetostr(FileDateToDateTime(sr.Time))) ;
+            if sr.Time > dt_rep then begin
+               result := sr.Name;
+               dt_rep := sr.time;
+            end;
+         end;
       until FindNext(sr) <> 0;
       FindClose(sr);
+      if debug then memo_tests.Add('-> ' + result);
    end;
-
-end; }
-
- //GetEnvironmentVariable('USERPROFILE')
-function taux.get_fichier_msg: string;
-begin
-//
 end;
 
 

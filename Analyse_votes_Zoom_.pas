@@ -10,6 +10,12 @@ uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire;
 
+const
+    hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
+                  '           (trop de suffrage) (0 le pouboir a été donné à quelqu''un' + #13#10 +
+                  'ID = erreur concernant le nom et le prénom'  + #13#10 +
+                  'N° = erreur concernant numéro de membre' + #13#10 ;
+
 type
   TForm1 = class(TForm)
     PEntrees: TPanel;
@@ -112,7 +118,8 @@ type
     Btst_pres: TButton;
     Button3: TButton;
     Pifl_ext: TPanel;
-    Memo1: TMemo;
+    Mtest: TMemo;
+    Btst_fic_msg: TButton;
     procedure traite_params;
     procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
@@ -133,6 +140,7 @@ type
     procedure Ifl_extMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure Btst_presClick(Sender: TObject);
+    procedure Btst_fic_msgClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -163,10 +171,12 @@ begin
    for i := 1 to StringGrid1.ColCount - 1 do StringGrid1.ColWidths[i] := l;
 
    caption := 'Analyse des votes par messages Zoom       version ' + Aux1.getversion + '      GG';
-   Efic_msg.Text := Aux1.get_fichier_msg;
+   Efic_msg.Text := Aux1.get_fichier_msg(rep_msg_def);
    place_ifl_ext;
    Pifl_ext.BringToFront;
    traite_params;
+   image1.Hint := hint_image1;
+   memo_tests := mtest.Lines;
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -318,8 +328,9 @@ procedure TForm1.traite_params;
 var
    i : Integer;
 begin
+   debug := false;
    for i := 1 to ParamCount do begin
-      if paramstr(i) = 'debug' then Pdebug.Visible := true;
+      if paramstr(i) = 'debug' then begin debug := true ; Pdebug.Visible := true; end;
 
    end;
 end;
@@ -329,6 +340,11 @@ end;
 procedure TForm1.Btst_presClick(Sender: TObject);
 begin
    test_presentation(TComponent(sender).tag);
+end;
+
+procedure TForm1.Btst_fic_msgClick(Sender: TObject);
+begin
+   Mtest.Lines.Add( Aux1.get_fichier_msg(rep_msg_def));
 end;
 
 end.

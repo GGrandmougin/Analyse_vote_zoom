@@ -12,6 +12,7 @@ object Form1: TForm1
   Font.Style = []
   OldCreateOrder = False
   Position = poScreenCenter
+  ShowHint = True
   OnClose = FormClose
   OnCreate = FormCreate
   PixelsPerInch = 96
@@ -2241,8 +2242,8 @@ object Form1: TForm1
     end
   end
   object Pdebug: TPanel
-    Left = 176
-    Top = 128
+    Left = 456
+    Top = 288
     Width = 380
     Height = 280
     BorderWidth = 3
@@ -2290,32 +2291,43 @@ object Form1: TForm1
     end
     object Btst_pres: TButton
       Tag = 1
-      Left = 32
+      Left = 24
       Top = 0
       Width = 57
       Height = 17
+      Hint = 'exemple de messages rejet'#233's'
       Caption = 'tst_pres1'
       TabOrder = 0
       OnClick = Btst_presClick
     end
     object Button3: TButton
       Tag = 2
-      Left = 88
+      Left = 80
       Top = 0
       Width = 57
       Height = 17
+      Hint = 'exemple messages rejet'#233's pour la lettre "M"'
       Caption = 'tst_pres2'
       TabOrder = 1
       OnClick = Btst_presClick
     end
-    object Memo1: TMemo
-      Left = 144
+    object Mtest: TMemo
+      Left = 136
       Top = 0
-      Width = 145
-      Height = 89
-      Lines.Strings = (
-        'Memo1')
+      Width = 241
+      Height = 121
+      ReadOnly = True
+      ScrollBars = ssBoth
       TabOrder = 3
+    end
+    object Btst_fic_msg: TButton
+      Left = 24
+      Top = 16
+      Width = 113
+      Height = 17
+      Caption = 'Btst_fic_msg'
+      TabOrder = 4
+      OnClick = Btst_fic_msgClick
     end
   end
 end
