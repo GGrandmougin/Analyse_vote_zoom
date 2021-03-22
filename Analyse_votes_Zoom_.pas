@@ -109,7 +109,12 @@ type
     Pdebug: TPanel;
     Icroix: TImage;
     Ifl_ext: TImage;
+    Btst_pres: TButton;
+    Button3: TButton;
+    Pifl_ext: TPanel;
+    Memo1: TMemo;
     procedure traite_params;
+    procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
     procedure LAnalyseClick(Sender: TObject);
     procedure ButtonAClick(Sender: TObject);
@@ -127,6 +132,7 @@ type
       Y: Integer);
     procedure Ifl_extMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure Btst_presClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -137,7 +143,7 @@ type
 
 var
   Form1: TForm1;
-  fic_strgrd : string;
+
 implementation
 
 {$R *.dfm}
@@ -146,28 +152,41 @@ implementation
 procedure TForm1.FormCreate(Sender: TObject);
 var
    i, l : integer;
-   ok : boolean;
 begin
    aux1 := taux.create;
+   //aux1.initialise;
+   
    l := 25;
-   fic_strgrd :=  ExtractFilePath(paramstr(0)) + 'rejets_row';
+
    // ligne pouvoirs, pour, contre , abs, non exprimé, ID incorrecte ,  incorrect : nom, prenom, n°, région, suffrage, > pouvoirs , 2 nb, 2 choix
    StringGrid1.ColWidths[0] := StringGrid1.Width - (l +1) * (StringGrid1.ColCount - 1) - 20;
    for i := 1 to StringGrid1.ColCount - 1 do StringGrid1.ColWidths[i] := l;
+
+   caption := 'Analyse des votes par messages Zoom       version ' + Aux1.getversion + '      GG';
+   Efic_msg.Text := Aux1.get_fichier_msg;
+   place_ifl_ext;
+   Pifl_ext.BringToFront;
+   traite_params;
+end;
+
+procedure TForm1.test_presentation(n : integer);
+var
+   i : integer;
+   ok : boolean;
+   fic_strgrd : string;
+begin
+   fic_strgrd :=  ExtractFilePath(paramstr(0)) + 'msg_rejetes\' + '\' + inttostr(n) + '\' + 'rejets_row';
    ok :=  fileexists(fic_strgrd + '0.txt');
    if ok then begin
+      StringGrid1.RowCount := 20;
       for i := 0 to StringGrid1.RowCount -1 do begin
          StringGrid1.Rows[i].LoadFromFile(fic_strgrd + inttostr(i) + '.txt');
       end;
    end else begin
-      for i := 0 to StringGrid1.RowCount -1 do begin
+      {for i := 0 to StringGrid1.RowCount -1 do begin
          StringGrid1.Cells[i, StringGrid1.ColCount - 1 ] := '*' ;
-      end;
+      end; }
    end;
-   caption := 'Analyse des votes par messages Zoom       version ' + Aux1.getversion + '      GG';
-   Efic_msg.Text := Aux1.get_fichier_msg;
-   place_ifl_ext;
-   traite_params;
 end;
 
 procedure TForm1.LAnalyseClick(Sender: TObject);
@@ -175,7 +194,7 @@ var
    i : integer;
 begin
    for i := 0 to StringGrid1.RowCount -1 do begin
-      StringGrid1.Rows[i].SaveToFile(fic_strgrd + inttostr(i) + '.txt');
+      //StringGrid1.Rows[i].SaveToFile(fic_strgrd + inttostr(i) + '.txt');
    end;
 end;
 
@@ -212,8 +231,8 @@ end;
 
 procedure TForm1.place_ifl_ext;
 begin
-   Ifl_ext.Left := Pdebug.Width - 30;
-   Ifl_ext.Top := Pdebug.Height - 30;
+   pIfl_ext.Left := Pdebug.Width - 30;
+   pIfl_ext.Top := Pdebug.Height - 30;
 end;
 
 procedure TForm1.IcroixMouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
@@ -257,7 +276,7 @@ end;
 procedure TForm1.Ifl_extMouseDown(Sender: TObject; Button: TMouseButton;
   Shift: TShiftState; X, Y: Integer);
 begin
-   mx := x ;
+   mx := x  ;
    my := y ;
    en_deplacement := false;
 end;
@@ -273,6 +292,7 @@ begin
       Pdebug.Width := Pdebug.Width + dx;
       pdebug.Height := Pdebug.Height + dy;
       place_ifl_ext;
+      //tcontrol(Ifl_ext).SetZOrder(true);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -302,6 +322,13 @@ begin
       if paramstr(i) = 'debug' then Pdebug.Visible := true;
 
    end;
+end;
+
+
+
+procedure TForm1.Btst_presClick(Sender: TObject);
+begin
+   test_presentation(TComponent(sender).tag);
 end;
 
 end.

@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 495
-  Top = 173
+  Left = 365
+  Top = 198
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2243,8 +2243,8 @@ object Form1: TForm1
   object Pdebug: TPanel
     Left = 176
     Top = 128
-    Width = 321
-    Height = 193
+    Width = 380
+    Height = 280
     BorderWidth = 3
     BorderStyle = bsSingle
     TabOrder = 4
@@ -2265,21 +2265,57 @@ object Form1: TForm1
       OnMouseMove = IcroixMouseMove
       OnMouseUp = IcroixMouseUp
     end
-    object Ifl_ext: TImage
-      Left = 290
-      Top = 162
+    object Pifl_ext: TPanel
+      Left = 350
+      Top = 250
       Width = 25
       Height = 25
-      Picture.Data = {
-        07544269746D6170A2000000424DA2000000000000003E000000280000001900
-        0000190000000100010000000000640000000000000000000000020000000000
-        000000000000FFFFFF00000000000000000000003E000000060000000A000000
-        1200000022000000400000008000000100000002000000040000000800000010
-        0000002000000040000000800000010000002200000024000000280000003000
-        00003E0000000000000000000000}
-      OnMouseDown = Ifl_extMouseDown
-      OnMouseMove = Ifl_extMouseMove
-      OnMouseUp = Ifl_extMouseUp
+      TabOrder = 2
+      object Ifl_ext: TImage
+        Left = 0
+        Top = 0
+        Width = 25
+        Height = 25
+        Picture.Data = {
+          07544269746D6170A2000000424DA2000000000000003E000000280000001900
+          0000190000000100010000000000640000000000000000000000020000000000
+          000000000000FFFFFF00000000000000000000003E000000060000000A000000
+          1200000022000000400000008000000100000002000000040000000800000010
+          0000002000000040000000800000010000002200000024000000280000003000
+          00003E0000000000000000000000}
+        OnMouseDown = Ifl_extMouseDown
+        OnMouseMove = Ifl_extMouseMove
+        OnMouseUp = Ifl_extMouseUp
+      end
+    end
+    object Btst_pres: TButton
+      Tag = 1
+      Left = 32
+      Top = 0
+      Width = 57
+      Height = 17
+      Caption = 'tst_pres1'
+      TabOrder = 0
+      OnClick = Btst_presClick
+    end
+    object Button3: TButton
+      Tag = 2
+      Left = 88
+      Top = 0
+      Width = 57
+      Height = 17
+      Caption = 'tst_pres2'
+      TabOrder = 1
+      OnClick = Btst_presClick
+    end
+    object Memo1: TMemo
+      Left = 144
+      Top = 0
+      Width = 145
+      Height = 89
+      Lines.Strings = (
+        'Memo1')
+      TabOrder = 3
     end
   end
 end

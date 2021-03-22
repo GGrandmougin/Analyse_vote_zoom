@@ -4,25 +4,66 @@ interface
 
 uses
    SysUtils, ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
-   Windows, graphics, strutils, Forms;
+   Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
+   IdFTP, IdHTTP, OleCtrls, SHDocVw;
 
 type
   taux = class
     function getversion: String;
     function get_fichier_msg : string;
+    //procedure initialise;
     constructor create;
     destructor destroy;  override;
   private
 
   end;
 
+ procedure log_infos(mess : string; typ : integer = 0);
 var
   Aux1 : taux;
+  dir_exe : string;
+  dir_trv : string;
+
 implementation
+
+var
+   ficlog : string;
+   
+{procedure taux.initialise;
+begin
+   dir_exe := extractfilepath(paramstr(0));
+   dir_trv := dir_exe + 'docs_votes';
+   forcedirectories(dir_trv);
+   ficlog := dir_trv + 'infos.log';
+end;}
+
+
+
+procedure log_infos(mess : string; typ : integer = 0);
+var
+   tf : textfile;
+begin
+   try
+      assignfile(tf,ficlog);
+      if fileexists(ficlog) then
+         append(tf)
+      else
+         rewrite(tf);
+      writeln(tf,datetostr(date)+' '+timetostr(time)+' '+ mess);
+      { Insérer ici un code nécessitant un Flush avant de fermer le fichier }
+      //Flush(tf);
+      closefile(tf);
+   except
+      //pour ne pas ajouter l'erreur à l'erreur
+   end;
+end;
 
 constructor taux.create;
 begin
-  //
+   dir_exe := extractfilepath(paramstr(0));
+   dir_trv := dir_exe + 'docs_votes';
+   forcedirectories(dir_trv);
+   ficlog := dir_trv + 'infos.log';
 end;
 
 destructor taux.destroy;
@@ -77,5 +118,7 @@ function taux.get_fichier_msg: string;
 begin
 //
 end;
+
+
 
 end.
