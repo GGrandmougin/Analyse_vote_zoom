@@ -12,6 +12,7 @@ type
     nom, prenom, region : string;
     numero : integer;
     pouvoirs : Byte	;
+    p_en_erreur : boolean;
     constructor create;
     destructor destroy;  override;
   end;
@@ -19,12 +20,18 @@ type
     particpant : tparticipant;
     choix : string ;
     nombre : Byte	;
-    en_erreur : boolean;
+    m_en_erreur : boolean;
     constructor create;
     destructor destroy;  override;
   end;
   taux = class
-    messages : tstringlist;
+    lmessages : tstringlist;
+    lvotes : tstringlist;
+    lparticipants: tstringlist;
+    lrejetes: tstringlist;
+    lconfig: tstringlist;
+    procedure videlistes;
+    procedure pretraitement_lmsg;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
     procedure charge_fic_msg(fic : string);
@@ -71,22 +78,76 @@ end;
 
 procedure taux.charge_fic_msg(fic: string);
 begin
-  //
+   videlistes;
+   if fileexists(fic) then begin
+      try
+         lmessages.LoadFromFile(fic);
+      except
+         on E: Exception do memo_tests.add('ERREUR: ' + E.Message + ' pour le fichier: ' + fic);
+      end;
+   end else begin
+      log_infos('fichier des messages: ' + fic + ' non trouvé' );
+   end;
+   if lmessages.count > 0 then begin
+      pretraitement_lmsg;
+      if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
+   end else begin
+      if debug then memo_tests.Add('erreur chargement fichier');
+      log_infos('problème au fichier des messages: ' + fic );
+   end;
+{
+stringlist.loadfromfile(fichier_entree);
+for i := stringlist.count -1 downto 0 do begin
+   st := stringreplace(stringlist.lines[i] , 'à tout le monde'  , '', []);
+   if len(st) = len(stringlist.lines[i]) then begin
+      delete(i);
+   end else begin
+      stringlist.lines[i] := st;
+   end;
+
+end
+}  //
 end;
 
 constructor taux.create;
 begin
+    lmessages := tstringlist.Create;
+    lvotes := tstringlist.Create;
+    lparticipants:= tstringlist.Create;
+    lrejetes:= tstringlist.Create;
+    lconfig:= tstringlist.Create;
    dir_exe := extractfilepath(paramstr(0));
-   dir_trv := dir_exe + 'docs_votes';
+   dir_trv := dir_exe + 'tests';
    forcedirectories(dir_trv);
+   dir_trv := dir_trv + '\';
    ficlog := dir_trv + 'infos.log';
    rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
 end;
 
 destructor taux.destroy;
 begin
-  //
+    videlistes;
+    lrejetes.free;
+    lvotes.free;
+    lmessages.free;
+    lparticipants.free;
+    lconfig.Free;
   inherited;
+end;
+
+procedure taux.videlistes;
+begin
+    lrejetes.clear;
+    lvotes.clear;
+    lconfig.Clear;
+    while lmessages.Count > 0 do begin  //les tmessages seront créés lors de l'analyse d'un vote s'il n'existent pas déjà et reste sur cette liste
+       lmessages.Objects[0].Free;  // destruction des tmessages
+       lmessages.Delete(0);
+    end;
+    while lparticipants.Count > 0 do begin
+       lparticipants.Objects[0].Free;  // destruction des tparticipant
+       lparticipants.Delete(0);
+    end;
 end;
 
 function Taux.getversion: String;
@@ -163,6 +224,27 @@ destructor tmessage.destroy;
 begin
 //
   inherited;
+end;
+
+procedure taux.pretraitement_lmsg;
+var
+   i, n : integer;
+
+begin
+   n := 0;
+   for i := lmessages.Count - 1 downto 1  do begin
+      if (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
+         inc(n);
+         lmessages.Strings[i - 1] := lmessages.Strings[i - 1] + ' _ ' + lmessages.Strings[i] ;
+         lmessages.Delete(i);
+      end else if pos('configutaion votes', lmessages.Strings[i]) > 0 then begin
+         lconfig.Add(lmessages.Strings[i]) ;
+      end;
+   end;
+   if debug then begin
+      memo_tests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes concaténées');
+      memo_tests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
+   end;
 end;
 
 end.

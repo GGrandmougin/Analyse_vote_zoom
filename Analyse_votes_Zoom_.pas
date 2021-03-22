@@ -122,6 +122,7 @@ type
     Btst_fic_msg: TButton;
     Bch_msg: TButton;
     Baff_msg: TButton;
+    Benr_lmsg: TButton;
     procedure traite_params;
     procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
@@ -144,6 +145,8 @@ type
     procedure Btst_presClick(Sender: TObject);
     procedure Btst_fic_msgClick(Sender: TObject);
     procedure Bch_msgClick(Sender: TObject);
+    procedure Baff_msgClick(Sender: TObject);
+    procedure Benr_lmsgClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -354,4 +357,14 @@ for i := stringlist.count -1 downto 0 do begin
 
 end
 }
+procedure TForm1.Baff_msgClick(Sender: TObject);
+begin
+   StringGrid1.cols[0].Assign(aux1.lmessages); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
+end;
+
+procedure TForm1.Benr_lmsgClick(Sender: TObject);
+begin
+   Aux1.lmessages.SaveToFile(dir_trv + 'lmessages.txt');
+end;
+
 end.

@@ -1765,7 +1765,7 @@ object Form1: TForm1
       Height = 369
       ColCount = 15
       FixedCols = 0
-      RowCount = 20
+      RowCount = 1000
       FixedRows = 0
       ScrollBars = ssVertical
       TabOrder = 0
@@ -2335,7 +2335,7 @@ object Form1: TForm1
     object Bch_msg: TButton
       Left = 0
       Top = 32
-      Width = 49
+      Width = 65
       Height = 17
       Hint = 'charge le fichier des messages zoom'
       Caption = 'Bch_msg'
@@ -2343,13 +2343,24 @@ object Form1: TForm1
       OnClick = Bch_msgClick
     end
     object Baff_msg: TButton
-      Left = 56
+      Left = 64
       Top = 32
       Width = 73
       Height = 17
       Hint = 'affiche les messages  charg'#233's'
       Caption = 'Baff_msg'
       TabOrder = 6
+      OnClick = Baff_msgClick
+    end
+    object Benr_lmsg: TButton
+      Left = 0
+      Top = 48
+      Width = 65
+      Height = 17
+      Hint = 'enregistre lmessages dans .\tests\lmessages.txt'
+      Caption = 'Benr_lmsg'
+      TabOrder = 7
+      OnClick = Benr_lmsgClick
     end
   end
 end
