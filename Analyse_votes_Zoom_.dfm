@@ -2397,6 +2397,7 @@ object Form1: TForm1
       Top = 64
       Width = 73
       Height = 17
+      Hint = 'affichage lvotes'
       Caption = 'BAff_lvote'
       TabOrder = 9
       OnClick = BAff_lvoteClick
@@ -2406,6 +2407,7 @@ object Form1: TForm1
       Top = 64
       Width = 73
       Height = 17
+      Hint = 'affichage lparticpants'
       Caption = 'Aff_lparticipant'
       TabOrder = 10
       OnClick = BAff_lparticipantsClick

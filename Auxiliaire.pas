@@ -32,7 +32,7 @@ type
     lrejetes: tstringlist;
     lconfig: tstringlist;
     procedure videlistes;
-    procedure select_lvotes(heure, duree : string, secret_exclusif : boolean);
+    procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
     procedure pretraitement_lmsg;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
@@ -53,6 +53,7 @@ var
   rep_msg_def: string;
   memo_tests : tstrings;
   debug : boolean;
+  stringgrid1rowscount : integer;
 implementation
 
 var
@@ -249,7 +250,7 @@ begin
    end;
 end;
 
-procedure taux.select_lvotes(heure, duree: string , secret, secret_exclusif : boolean);
+procedure taux.select_lvotes(heure, duree: string ; secret, secret_exclusif : boolean);
 var
    hfin : string;
    i : integer;
@@ -261,10 +262,12 @@ begin
    repeat
       inc(i)
    until (i >= lmessages.Count) or (heure > lmessages.Strings[i]);
+
    while (i < lmessages.Count) and (lmessages.Strings[i] < hfin) do begin
       lvotes.Add(lmessages.Strings[i]);
+      inc(i);
    end;
-   if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés)
+   if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés');
    // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 

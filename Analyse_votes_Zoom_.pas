@@ -128,6 +128,7 @@ type
     BAff_lparticipants: TButton;
     Label5: TLabel;
     procedure traite_params;
+    procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
     procedure LAnalyseClick(Sender: TObject);
@@ -154,6 +155,7 @@ type
     procedure Bcree_lvoteClick(Sender: TObject);
     procedure BAff_lvoteClick(Sender: TObject);
     procedure BAff_lparticipantsClick(Sender: TObject);
+    procedure aff_strigrid(str : tstrings);
   private
     { Déclarations privées }
   public
@@ -190,6 +192,7 @@ begin
    traite_params;
    image1.Hint := hint_image1;
    memo_tests := mtest.Lines;
+   stringgrid1rowscount := StringGrid1.RowCount;
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -199,17 +202,26 @@ var
    fic_strgrd : string;
 begin
    fic_strgrd :=  ExtractFilePath(paramstr(0)) + 'msg_rejetes\' + '\' + inttostr(n) + '\' + 'rejets_row';
-   ok :=  fileexists(fic_strgrd + '0.txt');
-   if ok then begin
-      StringGrid1.RowCount := 20;
-      for i := 0 to StringGrid1.RowCount -1 do begin
-         StringGrid1.Rows[i].LoadFromFile(fic_strgrd + inttostr(i) + '.txt');
-      end;
-   end else begin
-      {for i := 0 to StringGrid1.RowCount -1 do begin
-         StringGrid1.Cells[i, StringGrid1.ColCount - 1 ] := '*' ;
-      end; }
+   i := 0;
+   ok := false;
+   while fileexists(fic_strgrd + inttostr(i) + '.txt') do begin
+      if not ok then
+      StringGrid1.Rows[i].Clear;
+      StringGrid1.Rows[i].LoadFromFile(fic_strgrd + inttostr(i) + '.txt');
+      inc(i);
+      ok := true;
    end;
+end;
+
+procedure TForm1.eff_stringgrid1;
+var
+   i : integer;
+begin
+   StringGrid1.RowCount := stringgrid1rowscount;
+   for i := 0 to StringGrid1.ColCount -1 do begin
+      StringGrid1.cols[i].Clear;
+   end;
+   //StringGrid1.ScrollBars.Visible := false; //   .VertScrollBar.Position := 0;
 end;
 
 procedure TForm1.LAnalyseClick(Sender: TObject);
@@ -367,7 +379,7 @@ end
 }
 procedure TForm1.Baff_msgClick(Sender: TObject);
 begin
-   StringGrid1.cols[0].Assign(aux1.lmessages); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
+   aff_strigrid(aux1.lmessages); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
 end;
 
 procedure TForm1.Benr_lmsgClick(Sender: TObject);
@@ -382,12 +394,18 @@ end;
 
 procedure TForm1.BAff_lvoteClick(Sender: TObject);
 begin
-   StringGrid1.cols[0].Assign(aux1.lvotes);
+   aff_strigrid(aux1.lvotes)
 end;
 
 procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
 begin
-   StringGrid1.cols[0].Assign(aux1.lparticipants);
+   aff_strigrid(aux1.lparticipants);
+end;
+
+procedure TForm1.aff_strigrid(str : tstrings);
+begin
+   eff_stringgrid1;
+   StringGrid1.cols[0].Assign(str);
 end;
 
 end.
