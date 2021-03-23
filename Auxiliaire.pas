@@ -1,4 +1,5 @@
 unit Auxiliaire;
+// Les suffrages exprimés sont les votes valablement émis dans le cadre d’une proposition mise aux voix ou d’une élection, les suffrages recueillis étant comptabilisés, déduction faite des abstentions ou des bulletins rejetés.
 
 interface
 
@@ -31,6 +32,7 @@ type
     lrejetes: tstringlist;
     lconfig: tstringlist;
     procedure videlistes;
+    procedure select_lvotes(heure, duree : string, secret_exclusif : boolean);
     procedure pretraitement_lmsg;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
@@ -245,6 +247,25 @@ begin
       memo_tests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes concaténées');
       memo_tests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
    end;
+end;
+
+procedure taux.select_lvotes(heure, duree: string , secret, secret_exclusif : boolean);
+var
+   hfin : string;
+   i : integer;
+begin
+   i := -1;
+   lvotes.Clear;
+   hfin := TimeToStr(strtotime(heure) + strtotime( '00:' + duree));
+   if debug then memo_tests.add('sélection de ' + heure + ' à ' + hfin);
+   repeat
+      inc(i)
+   until (i >= lmessages.Count) or (heure > lmessages.Strings[i]);
+   while (i < lmessages.Count) and (lmessages.Strings[i] < hfin) do begin
+      lvotes.Add(lmessages.Strings[i]);
+   end;
+   if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés)
+   // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 
 end.

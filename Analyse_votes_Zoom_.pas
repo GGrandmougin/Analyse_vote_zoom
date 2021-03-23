@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire;
+  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -30,11 +30,11 @@ type
     Edit1: TEdit;
     Label1: TLabel;
     Ldebut: TLabel;
-    MaskEdit1: TMaskEdit;
+    ME_heure: TMaskEdit;
     Efic_msg: TEdit;
     Label2: TLabel;
     Lduree: TLabel;
-    MaskEdit2: TMaskEdit;
+    ME_duree: TMaskEdit;
     StringGrid1: TStringGrid;
     Ppour: TPanel;
     Label11: TLabel;
@@ -123,6 +123,10 @@ type
     Bch_msg: TButton;
     Baff_msg: TButton;
     Benr_lmsg: TButton;
+    Bcree_lvote: TButton;
+    BAff_lvote: TButton;
+    BAff_lparticipants: TButton;
+    Label5: TLabel;
     procedure traite_params;
     procedure test_presentation(n : integer);
     procedure FormCreate(Sender: TObject);
@@ -147,6 +151,9 @@ type
     procedure Bch_msgClick(Sender: TObject);
     procedure Baff_msgClick(Sender: TObject);
     procedure Benr_lmsgClick(Sender: TObject);
+    procedure Bcree_lvoteClick(Sender: TObject);
+    procedure BAff_lvoteClick(Sender: TObject);
+    procedure BAff_lparticipantsClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -292,8 +299,8 @@ begin
       en_deplacement := true;
       dx := x  - mx;
       dy := y  - my;
-      Pdebug.Width := Pdebug.Width + dx;
-      pdebug.Height := Pdebug.Height + dy;
+      Pdebug.Width := max(Pdebug.Width + dx, 40);
+      pdebug.Height := max(Pdebug.Height + dy, 40);
       place_ifl_ext;
       //tcontrol(Ifl_ext).SetZOrder(true);
       Application.ProcessMessages;
@@ -302,7 +309,8 @@ begin
 end;
 
 procedure TForm1.Ifl_extMouseUp(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
-var
+begin
+{var
    dx , dy : integer;
 begin
    if not en_deplacement then begin
@@ -314,7 +322,7 @@ begin
       place_ifl_ext;
       Application.ProcessMessages;
       en_deplacement := false;
-   end;
+   end; }
 end;
 
 procedure TForm1.traite_params;
@@ -365,6 +373,21 @@ end;
 procedure TForm1.Benr_lmsgClick(Sender: TObject);
 begin
    Aux1.lmessages.SaveToFile(dir_trv + 'lmessages.txt');
+end;
+
+procedure TForm1.Bcree_lvoteClick(Sender: TObject);
+begin
+   Aux1.select_lvotes(ME_heure.Text, ME_duree.Text, true, false);
+end;
+
+procedure TForm1.BAff_lvoteClick(Sender: TObject);
+begin
+   StringGrid1.cols[0].Assign(aux1.lvotes);
+end;
+
+procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
+begin
+   StringGrid1.cols[0].Assign(aux1.lparticipants);
 end;
 
 end.

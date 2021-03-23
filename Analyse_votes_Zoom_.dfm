@@ -99,19 +99,35 @@ object Form1: TForm1
       Font.Style = []
       ParentFont = False
     end
-    object MaskEdit1: TMaskEdit
+    object Label5: TLabel
+      Left = 330
+      Top = 27
+      Width = 21
+      Height = 16
+      Caption = 'm,s'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object ME_heure: TMaskEdit
       Left = 112
       Top = 24
       Width = 81
       Height = 28
+      Hint = 'heure du d'#233'but du vote'
+      EditMask = '!90:00:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
+      MaxLength = 8
       ParentFont = False
       TabOrder = 0
-      Text = '14:41:30'
+      Text = '12:00:00'
     end
     object Efic_msg: TEdit
       Left = 8
@@ -127,19 +143,22 @@ object Form1: TForm1
       TabOrder = 1
       Text = 'C:\telechergements_Zoom\meeting_saved_chat.txt'
     end
-    object MaskEdit2: TMaskEdit
+    object ME_duree: TMaskEdit
       Left = 272
       Top = 24
-      Width = 57
+      Width = 53
       Height = 28
+      Hint = 'dur'#233'e du vote'
+      EditMask = '!90:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
       Font.Name = 'MS Sans Serif'
       Font.Style = [fsBold]
+      MaxLength = 5
       ParentFont = False
       TabOrder = 2
-      Text = ' 5:00'
+      Text = '05:00'
     end
     object Edit11: TEdit
       Left = 112
@@ -2246,6 +2265,7 @@ object Form1: TForm1
     Top = 288
     Width = 380
     Height = 280
+    Hint = 'Affichage de lvotes'
     BorderWidth = 3
     BorderStyle = bsSingle
     TabOrder = 4
@@ -2361,6 +2381,34 @@ object Form1: TForm1
       Caption = 'Benr_lmsg'
       TabOrder = 7
       OnClick = Benr_lmsgClick
+    end
+    object Bcree_lvote: TButton
+      Left = 64
+      Top = 48
+      Width = 73
+      Height = 17
+      Hint = 's'#233'lection des messages selon plage horaire -> lvotes'
+      Caption = 'Bcree_lvote'
+      TabOrder = 8
+      OnClick = Bcree_lvoteClick
+    end
+    object BAff_lvote: TButton
+      Left = -8
+      Top = 64
+      Width = 73
+      Height = 17
+      Caption = 'BAff_lvote'
+      TabOrder = 9
+      OnClick = BAff_lvoteClick
+    end
+    object BAff_lparticipants: TButton
+      Left = 64
+      Top = 64
+      Width = 73
+      Height = 17
+      Caption = 'Aff_lparticipant'
+      TabOrder = 10
+      OnClick = BAff_lparticipantsClick
     end
   end
 end
