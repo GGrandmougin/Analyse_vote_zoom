@@ -33,6 +33,8 @@ type
     lconfig: tstringlist;
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
+    procedure traitement_lvotes;
+    function remplace_accents(str : string) string;
     procedure pretraitement_lmsg;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
@@ -80,11 +82,13 @@ begin
 end;
 
 procedure taux.charge_fic_msg(fic: string);
+var
+   st : string;
 begin
    videlistes;
    if fileexists(fic) then begin
       try
-         lmessages.LoadFromFile(fic);
+         lmessages.loadfromfile(fic);
       except
          on E: Exception do memo_tests.add('ERREUR: ' + E.Message + ' pour le fichier: ' + fic);
       end;
@@ -261,14 +265,128 @@ begin
    if debug then memo_tests.add('sélection de ' + heure + ' à ' + hfin);
    repeat
       inc(i)
-   until (i >= lmessages.Count) or (heure > lmessages.Strings[i]);
+   until (i >= lmessages.Count) or (heure < lmessages.Strings[i]);
 
    while (i < lmessages.Count) and (lmessages.Strings[i] < hfin) do begin
-      lvotes.Add(lmessages.Strings[i]);
+      lvotes.AddObject(lmessages.Strings[i], tobject(i));
       inc(i);
    end;
    if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés');
    // filtrage "tout le monde" , "secret" , 'secret uniquement"
+
 end;
+
+procedure taux.traitement_lvotes;
+var
+   i, p : integer;
+   st, nv : string;
+   tlm, secret : boolean;
+begin    // '(Message direct)'    'à  Tout le monde :'
+   for i := lvotes.Count -1 downto 0 do begin
+      if lmessages.Objects[integer(lvotes.Objects[i])] = nil then begin
+         tlm := true;
+         secret := false;
+         st := lvotes.Strings[i] ;
+         nv := stringreplace(stringlist.lines[i] , char(195) + char(160) + ' tout le monde'  , 'tlm', []);  // char(195) + char(160) = à
+         if len(nv) = len(st) then begin
+            tlm := false;
+            p := pos('(Message direct)', st);
+            if p > 0   then begin
+               secret := true;
+               nv := copy(st, 1, pos(char(195) + char(160, st))) + 'secret' + rightstr( len(st) - p - 16);
+            end;
+         end;
+         if secret or tlm then begin
+            nv := remplace_accents(nv);
+            //création objet message
+
+            stringlist.lines[i] := nv;
+         end else begin
+            delete(i);
+         end;
+      end else begin
+
+
+      end;
+   end;
+end;
+
+function aux1.remplace_accents(str : string) : string;
+begin
+//   stringreplace    [rfReplaceAll]
+
+{
+à C3A0        195  160
+ï C3AF        195  175
+é C3A9  Ã©    195  169
+è C3A8  Ã¨    195  168
+ê C3AA        195  170
+}
+end;
+
+(*procedure taux.charge_fic_msg(fic: string);
+var
+   strm : tmemorystream;
+   tf : textfile;
+   st, s2 : string;
+   buf : array[0.. 10000] of byte;
+   i : integer;
+begin
+   videlistes;
+   strm := tmemorystream.create;
+   if fileexists(fic) then begin
+      try
+         //lmessages.loadfromfile(fic);
+         Strm.loadfromfile(fic);
+         strm.Position := 0;
+         strm.Read(buf, 10000);
+         for i := 0 to 9999 do begin
+            if buf[i] = 10 then begin
+               lmessages.Add(st);
+               st := '';
+            end else if buf[i] = 13 then begin
+            end else begin
+               if buf[i] > 127 then begin
+                  s2 := char(buf[i]);
+                  showmessage( inttostr(i) + '  ' + inttostr(buf[i]) + '  ' + s2);
+               end;
+               st := st + char(buf[i]);
+            end;
+         end;
+         //lmessages.LoadFromstream(strm);
+         {assignfile(tf,fic);
+         reset(tf);
+         while not eof(tf) do begin
+            readln(tf,st);
+            lmessages.Add(st);
+         end;
+         closefile(tf); }
+      exce
+         on E: Exception do memo_tests.add('ERREUR: ' + E.Message + ' pour le fichier: ' + fic);
+      end;
+   end else begin
+      log_infos('fichier des messages: ' + fic + ' non trouvé' );
+   end;
+   if lmessages.count > 0 then begin
+      pretraitement_lmsg;
+      if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
+   end else begin
+      if debug then memo_tests.Add('erreur chargement fichier');
+      log_infos('problème au fichier des messages: ' + fic );
+   end;
+{
+stringlist.loadfromfile(fichier_entree);
+for i := stringlist.count -1 downto 0 do begin
+   st := stringreplace(stringlist.lines[i] , 'à tout le monde'  , '', []);
+   if len(st) = len(stringlist.lines[i]) then begin
+      delete(i);
+   end else begin
+      stringlist.lines[i] := st;
+   end;
+
+end
+}  //
+   strm.free;
+end;*)
 
 end.

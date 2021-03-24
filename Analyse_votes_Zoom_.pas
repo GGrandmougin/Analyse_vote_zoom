@@ -27,7 +27,7 @@ type
     LEntree: TLabel;
     LAction: TLabel;
     LAnalyse: TLabel;
-    Edit1: TEdit;
+    ENoVote: TEdit;
     Label1: TLabel;
     Ldebut: TLabel;
     ME_heure: TMaskEdit;
@@ -127,6 +127,8 @@ type
     BAff_lvote: TButton;
     BAff_lparticipants: TButton;
     Label5: TLabel;
+    Lnomvote: TLabel;
+    Edit1: TEdit;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -156,6 +158,9 @@ type
     procedure BAff_lvoteClick(Sender: TObject);
     procedure BAff_lparticipantsClick(Sender: TObject);
     procedure aff_strigrid(str : tstrings);
+    procedure Edit1Change(Sender: TObject);
+    procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
   private
     { Déclarations privées }
   public
@@ -170,6 +175,9 @@ var
 implementation
 
 {$R *.dfm}
+
+uses
+    Clipbrd ;
 
 
 procedure TForm1.FormCreate(Sender: TObject);
@@ -406,6 +414,48 @@ procedure TForm1.aff_strigrid(str : tstrings);
 begin
    eff_stringgrid1;
    StringGrid1.cols[0].Assign(str);
+end;
+
+procedure TForm1.Edit1Change(Sender: TObject);
+begin
+   StringGrid1.Font.Charset := strtointdef(edit1.text, 1);
+   StringGrid1.Font.Name := edit24.text;
+{ANSI_CHARSET	0	Caractères ANSI.
+DEFAULT_CHARSET	1	La fonte est choisie en se basant seulement sur le nom et la taille. Si la fonte décrite n'est pas disponible sur le système, Windows lui substituera une autre fonte.
+SYMBOL_CHARSET	2	Jeu symbole standard.
+MAC_CHARSET	77	Caractères Macintosh. Non disponible sur NT 3.51.
+SHIFTJIS_CHARSET	128	Caractères Japonais shift-JIS.
+HANGEUL_CHARSET	129	Caractères Coréens (Wansung).
+JOHAB_CHARSET	130	Caractères Coréens (Johab). Non disponible sur NT 3.51
+
+GB2312_CHARSET	134	Caractères Chinois simplifiés (mainland china).
+CHINESEBIG5_CHARSET	136	Caractères chinois traditionnels (taïwan).
+GREEK_CHARSET	161	Caractères Grecs. Non disponible sur NT 3.51.
+TURKISH_CHARSET	162	Caractères Turcs. Non disponible sur NT 3.51
+VIETNAMESE_CHARSET	163	Caractères Vietnamiens. Non disponible sur NT 3.51.
+HEBREW_CHARSET	177	Caractères Hébreux. Non disponible sur NT 3.51
+ARABIC_CHARSET	178	Caractères Arabes. Non disponible sur NT 3.51
+
+BALTIC_CHARSET	186	Caractères Baltiques. Non disponible sur NT 3.51.
+RUSSIAN_CHARSET	204	Caractères Cyrilliques. Non disponible sur NT 3.51.
+THAI_CHARSET	222	Caractères Thaï. Non disponible sur NT 3.51
+EASTEUROPE_CHARSET	238	Comprend les marques diacritiques pour les pays de l'Europe de l'Est. Non disponible sur NT 3.51.
+OEM_CHARSET	255	Dépend de la page de code du système d'exploitation.}
+end;  
+
+procedure TForm1.StringGrid1MouseDown(Sender: TObject;
+  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+var
+   gc  : TGridCoord;
+begin
+   if debug then begin
+      gc := StringGrid1.MouseCoord(X, Y);
+      //Clipboard.AsText := StringGrid1.Cells[gc.X , gc.Y];    //tclipboard
+      Clipboard.Open;
+      //Clipboard.SetTextBuf(pchar(StringGrid1.Cells[gc.X , gc.Y]));
+      Clipboard.SetTextBuf(pchar(aux1.lmessages.strings[gc.Y]));
+      Clipboard.Close;
+   end;
 end;
 
 end.

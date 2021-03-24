@@ -230,15 +230,22 @@ object Form1: TForm1
       ParentFont = False
     end
     object Label1: TLabel
-      Left = 48
+      Left = 16
       Top = 24
       Width = 40
       Height = 13
       Caption = 'Vote N'#176' '
     end
+    object Lnomvote: TLabel
+      Left = 16
+      Top = 48
+      Width = 64
+      Height = 13
+      Caption = 'Nom du vote:'
+    end
     object BTraitement: TButton
       Left = 24
-      Top = 88
+      Top = 96
       Width = 89
       Height = 25
       Caption = 'Traitement'
@@ -250,11 +257,11 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 0
     end
-    object Edit1: TEdit
-      Left = 48
-      Top = 40
+    object ENoVote: TEdit
+      Left = 72
+      Top = 20
       Width = 33
-      Height = 28
+      Height = 24
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -263,6 +270,19 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 1
       Text = '3'
+    end
+    object Edit1: TEdit
+      Left = 8
+      Top = 64
+      Width = 121
+      Height = 21
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 2
     end
   end
   object PResultats: TPanel
@@ -1788,6 +1808,7 @@ object Form1: TForm1
       FixedRows = 0
       ScrollBars = ssVertical
       TabOrder = 0
+      OnMouseDown = StringGrid1MouseDown
     end
     object StaticText1: TStaticText
       Left = 400
@@ -1856,6 +1877,7 @@ object Form1: TForm1
         Top = 8
         Width = 121
         Height = 25
+        Hint = 'Messages rejet'#233's pendant le vote'
         Caption = 'Messages rejet'#233's'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1870,6 +1892,7 @@ object Form1: TForm1
         Top = 48
         Width = 121
         Height = 25
+        Hint = 'Tous les messages pendant le vote'
         Caption = 'Tous les messages'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1884,6 +1907,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'A'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1899,6 +1923,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'B'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1913,6 +1938,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'C'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1927,6 +1953,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'D'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1941,6 +1968,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'E'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1955,6 +1983,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'F'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1969,6 +1998,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'G'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1983,6 +2013,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'H'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1997,6 +2028,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'I'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2011,6 +2043,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'J'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2025,6 +2058,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'K'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2039,6 +2073,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'L'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2053,6 +2088,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'M'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2068,6 +2104,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'N'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2082,6 +2119,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'O'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2096,6 +2134,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'P'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2110,6 +2149,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'Q'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2124,6 +2164,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'R'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2138,6 +2179,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'S'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2152,6 +2194,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'T'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2166,6 +2209,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'U'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2180,6 +2224,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'V'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2194,6 +2239,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'W'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2208,6 +2254,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'X'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2222,6 +2269,7 @@ object Form1: TForm1
         Top = 280
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'Y'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2236,6 +2284,7 @@ object Form1: TForm1
         Top = 280
         Width = 25
         Height = 25
+        Hint = 'messages commen'#231'ant par cette lettre'
         Caption = 'Z'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2250,6 +2299,7 @@ object Form1: TForm1
         Top = 320
         Width = 121
         Height = 28
+        Hint = 'filtre des messages: messages commen'#231'ant par'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
