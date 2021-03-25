@@ -25,8 +25,11 @@ const
                                                  (' ', char($C2) + char($A0)),
                                                  (char($AB), char($C2) + char($AB)),  // «
                                                  (char($BB), char($C2) + char($BB))) ; // »
+        // manque ç et  a, i, o , u aver tréma et accent circonflexe
+    col_pouvoirs = 1;
+    col_pour = 2;
+    col_contre = 3;
 
-   // manque ç et  a, i, o , u aver tréma et accent circonflexe
 
 type
   tparticipant = class
@@ -34,15 +37,19 @@ type
     numero : integer;
     pouvoirs : Byte	;
     p_en_erreur : boolean;
-    constructor create;
+    constructor create(msg  : string);
     destructor destroy;  override;
   end;
   tmessage = class
-    particpant : tparticipant;
+    participant : tparticipant;
+    texte : string;
     choix : string ;
-    nombre : Byte	;
+    nombre : integer	;
     m_en_erreur : boolean;
-    constructor create;
+    m_secret : boolean;
+    err_choix : boolean;
+    err_nombre : boolean;
+    constructor create(idx_msg : integer; msg  : string; secret : boolean);
     destructor destroy;  override;
   end;
   taux = class
@@ -77,6 +84,7 @@ var
   memo_tests : tstrings;
   debug : boolean;
   stringgrid1rowscount : integer;
+  l_aff : tstringlist = nil;
 implementation
 
 var
@@ -103,8 +111,6 @@ begin
 end;
 
 procedure taux.charge_fic_msg(fic: string);
-var
-   st : string;
 begin
    videlistes;
    if fileexists(fic) then begin
@@ -233,7 +239,7 @@ end;
 
 { tparticipant }
 
-constructor tparticipant.create;
+constructor tparticipant.create(msg  : string);
 begin
 //
 end;
@@ -246,9 +252,47 @@ end;
 
 { tmessage }
 
-constructor tmessage.create;
+constructor tmessage.create(idx_msg : integer; msg  : string; secret : boolean);
+var
+   st, tlm_scrt, nb : string;
+   v, i : integer;
+   lttr , ch : boolean ;
+   nbgrl, nbgrc : integer;
+   dans_grl, dans_grc : boolean;
 begin
-//
+   participant := tparticipant.create(msg );
+   m_secret := secret;
+   texte := msg;
+   nbgrl := 0;
+   nbgrc := 0;
+   dans_grl := false;
+   dans_grc := false;
+   nombre := 0;
+   if m_secret then tlm_scrt := 'RET :' else tlm_scrt := 'TLM :';
+   st := lowercase(rightstr(msg ,length(msg) - pos( tlm_scrt, st) - 4));
+   for i := 1 to length(st) do begin
+      v := ord(st[i]);
+      if (v > 96) and (v < 123) then begin  // lettre
+         if not dans_grl then inc(nbgrl);
+         dans_grl := true;
+         if nbgrl = 1 then choix := choix + st[i];
+      end else begin
+         dans_grl := false;
+      end;
+      if choix = 'abstention' then choix := 'abs';
+      if (choix <> 'pour') and (choix <> 'contre') and (choix <> 'abs') then choix := '';
+      if  (v > 47) and (v < 58) then begin // chiffre
+         if not dans_grc then inc(nbgrc);
+         dans_grc := true;
+         if nbgrc = 1 then nb := nb + st[i];
+      end else begin
+         dans_grc := false;
+      end;
+      if nb <> '' then nombre := strtoint(nb);
+      err_choix := (nbgrl <> 1) and (choix <> '');
+      if nbgrc = 0 then nombre := 1;
+      err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
+   end;
 end;
 
 destructor tmessage.destroy;
@@ -296,34 +340,35 @@ begin
       inc(i);
    end;
    if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés');
-   // filtrage "tout le monde" , "secret" , 'secret uniquement"
-   traitement_lvotes;
+   traitement_lvotes; // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 
 procedure taux.traitement_lvotes;
 var
-   i, p  : integer;
+   i, idx_msg ,p  : integer;
    st, nv : string;
    tlm, secret : boolean;
-begin    // '(Message direct)'    'à  Tout le monde :';
+   msg  : tmessage;
+begin    
    for i := lvotes.Count -1 downto 0 do begin
-      if lmessages.Objects[integer(lvotes.Objects[i])] = nil then begin
+      idx_msg := integer(lvotes.Objects[i]);
+      if lmessages.Objects[idx_msg] = nil then begin
          tlm := true;
          secret := false;
          st := lvotes.Strings[i] ;
-         nv := stringreplace(lvotes.strings[i] , 'Ã   Tout le monde'   , 'tlm', []);  // char(195) + char(160) = à  // char(195) + char(160) + ' Tout le monde'
+         nv := stringreplace(lvotes.strings[i] , 'Ã   Tout le monde'   , 'TLM', []);  // char(195) + char(160) = à  // char(195) + char(160) + ' Tout le monde'
          if length(nv) = length(st) then begin
             tlm := false;
             p := pos('(Message direct)', st);
             if p > 0   then begin
                secret := true;
-               nv := copy(st, 1, pos(char(195) + char(160), st)) + 'secret' + rightstr(st, length(st) - p - 16);
+               nv := copy(st, 1, pos(char(195) + char(160), st) -1) + 'SECRET' + rightstr(st, length(st) - p - 16);
             end;
          end;
          if secret or tlm then begin
             nv := remplace_accents(nv);
             //création objet message
-
+            msg := tmessage.create(idx_msg, nv, secret); // dans create : lmessages.Objects[idx_msg] := msg;
             lvotes.strings[i] := nv;
          end else begin
             lvotes.delete(i);
@@ -339,7 +384,6 @@ end;
 function taux.remplace_accents(str : string) : string;
 var
    i : integer;
-   nm : string;
 begin
    result := str;
    for i := 0 to high(rempl_acc) do begin

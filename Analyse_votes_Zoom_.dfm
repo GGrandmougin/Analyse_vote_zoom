@@ -39,7 +39,7 @@ object Form1: TForm1
       Top = 0
       Width = 54
       Height = 16
-      Caption = 'Entr'#233'es'
+      Caption = 'Entrées'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -52,7 +52,7 @@ object Form1: TForm1
       Top = 32
       Width = 92
       Height = 16
-      Caption = 'Heure du d'#233'but'
+      Caption = 'Heure du début'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -65,7 +65,7 @@ object Form1: TForm1
       Top = 88
       Width = 87
       Height = 16
-      Caption = 'Fichier '#224' traiter'
+      Caption = 'Fichier à traiter'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -78,7 +78,7 @@ object Form1: TForm1
       Top = 32
       Width = 37
       Height = 16
-      Caption = 'Dur'#233'e'
+      Caption = 'Durée'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -117,7 +117,7 @@ object Form1: TForm1
       Top = 24
       Width = 81
       Height = 28
-      Hint = 'heure du d'#233'but du vote'
+      Hint = 'heure du début du vote'
       EditMask = '!90:00:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -148,7 +148,7 @@ object Form1: TForm1
       Top = 24
       Width = 53
       Height = 28
-      Hint = 'dur'#233'e du vote'
+      Hint = 'durée du vote'
       EditMask = '!90:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -193,7 +193,7 @@ object Form1: TForm1
       Top = 67
       Width = 121
       Height = 17
-      Caption = 'Pouvoirs valid'#233's'
+      Caption = 'Pouvoirs validés'
       Checked = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -234,7 +234,7 @@ object Form1: TForm1
       Top = 24
       Width = 40
       Height = 13
-      Caption = 'Vote N'#176' '
+      Caption = 'Vote N° '
     end
     object Lnomvote: TLabel
       Left = 16
@@ -301,7 +301,7 @@ object Form1: TForm1
       Top = 0
       Width = 66
       Height = 16
-      Caption = 'R'#233'sultats'
+      Caption = 'Résultats'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -340,7 +340,7 @@ object Form1: TForm1
       Top = 72
       Width = 93
       Height = 20
-      Caption = '% / exprim'#233's:'
+      Caption = '% / exprimés:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -1789,7 +1789,7 @@ object Form1: TForm1
       Top = 72
       Width = 171
       Height = 25
-      Caption = 'Messages rejet'#233's'
+      Caption = 'Messages rejetés'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
@@ -1877,8 +1877,8 @@ object Form1: TForm1
         Top = 8
         Width = 121
         Height = 25
-        Hint = 'Messages rejet'#233's pendant le vote'
-        Caption = 'Messages rejet'#233's'
+        Hint = 'Messages rejetés pendant le vote'
+        Caption = 'Messages rejetés'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -1907,7 +1907,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'A'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1923,7 +1923,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'B'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1938,7 +1938,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'C'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1953,7 +1953,7 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'D'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1968,7 +1968,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'E'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1983,7 +1983,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'F'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1998,7 +1998,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'G'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2013,7 +2013,7 @@ object Form1: TForm1
         Top = 120
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'H'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2028,7 +2028,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'I'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2043,7 +2043,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'J'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2058,7 +2058,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'K'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2073,7 +2073,7 @@ object Form1: TForm1
         Top = 152
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'L'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2088,7 +2088,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'M'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2104,7 +2104,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'N'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2119,7 +2119,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'O'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2134,7 +2134,7 @@ object Form1: TForm1
         Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'P'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2149,7 +2149,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'Q'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2164,7 +2164,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'R'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2179,7 +2179,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'S'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2194,7 +2194,7 @@ object Form1: TForm1
         Top = 216
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'T'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2209,7 +2209,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'U'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2224,7 +2224,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'V'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2239,7 +2239,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'W'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2254,7 +2254,7 @@ object Form1: TForm1
         Top = 248
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'X'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2269,7 +2269,7 @@ object Form1: TForm1
         Top = 280
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'Y'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2284,7 +2284,7 @@ object Form1: TForm1
         Top = 280
         Width = 25
         Height = 25
-        Hint = 'messages commen'#231'ant par cette lettre'
+        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
         Caption = 'Z'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2299,7 +2299,7 @@ object Form1: TForm1
         Top = 320
         Width = 121
         Height = 28
-        Hint = 'filtre des messages: messages commen'#231'ant par'
+        Hint = 'filtre des messages: messages dont le nom de l''expéditeur commence par:'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -2365,7 +2365,7 @@ object Form1: TForm1
       Top = 0
       Width = 57
       Height = 17
-      Hint = 'exemple de messages rejet'#233's'
+      Hint = 'exemple de messages rejetés'
       Caption = 'tst_pres1'
       TabOrder = 0
       OnClick = Btst_presClick
@@ -2376,7 +2376,7 @@ object Form1: TForm1
       Top = 0
       Width = 57
       Height = 17
-      Hint = 'exemple messages rejet'#233's pour la lettre "M"'
+      Hint = 'exemple messages rejetés pour la lettre "M"'
       Caption = 'tst_pres2'
       TabOrder = 1
       OnClick = Btst_presClick
@@ -2396,7 +2396,7 @@ object Form1: TForm1
       Width = 113
       Height = 17
       Hint = 
-        'selectionne le dernier fichier  des message zoom dans le r'#233'perto' +
+        'selectionne le dernier fichier  des message zoom dans le réperto' +
         'ire standard'
       Caption = 'Btst_fic_msg'
       TabOrder = 4
@@ -2417,7 +2417,7 @@ object Form1: TForm1
       Top = 32
       Width = 73
       Height = 17
-      Hint = 'affiche les messages  charg'#233's'
+      Hint = 'affiche les messages  chargés'
       Caption = 'Baff_msg'
       TabOrder = 6
       OnClick = Baff_msgClick
@@ -2437,7 +2437,7 @@ object Form1: TForm1
       Top = 48
       Width = 73
       Height = 17
-      Hint = 's'#233'lection des messages selon plage horaire -> lvotes'
+      Hint = 'sélection des messages selon plage horaire -> lvotes'
       Caption = 'Bcree_lvote'
       TabOrder = 8
       OnClick = Bcree_lvoteClick

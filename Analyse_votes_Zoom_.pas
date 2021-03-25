@@ -404,12 +404,14 @@ end;
 
 procedure TForm1.BAff_lvoteClick(Sender: TObject);
 begin
-   aff_strigrid(aux1.lvotes)
+   aff_strigrid(aux1.lvotes)   ;
+   l_aff := aux1.lvotes
 end;
 
 procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
 begin
    aff_strigrid(aux1.lparticipants);
+   l_aff := aux1.lparticipants;
 end;
 
 procedure TForm1.aff_strigrid(str : tstrings);
@@ -452,10 +454,8 @@ var
 begin
    if debug then begin
       gc := StringGrid1.MouseCoord(X, Y);
-      //Clipboard.AsText := StringGrid1.Cells[gc.X , gc.Y];    //tclipboard
       Clipboard.Open;
-      //Clipboard.SetTextBuf(pchar(StringGrid1.Cells[gc.X , gc.Y]));
-      Clipboard.SetTextBuf(pchar(aux1.lmessages.strings[gc.Y]));
+      Clipboard.SetTextBuf(pchar(StringGrid1.Cells[gc.X , gc.Y]));
       Clipboard.Close;
    end;
 end;
