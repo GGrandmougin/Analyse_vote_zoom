@@ -129,6 +129,7 @@ type
     Label5: TLabel;
     Lnomvote: TLabel;
     Edit1: TEdit;
+    Binfo: TButton;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -161,6 +162,7 @@ type
     procedure Edit1Change(Sender: TObject);
     procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
+    procedure BinfoClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -456,6 +458,12 @@ begin
       Clipboard.SetTextBuf(pchar(aux1.lmessages.strings[gc.Y]));
       Clipboard.Close;
    end;
+end;
+
+procedure TForm1.BinfoClick(Sender: TObject);
+begin
+   showmessage(inttostr(high(rempl_acc)));
+
 end;
 
 end.

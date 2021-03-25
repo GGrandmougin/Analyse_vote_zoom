@@ -261,7 +261,7 @@ object Form1: TForm1
       Left = 72
       Top = 20
       Width = 33
-      Height = 24
+      Height = 28
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -2461,6 +2461,15 @@ object Form1: TForm1
       Caption = 'Aff_lparticipant'
       TabOrder = 10
       OnClick = BAff_lparticipantsClick
+    end
+    object Binfo: TButton
+      Left = 272
+      Top = 256
+      Width = 75
+      Height = 17
+      Caption = 'Binfo'
+      TabOrder = 11
+      OnClick = BinfoClick
     end
   end
 end

@@ -7,6 +7,26 @@ uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
    IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils ;
+{
+à C3A0        195  160
+ï C3AF        195  175
+é C3A9  Ã©    195  169
+è C3A8  Ã¨    195  168
+ê C3AA        195  170
+}
+
+const
+
+    rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à
+                                                 ('i', char(195) + char(175)),  // ï
+                                                 ('e', char(195) + char(169)),  // é
+                                                 ('e', char(195) + char(168)),  // è
+                                                 ('e', char(195) + char(170)),  // ê
+                                                 (' ', char($C2) + char($A0)),
+                                                 (char($AB), char($C2) + char($AB)),  // «
+                                                 (char($BB), char($C2) + char($BB))) ; // »
+
+   // manque ç et  a, i, o , u aver tréma et accent circonflexe
 
 type
   tparticipant = class
@@ -31,10 +51,11 @@ type
     lparticipants: tstringlist;
     lrejetes: tstringlist;
     lconfig: tstringlist;
+    //lremplacement: tstringlist;
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
     procedure traitement_lvotes;
-    function remplace_accents(str : string) string;
+    function remplace_accents(str : string): string;
     procedure pretraitement_lmsg;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
@@ -123,12 +144,14 @@ begin
     lparticipants:= tstringlist.Create;
     lrejetes:= tstringlist.Create;
     lconfig:= tstringlist.Create;
-   dir_exe := extractfilepath(paramstr(0));
-   dir_trv := dir_exe + 'tests';
-   forcedirectories(dir_trv);
-   dir_trv := dir_trv + '\';
-   ficlog := dir_trv + 'infos.log';
-   rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
+    //lremplacement := tstringlist.Create;
+    //lremplacement.Text := remplacc;
+    dir_exe := extractfilepath(paramstr(0));
+    dir_trv := dir_exe + 'tests';
+    forcedirectories(dir_trv);
+    dir_trv := dir_trv + '\';
+    ficlog := dir_trv + 'infos.log';
+    rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
 end;
 
 destructor taux.destroy;
@@ -139,6 +162,7 @@ begin
     lmessages.free;
     lparticipants.free;
     lconfig.Free;
+    //lremplacement.Free;
   inherited;
 end;
 
@@ -273,55 +297,55 @@ begin
    end;
    if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages sélectionnés');
    // filtrage "tout le monde" , "secret" , 'secret uniquement"
-
+   traitement_lvotes;
 end;
 
 procedure taux.traitement_lvotes;
 var
-   i, p : integer;
+   i, p  : integer;
    st, nv : string;
    tlm, secret : boolean;
-begin    // '(Message direct)'    'à  Tout le monde :'
+begin    // '(Message direct)'    'à  Tout le monde :';
    for i := lvotes.Count -1 downto 0 do begin
       if lmessages.Objects[integer(lvotes.Objects[i])] = nil then begin
          tlm := true;
          secret := false;
          st := lvotes.Strings[i] ;
-         nv := stringreplace(stringlist.lines[i] , char(195) + char(160) + ' tout le monde'  , 'tlm', []);  // char(195) + char(160) = à
-         if len(nv) = len(st) then begin
+         nv := stringreplace(lvotes.strings[i] , 'Ã   Tout le monde'   , 'tlm', []);  // char(195) + char(160) = à  // char(195) + char(160) + ' Tout le monde'
+         if length(nv) = length(st) then begin
             tlm := false;
             p := pos('(Message direct)', st);
             if p > 0   then begin
                secret := true;
-               nv := copy(st, 1, pos(char(195) + char(160, st))) + 'secret' + rightstr( len(st) - p - 16);
+               nv := copy(st, 1, pos(char(195) + char(160), st)) + 'secret' + rightstr(st, length(st) - p - 16);
             end;
          end;
          if secret or tlm then begin
             nv := remplace_accents(nv);
             //création objet message
 
-            stringlist.lines[i] := nv;
+            lvotes.strings[i] := nv;
          end else begin
-            delete(i);
+            lvotes.delete(i);
          end;
       end else begin
 
 
       end;
    end;
+   if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages filtrés');
 end;
 
-function aux1.remplace_accents(str : string) : string;
+function taux.remplace_accents(str : string) : string;
+var
+   i : integer;
+   nm : string;
 begin
-//   stringreplace    [rfReplaceAll]
+   result := str;
+   for i := 0 to high(rempl_acc) do begin
+      result := StringReplace(result, rempl_acc[i, 1]  , rempl_acc[i, 0] , [rfReplaceAll] );
+   end;
 
-{
-à C3A0        195  160
-ï C3AF        195  175
-é C3A9  Ã©    195  169
-è C3A8  Ã¨    195  168
-ê C3AA        195  170
-}
 end;
 
 (*procedure taux.charge_fic_msg(fic: string);
@@ -374,19 +398,16 @@ begin
       if debug then memo_tests.Add('erreur chargement fichier');
       log_infos('problème au fichier des messages: ' + fic );
    end;
-{
-stringlist.loadfromfile(fichier_entree);
-for i := stringlist.count -1 downto 0 do begin
-   st := stringreplace(stringlist.lines[i] , 'à tout le monde'  , '', []);
-   if len(st) = len(stringlist.lines[i]) then begin
-      delete(i);
-   end else begin
-      stringlist.lines[i] := st;
-   end;
 
-end
-}  //
    strm.free;
 end;*)
 
+{ STRUCTURE _______________________________________________________________________________________
+
+******* un objet tvote par N° de vote comprenant une tstringlist de type lvote
+
+******* rechargement  de meeting_saved_chat.txt  venant du même dossier -> ajout des nouvelles ligne au lmessage existant (conservation des tmessages existants)
+
+
+}
 end.
