@@ -29,13 +29,19 @@ const
     col_pouvoirs = 1;
     col_pour = 2;
     col_contre = 3;
+    col_abs = 4;
+    tb_regions : array[0.. 9] of string = ( '', '', '', '','', '','', '','', '');    // specifique Mensa
 
 
 type
+  ttbnoms = array[0..9] of string;
   tparticipant = class
     nom, prenom, region : string;
+    texte : string;
+    tbnom : ttbnoms;
     numero : integer;
     pouvoirs : Byte	;
+    err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     p_en_erreur : boolean;
     constructor create(msg  : string);
     destructor destroy;  override;
@@ -49,6 +55,7 @@ type
     m_secret : boolean;
     err_choix : boolean;
     err_nombre : boolean;
+    function cherche_participant(msg : string): tparticipant ;
     constructor create(idx_msg : integer; msg  : string; secret : boolean);
     destructor destroy;  override;
   end;
@@ -236,12 +243,55 @@ begin
 end;
 
 
-
 { tparticipant }
 
 constructor tparticipant.create(msg  : string);
+var
+   nbgrl, nbgrc, i, v, j : integer;
+   dans_grl, dans_grc : boolean;
+   nb : string;
 begin
-//
+   err_region := false;
+   err_prenom := false;
+   err_nom := false;
+   err_num := false;
+   err_ID := false;
+   numero := 0;
+   nbgrl := 0;
+   nbgrc := 0;
+   dans_grl := false;
+   dans_grc := false;
+   for i := 1 to length(msg) do begin
+      v := ord(msg[i]);
+      if (v > 96) and (v < 123) then begin  // lettre
+         if not dans_grl then inc(nbgrl);
+         dans_grl := true;
+         if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
+      end else begin
+         dans_grl := false;
+      end;
+      if  (v > 47) and (v < 58) then begin // chiffre
+         if not dans_grc then inc(nbgrc);
+         dans_grc := true;
+         if nbgrc = 1 then nb := nb + msg[i];
+      end else begin
+         dans_grc := false;
+      end;
+   end;
+   if nb <> '' then numero := strtoint(nb);
+   err_ID := nbgrl < 3 ;
+   for i := 0 to high(tbnom) do begin
+      if length(tbnom[i]) = 3 then begin    // specifique Mensa
+         j := 0;
+         while (j <= high(tb_regions)) and not err_region do begin
+            err_region := tbnom[i] = tb_regions[j];
+            inc(j);
+         end;
+      end;
+   end;
+   err_num := (nbgrc <> 1) or (numero = 0);
+   err_ID := err_ID or err_region or err_prenom or err_nom or err_num ;
+   aux1.lparticipants.AddObject('msg', self);
 end;
 
 destructor tparticipant.destroy;
@@ -252,15 +302,30 @@ end;
 
 { tmessage }
 
+function tmessage.cherche_participant(msg: string): tparticipant;
+var
+   p, i : integer;
+   st : string;
+begin
+   p := pos('TLM :' , msg);
+   if p = 0 then p := pos('SECRET :' , msg);
+   st := lowercase(copy(msg, 1 , p - 1));
+   i := Aux1.lparticipants.IndexOf(st);
+   if i >= 0 then begin
+      result := tparticipant(Aux1.lparticipants.objects[i]);
+   end else begin
+      result := tparticipant.create(st);
+   end;
+end;
+
 constructor tmessage.create(idx_msg : integer; msg  : string; secret : boolean);
 var
    st, tlm_scrt, nb : string;
    v, i : integer;
-   lttr , ch : boolean ;
    nbgrl, nbgrc : integer;
    dans_grl, dans_grc : boolean;
 begin
-   participant := tparticipant.create(msg );
+   participant := cherche_participant(msg);  //tparticipant.create(msg );
    m_secret := secret;
    texte := msg;
    nbgrl := 0;
@@ -288,11 +353,12 @@ begin
       end else begin
          dans_grc := false;
       end;
-      if nb <> '' then nombre := strtoint(nb);
-      err_choix := (nbgrl <> 1) and (choix <> '');
-      if nbgrc = 0 then nombre := 1;
-      err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
    end;
+   if nb <> '' then nombre := strtoint(nb);
+   err_choix := (nbgrl <> 1) and (choix <> '');
+   if nbgrc = 0 then nombre := 1;
+   err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
+   aux1.lmessages.Objects[idx_msg] := self;
 end;
 
 destructor tmessage.destroy;
@@ -348,7 +414,7 @@ var
    i, idx_msg ,p  : integer;
    st, nv : string;
    tlm, secret : boolean;
-   msg  : tmessage;
+   //msg  : tmessage;
 begin    
    for i := lvotes.Count -1 downto 0 do begin
       idx_msg := integer(lvotes.Objects[i]);
@@ -367,15 +433,13 @@ begin
          end;
          if secret or tlm then begin
             nv := remplace_accents(nv);
-            //création objet message
-            msg := tmessage.create(idx_msg, nv, secret); // dans create : lmessages.Objects[idx_msg] := msg;
+            tmessage.create(idx_msg, nv, secret); // dans create : lmessages.Objects[idx_msg] := msg;
             lvotes.strings[i] := nv;
          end else begin
             lvotes.delete(i);
          end;
       end else begin
-
-
+         lvotes.strings[i] := tmessage(lmessages.Objects[idx_msg]).texte;
       end;
    end;
    if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages filtrés');
