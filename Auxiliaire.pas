@@ -269,7 +269,7 @@ end;
 { tparticipant }
 
 
-constructor tparticipant.create(msg  : string);
+constructor tparticipant.create(msg  : string); // msg mis à lowercase dans fonction appelante cherche_participant
 var
    nbgrl, nbgrc, i, v, j : integer;
    dans_grl, dans_grc : boolean;
@@ -339,8 +339,12 @@ begin
 end;
 
 function tparticipant.affichage_p(ligne: tstrings; rejets : boolean; filtre: string): boolean;
+var
+   flt : string;
 begin
    result := (not rejets) or rejected;
+   flt := lowercase(trim(filtre));
+   result := result and ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
    if result then begin
       ligne[col_pouvoirs] := inttostr(pouvoirs);
       if err_nom then ligne[col_nom] := 'X';
@@ -365,6 +369,9 @@ begin
       if err_choix then ligne[col_choix] := 'X';
       if err_nombre then ligne[col_nombre] := 'X';
       if err_choix or err_nombre then ligne[col_suffrage] := 'X';  // sera peut-être rempli aussi par le controle des pouvoirs
+      if choix = 'pour' then ligne[col_pour] := inttostr(nombre) else
+      if choix = 'contre' then ligne[col_contre] := inttostr(nombre) else
+      if choix = 'abs' then ligne[col_abs] := inttostr(nombre) ; // sera éventuellement réécrit par la recherche du dernier message concernant ce choix
       //ligne[col_] := ;
    end;
 end;
