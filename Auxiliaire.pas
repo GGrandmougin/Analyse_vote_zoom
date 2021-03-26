@@ -30,6 +30,16 @@ const
     col_pour = 2;
     col_contre = 3;
     col_abs = 4;
+    col_nonexpr = 5;
+    col_ID = 6;
+    col_nom = 7;
+    col_prenom = 8;
+    col_No = 9;
+    col_region = 10;
+    col_suffrage = 11;
+    col_err_pouvoirs = 12;
+    col_nombre = 13;
+    col_choix = 14;
     tb_regions : array[0.. 9] of string = ( '', '', '', '','', '','', '','', '');    // specifique Mensa
 
 
@@ -41,8 +51,13 @@ type
     tbnom : ttbnoms;
     numero : integer;
     pouvoirs : Byte	;
+    partage_nomembre : boolean;
+    legitime : boolean;
+    no_legitime : boolean; // rtrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
-    p_en_erreur : boolean;
+    //p_en_erreur : boolean;
+    function rejected : boolean;
+    function affichage_p(ligne : tstrings; rejets : boolean; filtre : string) : boolean;
     constructor create(msg  : string);
     destructor destroy;  override;
   end;
@@ -51,10 +66,13 @@ type
     texte : string;
     choix : string ;
     nombre : integer	;
-    m_en_erreur : boolean;
+    //m_en_erreur : boolean;
     m_secret : boolean;
     err_choix : boolean;
     err_nombre : boolean;
+    est_vote : boolean;
+    function rejected : boolean;
+    function affichage_m(ligne: tstrings; rejets : boolean; filtre: string = '') : boolean;
     function cherche_participant(msg : string): tparticipant ;
     constructor create(idx_msg : integer; msg  : string; secret : boolean);
     destructor destroy;  override;
@@ -65,6 +83,7 @@ type
     lparticipants: tstringlist;
     lrejetes: tstringlist;
     lconfig: tstringlist;
+    lnmembre2index : tstringlist;
     //lremplacement: tstringlist;
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
@@ -152,6 +171,9 @@ end;
 
 constructor taux.create;
 begin
+    lnmembre2index := tstringlist.create;
+    lnmembre2index.Sorted := true;
+    lnmembre2index.Duplicates := dupAccept;
     lmessages := tstringlist.Create;
     lvotes := tstringlist.Create;
     lparticipants:= tstringlist.Create;
@@ -169,6 +191,7 @@ end;
 
 destructor taux.destroy;
 begin
+    lnmembre2index.Free;
     videlistes;
     lrejetes.free;
     lvotes.free;
@@ -245,13 +268,14 @@ end;
 
 { tparticipant }
 
+
 constructor tparticipant.create(msg  : string);
 var
    nbgrl, nbgrc, i, v, j : integer;
    dans_grl, dans_grc : boolean;
    nb : string;
 begin
-   err_region := false;
+   err_region := true;
    err_prenom := false;
    err_nom := false;
    err_num := false;
@@ -261,9 +285,12 @@ begin
    nbgrc := 0;
    dans_grl := false;
    dans_grc := false;
+   pouvoirs := 1;
+   partage_nomembre := false;
+   no_legitime := true; // rtrouvé dans liste pouvoirs ou autre
    for i := 1 to length(msg) do begin
       v := ord(msg[i]);
-      if (v > 96) and (v < 123) then begin  // lettre
+      if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
          if not dans_grl then inc(nbgrl);
          dans_grl := true;
          if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
@@ -281,17 +308,28 @@ begin
    if nb <> '' then numero := strtoint(nb);
    err_ID := nbgrl < 3 ;
    for i := 0 to high(tbnom) do begin
-      if length(tbnom[i]) = 3 then begin    // specifique Mensa
+      if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
          j := 0;
-         while (j <= high(tb_regions)) and not err_region do begin
-            err_region := tbnom[i] = tb_regions[j];
+         while (j <= high(tb_regions)) and err_region do begin
+            err_region := not (tbnom[i] = tb_regions[j]);
             inc(j);
          end;
+         if not err_region then region := tbnom[i];
       end;
    end;
    err_num := (nbgrc <> 1) or (numero = 0);
-   err_ID := err_ID or err_region or err_prenom or err_nom or err_num ;
+   if not err_num then begin
+      err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
+      if err_num then no_legitime := false;
+      aux1.lnmembre2index.Add(nb + '=' + inttostr(aux1.lparticipants.Count));
+   end;
+   legitime := true;
    aux1.lparticipants.AddObject('msg', self);
+end;
+
+function tparticipant.rejected: boolean;
+begin
+   result := err_ID or err_region or err_prenom or err_nom or (err_num and not no_legitime) ;
 end;
 
 destructor tparticipant.destroy;
@@ -300,7 +338,36 @@ begin
   inherited;
 end;
 
+function tparticipant.affichage_p(ligne: tstrings; rejets : boolean; filtre: string): boolean;
+begin
+   result := (not rejets) or rejected;
+   if result then begin
+      ligne[col_pouvoirs] := inttostr(pouvoirs);
+      if err_nom then ligne[col_nom] := 'X';
+      if err_prenom then ligne[col_prenom] := 'X';
+      if err_region then ligne[col_region] := 'X';
+      if err_num then ligne[col_No] := 'X';
+      if rejected then ligne[col_ID] := 'X';
+      {if err_ then ligne[col_] := 'X';
+      if err_ then ligne[col_] := 'X';   }
+   end;
+end;
+
+
 { tmessage }
+
+function tmessage.affichage_m(ligne: tstrings; rejets : boolean; filtre: string = ''): boolean;
+begin
+   result := est_vote and ((not rejets) or ( rejected ));
+   result := result and participant.affichage_p(ligne, rejets, filtre);
+   if result then begin
+      ligne[0] := texte;
+      if err_choix then ligne[col_choix] := 'X';
+      if err_nombre then ligne[col_nombre] := 'X';
+      if err_choix or err_nombre then ligne[col_suffrage] := 'X';  // sera peut-être rempli aussi par le controle des pouvoirs
+      //ligne[col_] := ;
+   end;
+end;
 
 function tmessage.cherche_participant(msg: string): tparticipant;
 var
@@ -358,7 +425,13 @@ begin
    err_choix := (nbgrl <> 1) and (choix <> '');
    if nbgrc = 0 then nombre := 1;
    err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
+   est_vote := participant.legitime and (nbgrl < 6 ) and ( nbgrc < 4);
    aux1.lmessages.Objects[idx_msg] := self;
+end;
+
+function tmessage.rejected: boolean;
+begin
+   result := not(err_choix or err_nombre);
 end;
 
 destructor tmessage.destroy;
@@ -518,4 +591,6 @@ end;*)
 
 
 }
+
+
 end.
