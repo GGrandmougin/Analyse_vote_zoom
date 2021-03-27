@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 365
-  Top = 198
+  Left = 797
+  Top = 298
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -39,7 +39,7 @@ object Form1: TForm1
       Top = 0
       Width = 54
       Height = 16
-      Caption = 'Entrées'
+      Caption = 'Entr'#233'es'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -52,7 +52,7 @@ object Form1: TForm1
       Top = 32
       Width = 92
       Height = 16
-      Caption = 'Heure du début'
+      Caption = 'Heure du d'#233'but'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -65,7 +65,7 @@ object Form1: TForm1
       Top = 88
       Width = 87
       Height = 16
-      Caption = 'Fichier à traiter'
+      Caption = 'Fichier '#224' traiter'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -78,7 +78,7 @@ object Form1: TForm1
       Top = 32
       Width = 37
       Height = 16
-      Caption = 'Durée'
+      Caption = 'Dur'#233'e'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -117,7 +117,7 @@ object Form1: TForm1
       Top = 24
       Width = 81
       Height = 28
-      Hint = 'heure du début du vote'
+      Hint = 'heure du d'#233'but du vote'
       EditMask = '!90:00:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -148,7 +148,7 @@ object Form1: TForm1
       Top = 24
       Width = 53
       Height = 28
-      Hint = 'durée du vote'
+      Hint = 'dur'#233'e du vote'
       EditMask = '!90:00;1;_'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -193,7 +193,7 @@ object Form1: TForm1
       Top = 67
       Width = 121
       Height = 17
-      Caption = 'Pouvoirs validés'
+      Caption = 'Pouvoirs valid'#233's'
       Checked = True
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -234,7 +234,7 @@ object Form1: TForm1
       Top = 24
       Width = 40
       Height = 13
-      Caption = 'Vote N° '
+      Caption = 'Vote N'#176' '
     end
     object Lnomvote: TLabel
       Left = 16
@@ -301,7 +301,7 @@ object Form1: TForm1
       Top = 0
       Width = 66
       Height = 16
-      Caption = 'Résultats'
+      Caption = 'R'#233'sultats'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
@@ -340,7 +340,7 @@ object Form1: TForm1
       Top = 72
       Width = 93
       Height = 20
-      Caption = '% / exprimés:'
+      Caption = '% / exprim'#233's:'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -16
@@ -1771,25 +1771,12 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
     end
-    object Label4: TLabel
-      Left = 867
-      Top = 512
-      Width = 48
-      Height = 16
-      Caption = 'Totaux'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-    end
     object Lmessages: TLabel
       Left = 408
       Top = 72
       Width = 171
       Height = 25
-      Caption = 'Messages rejetés'
+      Caption = 'Messages rejet'#233's'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -21
@@ -1823,91 +1810,48 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 1
     end
-    object Ettlpour: TEdit
-      Left = 856
-      Top = 488
-      Width = 24
-      Height = 21
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 2
-      Text = '7'
-    end
-    object Ettlcontre: TEdit
-      Left = 880
-      Top = 488
-      Width = 24
-      Height = 21
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 4
-      Text = '6'
-    end
-    object Ettlabs: TEdit
-      Left = 904
-      Top = 488
-      Width = 24
-      Height = 21
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -11
-      Font.Name = 'MS Sans Serif'
-      Font.Style = [fsBold]
-      ParentFont = False
-      TabOrder = 3
-      Text = '1'
-    end
     object Pchoix_msg: TPanel
       Left = 8
-      Top = 104
+      Top = 112
       Width = 145
       Height = 393
       BevelOuter = bvNone
-      TabOrder = 5
-      object Button1: TButton
-        Left = 8
-        Top = 8
-        Width = 121
+      TabOrder = 2
+      object LRejetes: TLabel
+        Left = 24
+        Top = 12
+        Width = 73
         Height = 25
-        Hint = 'Messages rejetés pendant le vote'
-        Caption = 'Messages rejetés'
+        Caption = 'Rejet'#233's'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -11
+        Font.Height = -20
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 18
+        Transparent = False
+        OnClick = RrejetesClick
       end
-      object Button2: TButton
+      object LTous_msg: TLabel
         Left = 8
         Top = 48
-        Width = 121
-        Height = 25
-        Hint = 'Tous les messages pendant le vote'
+        Width = 137
+        Height = 16
         Caption = 'Tous les messages'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
-        Font.Height = -11
+        Font.Height = -13
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 0
+        OnClick = RtousmsgClick
       end
       object ButtonA: TButton
         Left = 8
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
         Caption = 'A'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1915,7 +1859,7 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
-        TabOrder = 1
+        TabOrder = 0
         OnClick = ButtonAClick
       end
       object Button4: TButton
@@ -1923,8 +1867,23 @@ object Form1: TForm1
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
         Caption = 'B'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+      end
+      object Button5: TButton
+        Left = 72
+        Top = 88
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'C'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -1933,179 +1892,13 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 2
       end
-      object Button5: TButton
-        Left = 72
-        Top = 88
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'C'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 3
-      end
       object Button7: TButton
         Left = 104
         Top = 88
         Width = 25
         Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
         Caption = 'D'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 19
-      end
-      object Button8: TButton
-        Left = 8
-        Top = 120
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'E'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 20
-      end
-      object Button9: TButton
-        Left = 40
-        Top = 120
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'F'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 21
-      end
-      object Button10: TButton
-        Left = 72
-        Top = 120
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'G'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 22
-      end
-      object Button11: TButton
-        Left = 104
-        Top = 120
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'H'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 23
-      end
-      object Button12: TButton
-        Left = 8
-        Top = 152
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'I'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 24
-      end
-      object Button13: TButton
-        Left = 40
-        Top = 152
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'J'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 25
-      end
-      object Button14: TButton
-        Left = 72
-        Top = 152
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'K'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 26
-      end
-      object Button15: TButton
-        Left = 104
-        Top = 152
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'L'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 27
-      end
-      object Button24: TButton
-        Left = 8
-        Top = 184
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'M'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 15
-        OnClick = ButtonAClick
-      end
-      object Button25: TButton
-        Left = 40
-        Top = 184
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'N'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -2114,163 +1907,133 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 17
       end
-      object Button26: TButton
+      object Button8: TButton
+        Left = 8
+        Top = 120
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'E'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 18
+      end
+      object Button9: TButton
+        Left = 40
+        Top = 120
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'F'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 19
+      end
+      object Button10: TButton
         Left = 72
+        Top = 120
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'G'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 20
+      end
+      object Button11: TButton
+        Left = 104
+        Top = 120
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'H'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 21
+      end
+      object Button12: TButton
+        Left = 8
+        Top = 152
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'I'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 22
+      end
+      object Button13: TButton
+        Left = 40
+        Top = 152
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'J'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 23
+      end
+      object Button14: TButton
+        Left = 72
+        Top = 152
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'K'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 24
+      end
+      object Button15: TButton
+        Left = 104
+        Top = 152
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'L'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 25
+      end
+      object Button24: TButton
+        Left = 8
         Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'O'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 10
-      end
-      object Button27: TButton
-        Left = 104
-        Top = 184
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'P'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 12
-      end
-      object Button20: TButton
-        Left = 8
-        Top = 216
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'Q'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 8
-      end
-      object Button21: TButton
-        Left = 40
-        Top = 216
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'R'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 9
-      end
-      object Button22: TButton
-        Left = 72
-        Top = 216
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'S'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 11
-      end
-      object Button23: TButton
-        Left = 104
-        Top = 216
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'T'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 13
-      end
-      object Button16: TButton
-        Left = 8
-        Top = 248
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'U'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 4
-      end
-      object Button17: TButton
-        Left = 40
-        Top = 248
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'V'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 28
-      end
-      object Button18: TButton
-        Left = 72
-        Top = 248
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'W'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 6
-      end
-      object Button19: TButton
-        Left = 104
-        Top = 248
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'X'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -16
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 7
-      end
-      object Button28: TButton
-        Left = 40
-        Top = 280
-        Width = 25
-        Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'Y'
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'M'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -2278,14 +2041,15 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 14
+        OnClick = ButtonAClick
       end
-      object Button29: TButton
-        Left = 72
-        Top = 280
+      object Button25: TButton
+        Left = 40
+        Top = 184
         Width = 25
         Height = 25
-        Hint = 'messages dont le nom de l''expéditeur commence par cette lettre'
-        Caption = 'Z'
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'N'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -2294,12 +2058,133 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 16
       end
-      object Edit24: TEdit
+      object Button26: TButton
+        Left = 72
+        Top = 184
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'O'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 9
+      end
+      object Button27: TButton
+        Left = 104
+        Top = 184
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'P'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 11
+      end
+      object Button20: TButton
         Left = 8
-        Top = 320
-        Width = 121
-        Height = 28
-        Hint = 'filtre des messages: messages dont le nom de l''expéditeur commence par:'
+        Top = 216
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'Q'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 7
+      end
+      object Button21: TButton
+        Left = 40
+        Top = 216
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'R'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 8
+      end
+      object Button22: TButton
+        Left = 72
+        Top = 216
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'S'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 10
+      end
+      object Button23: TButton
+        Left = 104
+        Top = 216
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'T'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 12
+      end
+      object Button16: TButton
+        Left = 8
+        Top = 248
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'U'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 3
+      end
+      object Button17: TButton
+        Left = 40
+        Top = 248
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'V'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 26
+      end
+      object Button18: TButton
+        Left = 72
+        Top = 248
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'W'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -16
@@ -2307,6 +2192,154 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 5
+      end
+      object Button19: TButton
+        Left = 104
+        Top = 248
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'X'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 6
+      end
+      object Button28: TButton
+        Left = 40
+        Top = 280
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'Y'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 13
+      end
+      object Button29: TButton
+        Left = 72
+        Top = 280
+        Width = 25
+        Height = 25
+        Hint = 'messages dont le nom de l'#39'exp'#233'diteur commence par cette lettre'
+        Caption = 'Z'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 15
+      end
+      object Edit24: TEdit
+        Left = 8
+        Top = 320
+        Width = 121
+        Height = 28
+        Hint = 
+          'filtre des messages: messages dont le nom de l'#39'exp'#233'diteur commen' +
+          'ce par:'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 4
+      end
+      object Rrejetes: TRadioButton
+        Left = 0
+        Top = 16
+        Width = 10
+        Height = 17
+        Checked = True
+        TabOrder = 27
+        TabStop = True
+        OnClick = RrejetesClick
+      end
+      object Rtousmsg: TRadioButton
+        Left = 0
+        Top = 48
+        Width = 10
+        Height = 17
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 28
+        OnClick = RtousmsgClick
+      end
+    end
+    object Pmasque_totaux: TPanel
+      Left = 852
+      Top = 484
+      Width = 80
+      Height = 52
+      BevelOuter = bvNone
+      TabOrder = 3
+      object Ltotaux: TLabel
+        Left = 15
+        Top = 28
+        Width = 48
+        Height = 16
+        Caption = 'Totaux'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Ettlpour: TEdit
+        Left = 4
+        Top = 4
+        Width = 24
+        Height = 21
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        Text = '7'
+      end
+      object Ettlcontre: TEdit
+        Left = 28
+        Top = 4
+        Width = 24
+        Height = 21
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+        Text = '6'
+      end
+      object Ettlabs: TEdit
+        Left = 52
+        Top = 4
+        Width = 24
+        Height = 21
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+        Text = '1'
       end
     end
   end
@@ -2365,7 +2398,7 @@ object Form1: TForm1
       Top = 0
       Width = 57
       Height = 17
-      Hint = 'exemple de messages rejetés'
+      Hint = 'exemple de messages rejet'#233's'
       Caption = 'tst_pres1'
       TabOrder = 0
       OnClick = Btst_presClick
@@ -2376,7 +2409,7 @@ object Form1: TForm1
       Top = 0
       Width = 57
       Height = 17
-      Hint = 'exemple messages rejetés pour la lettre "M"'
+      Hint = 'exemple messages rejet'#233's pour la lettre "M"'
       Caption = 'tst_pres2'
       TabOrder = 1
       OnClick = Btst_presClick
@@ -2396,7 +2429,7 @@ object Form1: TForm1
       Width = 113
       Height = 17
       Hint = 
-        'selectionne le dernier fichier  des message zoom dans le réperto' +
+        'selectionne le dernier fichier  des message zoom dans le r'#233'perto' +
         'ire standard'
       Caption = 'Btst_fic_msg'
       TabOrder = 4
@@ -2417,7 +2450,7 @@ object Form1: TForm1
       Top = 32
       Width = 73
       Height = 17
-      Hint = 'affiche les messages  chargés'
+      Hint = 'affiche les messages  charg'#233's'
       Caption = 'Baff_msg'
       TabOrder = 6
       OnClick = Baff_msgClick
@@ -2437,7 +2470,7 @@ object Form1: TForm1
       Top = 48
       Width = 73
       Height = 17
-      Hint = 'sélection des messages selon plage horaire -> lvotes'
+      Hint = 's'#233'lection des messages selon plage horaire -> lvotes'
       Caption = 'Bcree_lvote'
       TabOrder = 8
       OnClick = Bcree_lvoteClick

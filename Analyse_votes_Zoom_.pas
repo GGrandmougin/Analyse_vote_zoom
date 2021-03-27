@@ -79,10 +79,8 @@ type
     Ettlpour: TEdit;
     Ettlcontre: TEdit;
     Ettlabs: TEdit;
-    Label4: TLabel;
+    Ltotaux: TLabel;
     CheckBox1: TCheckBox;
-    Button1: TButton;
-    Button2: TButton;
     ButtonA: TButton;
     Button4: TButton;
     Button5: TButton;
@@ -130,6 +128,11 @@ type
     Lnomvote: TLabel;
     Edit1: TEdit;
     Binfo: TButton;
+    Rrejetes: TRadioButton;
+    Rtousmsg: TRadioButton;
+    LRejetes: TLabel;
+    LTous_msg: TLabel;
+    Pmasque_totaux: TPanel;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -163,6 +166,8 @@ type
     procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure BinfoClick(Sender: TObject);
+    procedure RtousmsgClick(Sender: TObject);
+    procedure RrejetesClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -464,6 +469,20 @@ procedure TForm1.BinfoClick(Sender: TObject);
 begin
    showmessage(inttostr(high(rempl_acc)));
 
+end;
+
+procedure TForm1.RtousmsgClick(Sender: TObject);
+begin
+   Rtousmsg.Checked := true;
+   Pmasque_totaux.Visible := false;
+   Lmessages.Caption := 'Messages';
+end;
+
+procedure TForm1.RrejetesClick(Sender: TObject);
+begin
+   Rrejetes.Checked := true;
+   Pmasque_totaux.Visible := true;
+   Lmessages.Caption := 'Messages rejetés';
 end;
 
 end.

@@ -52,8 +52,8 @@ type
     numero : integer;
     pouvoirs : Byte	;
     partage_nomembre : boolean;
-    legitime : boolean;
-    no_legitime : boolean; // rtrouvé dans liste pouvoirs ou autre
+    voteur_legitime : boolean;
+    no_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
     function rejected : boolean;
@@ -83,7 +83,7 @@ type
     lparticipants: tstringlist;
     lrejetes: tstringlist;
     lconfig: tstringlist;
-    lnmembre2index : tstringlist;
+    lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
     //lremplacement: tstringlist;
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
@@ -321,9 +321,9 @@ begin
    if not err_num then begin
       err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
       if err_num then no_legitime := false;
-      aux1.lnmembre2index.Add(nb + '=' + inttostr(aux1.lparticipants.Count));
    end;
-   legitime := true;
+   aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
+   voteur_legitime := true;
    aux1.lparticipants.AddObject('msg', self);
 end;
 
@@ -344,7 +344,7 @@ var
 begin
    result := (not rejets) or rejected;
    flt := lowercase(trim(filtre));
-   result := result and ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
+   result := result and ((filtre = '') or (flt = copy(texte, 14, length(flt)))); // texte uniquement lowercase
    if result then begin
       ligne[col_pouvoirs] := inttostr(pouvoirs);
       if err_nom then ligne[col_nom] := 'X';
@@ -432,7 +432,7 @@ begin
    err_choix := (nbgrl <> 1) and (choix <> '');
    if nbgrc = 0 then nombre := 1;
    err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
-   est_vote := participant.legitime and (nbgrl < 6 ) and ( nbgrc < 4);
+   est_vote := participant.voteur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
    aux1.lmessages.Objects[idx_msg] := self;
 end;
 
