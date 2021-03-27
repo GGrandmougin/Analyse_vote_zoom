@@ -6,7 +6,7 @@ interface
 uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils ;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids ;
 {
 à C3A0        195  160
 ï C3AF        195  175
@@ -40,11 +40,12 @@ const
     col_err_pouvoirs = 12;
     col_nombre = 13;
     col_choix = 14;
-    tb_regions : array[0.. 9] of string = ( '', '', '', '','', '','', '','', '');    // specifique Mensa
+    tb_regions : array[0.. 18] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch');    // specifique Mensa
 
 
 type
   ttbnoms = array[0..9] of string;
+  tliste_vote = tstringlist;
   tparticipant = class
     nom, prenom, region : string;
     texte : string;
@@ -79,7 +80,7 @@ type
   end;
   taux = class
     lmessages : tstringlist;
-    lvotes : tstringlist;
+    lvotes : tliste_vote;
     lparticipants: tstringlist;
     lrejetes: tstringlist;
     lconfig: tstringlist;
@@ -88,6 +89,7 @@ type
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
     procedure traitement_lvotes;
+    procedure aff_lvote(stringgrid: tstringgrid; rejetes : boolean; filtre : string; list_vote : tliste_vote = nil);
     function remplace_accents(str : string): string;
     procedure pretraitement_lmsg;
     function getversion: String;
@@ -122,6 +124,7 @@ var
    tf : textfile;
 begin
    try
+      if debug then memo_tests.Add(mess);
       assignfile(tf,ficlog);
       if fileexists(ficlog) then
          append(tf)
@@ -324,7 +327,7 @@ begin
    end;
    aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
    voteur_legitime := true;
-   aux1.lparticipants.AddObject('msg', self);
+   aux1.lparticipants.AddObject(msg, self);
 end;
 
 function tparticipant.rejected: boolean;
@@ -344,7 +347,7 @@ var
 begin
    result := (not rejets) or rejected;
    flt := lowercase(trim(filtre));
-   result := result and ((filtre = '') or (flt = copy(texte, 14, length(flt)))); // texte uniquement lowercase
+   result := result and ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
    if result then begin
       ligne[col_pouvoirs] := inttostr(pouvoirs);
       if err_nom then ligne[col_nom] := 'X';
@@ -383,7 +386,7 @@ var
 begin
    p := pos('TLM :' , msg);
    if p = 0 then p := pos('SECRET :' , msg);
-   st := lowercase(copy(msg, 1 , p - 1));
+   st := lowercase(copy(msg, 14 , p - 15));
    i := Aux1.lparticipants.IndexOf(st);
    if i >= 0 then begin
       result := tparticipant(Aux1.lparticipants.objects[i]);
@@ -497,7 +500,7 @@ var
    //msg  : tmessage;
 begin    
    for i := lvotes.Count -1 downto 0 do begin
-      idx_msg := integer(lvotes.Objects[i]);
+      idx_msg := cardinal(lvotes.Objects[i]);
       if lmessages.Objects[idx_msg] = nil then begin
          tlm := true;
          secret := false;
@@ -523,6 +526,7 @@ begin
       end;
    end;
    if debug then memo_tests.add( inttostr(lvotes.Count) + ' messages filtrés');
+   if debug then memo_tests.add( inttostr(lparticipants.Count) + ' tparticipants');
 end;
 
 function taux.remplace_accents(str : string) : string;
@@ -534,6 +538,26 @@ begin
       result := StringReplace(result, rempl_acc[i, 1]  , rempl_acc[i, 0] , [rfReplaceAll] );
    end;
 
+end;
+
+procedure taux.aff_lvote(stringgrid: tstringgrid; rejetes: boolean; filtre: string; list_vote: tliste_vote);
+var
+   i, j : integer;
+   lv : tliste_vote;
+begin
+   i := 0;
+   j := 0;
+   if list_vote = nil then lv := lvotes else lv := list_vote;
+   while ((i < lv.count) and (j < stringgrid.RowCount)) do begin
+      try
+         if tmessage(lmessages.Objects[cardinal(lv.Objects[i])]).affichage_m(stringgrid.Rows[j], rejetes, filtre) then inc(j);
+      except
+         on E: exception do begin
+            log_infos('Erreur dans aff_lvote (index:' + inttostr(i) + ') ' + E.Message);
+         end;
+      end;
+      inc(i);
+   end;
 end;
 
 (*procedure taux.charge_fic_msg(fic: string);
@@ -598,6 +622,7 @@ end;*)
 
 
 }
+
 
 
 end.

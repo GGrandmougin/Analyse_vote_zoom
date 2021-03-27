@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 797
-  Top = 298
+  Left = 404
+  Top = 196
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2238,7 +2238,7 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 15
       end
-      object Edit24: TEdit
+      object Efiltre: TEdit
         Left = 8
         Top = 320
         Width = 121
@@ -2445,15 +2445,15 @@ object Form1: TForm1
       TabOrder = 5
       OnClick = Bch_msgClick
     end
-    object Baff_msg: TButton
+    object Baff_lmsg: TButton
       Left = 64
       Top = 32
       Width = 73
       Height = 17
       Hint = 'affiche les messages  charg'#233's'
-      Caption = 'Baff_msg'
+      Caption = 'Baff_lmsg'
       TabOrder = 6
-      OnClick = Baff_msgClick
+      OnClick = Baff_lmsgClick
     end
     object Benr_lmsg: TButton
       Left = 0
@@ -2503,6 +2503,15 @@ object Form1: TForm1
       Caption = 'Binfo'
       TabOrder = 11
       OnClick = BinfoClick
+    end
+    object Baff_messages: TButton
+      Left = 0
+      Top = 80
+      Width = 65
+      Height = 17
+      Caption = 'Aff_messages'
+      TabOrder = 12
+      OnClick = Baff_messagesClick
     end
   end
 end

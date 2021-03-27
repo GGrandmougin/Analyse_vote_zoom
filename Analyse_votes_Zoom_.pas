@@ -107,7 +107,7 @@ type
     Button27: TButton;
     Button28: TButton;
     Button29: TButton;
-    Edit24: TEdit;
+    Efiltre: TEdit;
     Pchoix_msg: TPanel;
     Lmessages: TLabel;
     Pdebug: TPanel;
@@ -119,7 +119,7 @@ type
     Mtest: TMemo;
     Btst_fic_msg: TButton;
     Bch_msg: TButton;
-    Baff_msg: TButton;
+    Baff_lmsg: TButton;
     Benr_lmsg: TButton;
     Bcree_lvote: TButton;
     BAff_lvote: TButton;
@@ -133,6 +133,7 @@ type
     LRejetes: TLabel;
     LTous_msg: TLabel;
     Pmasque_totaux: TPanel;
+    Baff_messages: TButton;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -156,7 +157,7 @@ type
     procedure Btst_presClick(Sender: TObject);
     procedure Btst_fic_msgClick(Sender: TObject);
     procedure Bch_msgClick(Sender: TObject);
-    procedure Baff_msgClick(Sender: TObject);
+    procedure Baff_lmsgClick(Sender: TObject);
     procedure Benr_lmsgClick(Sender: TObject);
     procedure Bcree_lvoteClick(Sender: TObject);
     procedure BAff_lvoteClick(Sender: TObject);
@@ -168,6 +169,7 @@ type
     procedure BinfoClick(Sender: TObject);
     procedure RtousmsgClick(Sender: TObject);
     procedure RrejetesClick(Sender: TObject);
+    procedure Baff_messagesClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -392,7 +394,7 @@ for i := stringlist.count -1 downto 0 do begin
 
 end
 }
-procedure TForm1.Baff_msgClick(Sender: TObject);
+procedure TForm1.Baff_lmsgClick(Sender: TObject);
 begin
    aff_strigrid(aux1.lmessages); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
 end;
@@ -428,7 +430,7 @@ end;
 procedure TForm1.Edit1Change(Sender: TObject);
 begin
    StringGrid1.Font.Charset := strtointdef(edit1.text, 1);
-   StringGrid1.Font.Name := edit24.text;
+   StringGrid1.Font.Name := Efiltre.text;
 {ANSI_CHARSET	0	Caractères ANSI.
 DEFAULT_CHARSET	1	La fonte est choisie en se basant seulement sur le nom et la taille. Si la fonte décrite n'est pas disponible sur le système, Windows lui substituera une autre fonte.
 SYMBOL_CHARSET	2	Jeu symbole standard.
@@ -483,6 +485,16 @@ begin
    Rrejetes.Checked := true;
    Pmasque_totaux.Visible := true;
    Lmessages.Caption := 'Messages rejetés';
+end;
+
+procedure TForm1.Baff_messagesClick(Sender: TObject);
+begin
+   eff_stringgrid1;
+   if Rrejetes.Checked then begin
+      Aux1.aff_lvote(stringgrid1, true, '');
+   end else begin
+      Aux1.aff_lvote(stringgrid1, false, Efiltre.Text);
+   end;
 end;
 
 end.
