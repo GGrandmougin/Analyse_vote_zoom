@@ -134,6 +134,9 @@ type
     LTous_msg: TLabel;
     Pmasque_totaux: TPanel;
     Baff_messages: TButton;
+    Ptous_msg: TPanel;
+    Ltous_mess: TLabel;
+    Cbvnreconnus: TCheckBox;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -477,23 +480,25 @@ procedure TForm1.RtousmsgClick(Sender: TObject);
 begin
    Rtousmsg.Checked := true;
    Pmasque_totaux.Visible := false;
-   Lmessages.Caption := 'Messages';
+   Ptous_msg.Visible := true;
+   //Lmessages.Caption := 'Messages';
 end;
 
 procedure TForm1.RrejetesClick(Sender: TObject);
 begin
    Rrejetes.Checked := true;
    Pmasque_totaux.Visible := true;
-   Lmessages.Caption := 'Messages rejetés';
+   Ptous_msg.Visible := false;
+   //Lmessages. := 'Messages rejetés';
 end;
 
 procedure TForm1.Baff_messagesClick(Sender: TObject);
 begin
    eff_stringgrid1;
    if Rrejetes.Checked then begin
-      Aux1.aff_lvote(stringgrid1, true, '');
+      Aux1.aff_lvote(stringgrid1, Cbvnreconnus.Checked, false, '');
    end else begin
-      Aux1.aff_lvote(stringgrid1, false, Efiltre.Text);
+      Aux1.aff_lvote(stringgrid1, false, Cbvnreconnus.Checked, Efiltre.Text);
    end;
 end;
 

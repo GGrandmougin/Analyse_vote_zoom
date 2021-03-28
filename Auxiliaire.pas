@@ -7,25 +7,19 @@ uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
    IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids ;
-{
-à C3A0        195  160
-ï C3AF        195  175
-é C3A9  Ã©    195  169
-è C3A8  Ã¨    195  168
-ê C3AA        195  170
-}
+
 
 const
 
-    rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à
-                                                 ('i', char(195) + char(175)),  // ï
-                                                 ('e', char(195) + char(169)),  // é
-                                                 ('e', char(195) + char(168)),  // è
-                                                 ('e', char(195) + char(170)),  // ê
+    rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
+                                                 ('i', char(195) + char(175)),  // ï  175
+                                                 ('e', char(195) + char(169)),  // é  169
+                                                 ('e', char(195) + char(168)),  // è  168
+                                                 ('e', char(195) + char(170)),  // ê  170
                                                  (' ', char($C2) + char($A0)),
                                                  (char($AB), char($C2) + char($AB)),  // «
                                                  (char($BB), char($C2) + char($BB))) ; // »
-        // manque ç et  a, i, o , u aver tréma et accent circonflexe
+        // manque ç et  a, i, o , u avec tréma et accent circonflexe
     col_pouvoirs = 1;
     col_pour = 2;
     col_contre = 3;
@@ -40,7 +34,7 @@ const
     col_err_pouvoirs = 12;
     col_nombre = 13;
     col_choix = 14;
-    tb_regions : array[0.. 18] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch');    // specifique Mensa
+    tb_regions : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
 
 
 type
@@ -53,7 +47,7 @@ type
     numero : integer;
     pouvoirs : Byte	;
     partage_nomembre : boolean;
-    voteur_legitime : boolean;
+    electeur_legitime : boolean;
     no_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
@@ -73,7 +67,7 @@ type
     err_nombre : boolean;
     est_vote : boolean;
     function rejected : boolean;
-    function affichage_m(ligne: tstrings; rejets : boolean; filtre: string = '') : boolean;
+    function affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = '') : boolean;
     function cherche_participant(msg : string): tparticipant ;
     constructor create(idx_msg : integer; msg  : string; secret : boolean);
     destructor destroy;  override;
@@ -89,7 +83,7 @@ type
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
     procedure traitement_lvotes;
-    procedure aff_lvote(stringgrid: tstringgrid; rejetes : boolean; filtre : string; list_vote : tliste_vote = nil);
+    procedure aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean; filtre : string; list_vote : tliste_vote = nil);
     function remplace_accents(str : string): string;
     procedure pretraitement_lmsg;
     function getversion: String;
@@ -326,7 +320,8 @@ begin
       if err_num then no_legitime := false;
    end;
    aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
-   voteur_legitime := true;
+   electeur_legitime := true;
+   texte := msg;
    aux1.lparticipants.AddObject(msg, self);
 end;
 
@@ -363,9 +358,10 @@ end;
 
 { tmessage }
 
-function tmessage.affichage_m(ligne: tstrings; rejets : boolean; filtre: string = ''): boolean;
+function tmessage.affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = ''): boolean;
 begin
-   result := est_vote and ((not rejets) or ( rejected ));
+   result := (not rejets) or ( not rejected );
+   result := result and (vnr or est_vote);
    result := result and participant.affichage_p(ligne, rejets, filtre);
    if result then begin
       ligne[0] := texte;
@@ -422,7 +418,7 @@ begin
          dans_grl := false;
       end;
       if choix = 'abstention' then choix := 'abs';
-      if (choix <> 'pour') and (choix <> 'contre') and (choix <> 'abs') then choix := '';
+      if not((choix = 'pour') or (choix = 'contre') or (choix <> 'abs')) then choix := '';
       if  (v > 47) and (v < 58) then begin // chiffre
          if not dans_grc then inc(nbgrc);
          dans_grc := true;
@@ -432,10 +428,10 @@ begin
       end;
    end;
    if nb <> '' then nombre := strtoint(nb);
-   err_choix := (nbgrl <> 1) and (choix <> '');
+   err_choix := (nbgrl <> 1) or (choix = '');
    if nbgrc = 0 then nombre := 1;
-   err_nombre := (nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
-   est_vote := participant.voteur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
+   err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
+   est_vote := participant.electeur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
    aux1.lmessages.Objects[idx_msg] := self;
 end;
 
@@ -540,7 +536,7 @@ begin
 
 end;
 
-procedure taux.aff_lvote(stringgrid: tstringgrid; rejetes: boolean; filtre: string; list_vote: tliste_vote);
+procedure taux.aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote);
 var
    i, j : integer;
    lv : tliste_vote;
@@ -550,7 +546,7 @@ begin
    if list_vote = nil then lv := lvotes else lv := list_vote;
    while ((i < lv.count) and (j < stringgrid.RowCount)) do begin
       try
-         if tmessage(lmessages.Objects[cardinal(lv.Objects[i])]).affichage_m(stringgrid.Rows[j], rejetes, filtre) then inc(j);
+         if tmessage(lmessages.Objects[cardinal(lv.Objects[i])]).affichage_m(stringgrid.Rows[j], rejetes, vnr, filtre) then inc(j);
       except
          on E: exception do begin
             log_infos('Erreur dans aff_lvote (index:' + inttostr(i) + ') ' + E.Message);

@@ -2342,6 +2342,42 @@ object Form1: TForm1
         Text = '1'
       end
     end
+    object Ptous_msg: TPanel
+      Left = 16
+      Top = 64
+      Width = 657
+      Height = 41
+      BevelOuter = bvNone
+      TabOrder = 4
+      Visible = False
+      object Ltous_mess: TLabel
+        Left = 416
+        Top = 8
+        Width = 100
+        Height = 25
+        Caption = 'Messages'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -21
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
+      object Cbvnreconnus: TCheckBox
+        Left = 136
+        Top = 13
+        Width = 169
+        Height = 17
+        Caption = 'Votes non reconnus'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 0
+      end
+    end
   end
   object Pdebug: TPanel
     Left = 456
@@ -2509,6 +2545,7 @@ object Form1: TForm1
       Top = 80
       Width = 65
       Height = 17
+      Hint = 'Affichage pr'#233'vu pour les messages (toutes les colonnes)'
       Caption = 'Aff_messages'
       TabOrder = 12
       OnClick = Baff_messagesClick
