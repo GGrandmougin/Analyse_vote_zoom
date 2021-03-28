@@ -19,7 +19,7 @@ const
                                                  (' ', char($C2) + char($A0)),
                                                  (char($AB), char($C2) + char($AB)),  // «
                                                  (char($BB), char($C2) + char($BB))) ; // »
-        // manque ç et  a, i, o , u avec tréma et accent circonflexe
+        // manque ç et  a, i, o , u  avec tréma et accent circonflexe ,…(133) ,
     col_pouvoirs = 1;
     col_pour = 2;
     col_contre = 3;
@@ -52,7 +52,7 @@ type
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
     function rejected : boolean;
-    function affichage_p(ligne : tstrings; rejets : boolean; filtre : string) : boolean;
+    function affichage_p(ligne : tstrings;var rejetes : boolean; filtre : string) : boolean;
     constructor create(msg  : string);
     destructor destroy;  override;
   end;
@@ -61,6 +61,7 @@ type
     texte : string;
     choix : string ;
     nombre : integer	;
+    stg_tmp : TStringlist;
     //m_en_erreur : boolean;
     m_secret : boolean;
     err_choix : boolean;
@@ -83,7 +84,7 @@ type
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
     procedure traitement_lvotes;
-    procedure aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean; filtre : string; list_vote : tliste_vote = nil);
+    function aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote = nil): integer;
     function remplace_accents(str : string): string;
     procedure pretraitement_lmsg;
     function getversion: String;
@@ -188,8 +189,8 @@ end;
 
 destructor taux.destroy;
 begin
-    lnmembre2index.Free;
     videlistes;
+    lnmembre2index.Free;
     lrejetes.free;
     lvotes.free;
     lmessages.free;
@@ -204,6 +205,7 @@ begin
     lrejetes.clear;
     lvotes.clear;
     lconfig.Clear;
+    lnmembre2index.Clear;
     while lmessages.Count > 0 do begin  //les tmessages seront créés lors de l'analyse d'un vote s'il n'existent pas déjà et reste sur cette liste
        lmessages.Objects[0].Free;  // destruction des tmessages
        lmessages.Delete(0);
@@ -288,7 +290,9 @@ begin
    for i := 1 to length(msg) do begin
       v := ord(msg[i]);
       if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
-         if not dans_grl then inc(nbgrl);
+         if not dans_grl then begin
+            if tbnom[nbgrl] = '-' then tbnom[nbgrl] := '' else inc(nbgrl);
+         end;
          dans_grl := true;
          if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
       end else begin
@@ -336,13 +340,12 @@ begin
   inherited;
 end;
 
-function tparticipant.affichage_p(ligne: tstrings; rejets : boolean; filtre: string): boolean;
+function tparticipant.affichage_p(ligne: tstrings;var rejetes : boolean; filtre: string): boolean;
 var
    flt : string;
 begin
-   result := (not rejets) or rejected;
    flt := lowercase(trim(filtre));
-   result := result and ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
+   result := ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
    if result then begin
       ligne[col_pouvoirs] := inttostr(pouvoirs);
       if err_nom then ligne[col_nom] := 'X';
@@ -353,17 +356,22 @@ begin
       {if err_ then ligne[col_] := 'X';
       if err_ then ligne[col_] := 'X';   }
    end;
+   rejetes := rejected;
 end;
 
 
 { tmessage }
 
 function tmessage.affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = ''): boolean;
+var
+   rj_part : boolean;
 begin
-   result := (not rejets) or ( not rejected );
-   result := result and (vnr or est_vote);
-   result := result and participant.affichage_p(ligne, rejets, filtre);
+   stg_tmp.Assign(ligne);
+   result := participant.affichage_p(stg_tmp, rj_part, filtre) ;// il faut que affichage_p  soit appellé dans tous les cas
+   result := result and ((not rejets) or rejected or rj_part);
+   result := (vnr or est_vote) and result ;  
    if result then begin
+      ligne.Assign(stg_tmp);
       ligne[0] := texte;
       if err_choix then ligne[col_choix] := 'X';
       if err_nombre then ligne[col_nombre] := 'X';
@@ -398,6 +406,7 @@ var
    nbgrl, nbgrc : integer;
    dans_grl, dans_grc : boolean;
 begin
+   stg_tmp := TStringList.Create;
    participant := cherche_participant(msg);  //tparticipant.create(msg );
    m_secret := secret;
    texte := msg;
@@ -407,7 +416,7 @@ begin
    dans_grc := false;
    nombre := 0;
    if m_secret then tlm_scrt := 'RET :' else tlm_scrt := 'TLM :';
-   st := lowercase(rightstr(msg ,length(msg) - pos( tlm_scrt, st) - 4));
+   st := lowercase(rightstr(msg ,length(msg) - pos( tlm_scrt, msg) - 4));
    for i := 1 to length(st) do begin
       v := ord(st[i]);
       if (v > 96) and (v < 123) then begin  // lettre
@@ -417,8 +426,6 @@ begin
       end else begin
          dans_grl := false;
       end;
-      if choix = 'abstention' then choix := 'abs';
-      if not((choix = 'pour') or (choix = 'contre') or (choix <> 'abs')) then choix := '';
       if  (v > 47) and (v < 58) then begin // chiffre
          if not dans_grc then inc(nbgrc);
          dans_grc := true;
@@ -427,8 +434,11 @@ begin
          dans_grc := false;
       end;
    end;
+   if choix = 'abstention' then choix := 'abs';
+   err_choix :=  (choix = 'oui') or (choix = 'non');
+   if not((choix = 'pour') or (choix = 'contre') or (choix = 'abs') or (choix = 'oui') or (choix = 'non')) then choix := '';
    if nb <> '' then nombre := strtoint(nb);
-   err_choix := (nbgrl <> 1) or (choix = '');
+   err_choix := err_choix and (nbgrl <> 1) or (choix = '');
    if nbgrc = 0 then nombre := 1;
    err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
    est_vote := participant.electeur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
@@ -437,12 +447,12 @@ end;
 
 function tmessage.rejected: boolean;
 begin
-   result := not(err_choix or err_nombre);
+   result := err_choix or err_nombre;
 end;
 
 destructor tmessage.destroy;
 begin
-//
+  stg_tmp.free;
   inherited;
 end;
 
@@ -453,7 +463,7 @@ var
 begin
    n := 0;
    for i := lmessages.Count - 1 downto 1  do begin
-      if (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
+      if (length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
          inc(n);
          lmessages.Strings[i - 1] := lmessages.Strings[i - 1] + ' _ ' + lmessages.Strings[i] ;
          lmessages.Delete(i);
@@ -536,7 +546,7 @@ begin
 
 end;
 
-procedure taux.aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote);
+function taux.aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote = nil): integer;
 var
    i, j : integer;
    lv : tliste_vote;
@@ -554,6 +564,7 @@ begin
       end;
       inc(i);
    end;
+   result := j;
 end;
 
 (*procedure taux.charge_fic_msg(fic: string);

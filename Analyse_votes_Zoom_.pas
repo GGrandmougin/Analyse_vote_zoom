@@ -137,6 +137,9 @@ type
     Ptous_msg: TPanel;
     Ltous_mess: TLabel;
     Cbvnreconnus: TCheckBox;
+    Bvidelistes: TButton;
+    Bsel_strggd: TButton;
+    LNb_msg: TLabel;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -173,6 +176,8 @@ type
     procedure RtousmsgClick(Sender: TObject);
     procedure RrejetesClick(Sender: TObject);
     procedure Baff_messagesClick(Sender: TObject);
+    procedure BvidelistesClick(Sender: TObject);
+    procedure Bsel_strggdClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -221,6 +226,7 @@ var
    ok : boolean;
    fic_strgrd : string;
 begin
+   eff_stringgrid1;
    fic_strgrd :=  ExtractFilePath(paramstr(0)) + 'msg_rejetes\' + '\' + inttostr(n) + '\' + 'rejets_row';
    i := 0;
    ok := false;
@@ -236,12 +242,21 @@ end;
 procedure TForm1.eff_stringgrid1;
 var
    i : integer;
+   //Rect: TGridRect;
 begin
    StringGrid1.RowCount := stringgrid1rowscount;
    for i := 0 to StringGrid1.ColCount -1 do begin
       StringGrid1.cols[i].Clear;
    end;
    //StringGrid1.ScrollBars.Visible := false; //   .VertScrollBar.Position := 0;
+   //StringGrid1.RowCount := 10; StringGrid1.RowCount := stringgrid1rowscount;
+   StringGrid1.row := 0;
+   StringGrid1.col := 0;  // efficace pour ramener la vue au début du tableau si on cliquer sur une cellule au prélable
+   {rect.Top := 0;
+   rect.left := 0;
+   rect.Right := 1;
+   rect.Bottom := 1;
+   StringGrid1.Selection := rect; }
 end;
 
 procedure TForm1.LAnalyseClick(Sender: TObject);
@@ -457,15 +472,15 @@ EASTEUROPE_CHARSET	238	Comprend les marques diacritiques pour les pays de l'Euro
 OEM_CHARSET	255	Dépend de la page de code du système d'exploitation.}
 end;  
 
-procedure TForm1.StringGrid1MouseDown(Sender: TObject;
-  Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
+procedure TForm1.StringGrid1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
    gc  : TGridCoord;
 begin
    if debug then begin
       gc := StringGrid1.MouseCoord(X, Y);
       Clipboard.Open;
-      Clipboard.SetTextBuf(pchar(StringGrid1.Cells[gc.X , gc.Y]));
+      if (gc.X < StringGrid1.ColCount) and (gc.Y < StringGrid1.RowCount) and (gc.X >= 0) and (gc.Y >= 0) then
+         Clipboard.SetTextBuf(pchar(StringGrid1.Cells[gc.X , gc.Y]));
       Clipboard.Close;
    end;
 end;
@@ -493,13 +508,44 @@ begin
 end;
 
 procedure TForm1.Baff_messagesClick(Sender: TObject);
+var
+   nb : integer;
 begin
    eff_stringgrid1;
    if Rrejetes.Checked then begin
-      Aux1.aff_lvote(stringgrid1, Cbvnreconnus.Checked, false, '');
+      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, false, '');
    end else begin
-      Aux1.aff_lvote(stringgrid1, false, Cbvnreconnus.Checked, Efiltre.Text);
+      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text);
    end;
+   LNb_msg.Caption := inttostr(nb) + ' messages affichés';
+end;
+
+procedure TForm1.BvidelistesClick(Sender: TObject);
+begin
+   Aux1.videlistes;
+end;
+
+procedure TForm1.Bsel_strggdClick(Sender: TObject);
+//var
+  // Rect: TGridRect;
+begin
+   //FocusControl(stringgrid1);
+   {rect.Top := 0;
+   rect.left := 0;
+   rect.Right := 1;
+   rect.Bottom := 1;   }
+   //StringGrid1.Selection := rect;
+   //FocusControl(stringgrid1);
+   //SetFocusedControl(stringgrid1) ;
+   //DefocusControl(stringgrid1, true) ;
+
+   StringGrid1.row := 0;
+   StringGrid1.col := 0;
+
+   //SetFocusedControl(stringgrid1) ;  }
+   //TCustomGrid(StringGrid1).FocusCell(0,0);
+   //tcustomgrid(StringGrid1).FocusCell(0,0);
+
 end;
 
 end.

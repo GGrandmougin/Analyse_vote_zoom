@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 404
-  Top = 196
+  Left = 996
+  Top = 218
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -1784,14 +1784,21 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
     end
+    object LNb_msg: TLabel
+      Left = 152
+      Top = 488
+      Width = 96
+      Height = 13
+      Caption = '0 messages affich'#233's'
+    end
     object StringGrid1: TStringGrid
       Left = 152
       Top = 112
-      Width = 1057
+      Width = 1064
       Height = 369
       ColCount = 15
       FixedCols = 0
-      RowCount = 1000
+      RowCount = 3000
       FixedRows = 0
       ScrollBars = ssVertical
       TabOrder = 0
@@ -2549,6 +2556,24 @@ object Form1: TForm1
       Caption = 'Aff_messages'
       TabOrder = 12
       OnClick = Baff_messagesClick
+    end
+    object Bvidelistes: TButton
+      Left = 64
+      Top = 80
+      Width = 73
+      Height = 17
+      Caption = 'Bvidelistes'
+      TabOrder = 13
+      OnClick = BvidelistesClick
+    end
+    object Bsel_strggd: TButton
+      Left = 0
+      Top = 264
+      Width = 57
+      Height = 17
+      Caption = 'Bsel_strggd'
+      TabOrder = 14
+      OnClick = Bsel_strggdClick
     end
   end
 end
