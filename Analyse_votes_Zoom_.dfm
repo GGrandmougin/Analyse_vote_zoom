@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 996
-  Top = 218
+  Left = 381
+  Top = 251
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -269,9 +269,10 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 1
-      Text = '3'
+      Text = '1'
+      OnChange = ENoVoteChange
     end
-    object Edit1: TEdit
+    object Enomvote: TEdit
       Left = 8
       Top = 64
       Width = 121
@@ -283,6 +284,17 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 2
+      OnChange = EnomvoteChange
+    end
+    object UpDown1: TUpDown
+      Left = 105
+      Top = 20
+      Width = 16
+      Height = 28
+      Associate = ENoVote
+      Min = 1
+      Position = 1
+      TabOrder = 3
     end
   end
   object PResultats: TPanel
@@ -1838,6 +1850,7 @@ object Form1: TForm1
         ParentFont = False
         Transparent = False
         OnClick = RrejetesClick
+        OnMouseUp = LRejetesMouseUp
       end
       object LTous_msg: TLabel
         Left = 8
@@ -1852,6 +1865,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         OnClick = RtousmsgClick
+        OnMouseUp = LTous_msgMouseUp
       end
       object ButtonA: TButton
         Left = 8
@@ -2260,6 +2274,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 4
+        OnChange = EfiltreChange
       end
       object Rrejetes: TRadioButton
         Left = 0

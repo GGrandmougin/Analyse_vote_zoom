@@ -40,6 +40,8 @@ const
 type
   ttbnoms = array[0..9] of string;
   tliste_vote = tstringlist;
+  telement_scrutin = class;
+  tscrutin = class;
   tparticipant = class
     nom, prenom, region : string;
     texte : string;
@@ -48,11 +50,12 @@ type
     pouvoirs : Byte	;
     partage_nomembre : boolean;
     electeur_legitime : boolean;
+    element_scrutin : telement_scrutin;
     no_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
     function rejected : boolean;
-    function affichage_p(ligne : tstrings;var rejetes : boolean; filtre : string) : boolean;
+    function affichage_p(ligne : tstrings; filtre : string) : boolean;
     constructor create(msg  : string);
     destructor destroy;  override;
   end;
@@ -61,7 +64,7 @@ type
     texte : string;
     choix : string ;
     nombre : integer	;
-    stg_tmp : TStringlist;
+    //stg_clear : TStringlist;
     //m_en_erreur : boolean;
     m_secret : boolean;
     err_choix : boolean;
@@ -73,6 +76,21 @@ type
     constructor create(idx_msg : integer; msg  : string; secret : boolean);
     destructor destroy;  override;
   end;
+  telement_scrutin = class
+    participant : tparticipant;
+    msg_pour : tmessage;
+    msg_abs  : tmessage;
+    ms_contre: tmessage;
+    constructor create;
+    destructor destroy;  override;
+  end;
+  tscrutin = class
+    numero : integer;
+    nom : string;
+    lelement_scrutin : tstringlist;
+    constructor create(num : integer; nm : string);
+    destructor destroy;  override;
+  end;
   taux = class
     lmessages : tstringlist;
     lvotes : tliste_vote;
@@ -80,6 +98,8 @@ type
     lrejetes: tstringlist;
     lconfig: tstringlist;
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
+    lscrutin : tstringlist;
+    scrutin_encours : tscrutin;
     //lremplacement: tstringlist;
     procedure videlistes;
     procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean);
@@ -98,7 +118,7 @@ type
 
   end;
 
- procedure log_infos(mess : string; typ : integer = 0);
+procedure log_infos(mess : string; typ : integer = 0);
 var
   Aux1 : taux;
   dir_exe : string;
@@ -107,6 +127,7 @@ var
   memo_tests : tstrings;
   debug : boolean;
   stringgrid1rowscount : integer;
+  strgrd_colcount : integer;
   l_aff : tstringlist = nil;
 implementation
 
@@ -177,6 +198,7 @@ begin
     lparticipants:= tstringlist.Create;
     lrejetes:= tstringlist.Create;
     lconfig:= tstringlist.Create;
+    lscrutin := tstringlist.Create;
     //lremplacement := tstringlist.Create;
     //lremplacement.Text := remplacc;
     dir_exe := extractfilepath(paramstr(0));
@@ -185,6 +207,7 @@ begin
     dir_trv := dir_trv + '\';
     ficlog := dir_trv + 'infos.log';
     rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
+    
 end;
 
 destructor taux.destroy;
@@ -196,6 +219,7 @@ begin
     lmessages.free;
     lparticipants.free;
     lconfig.Free;
+    lscrutin.Free;
     //lremplacement.Free;
   inherited;
 end;
@@ -213,6 +237,10 @@ begin
     while lparticipants.Count > 0 do begin
        lparticipants.Objects[0].Free;  // destruction des tparticipant
        lparticipants.Delete(0);
+    end;
+    while lscrutin.Count > 0 do begin
+       lscrutin.Objects[0].Free;  // destruction des tscrutin
+       lscrutin.Delete(0);
     end;
 end;
 
@@ -340,7 +368,7 @@ begin
   inherited;
 end;
 
-function tparticipant.affichage_p(ligne: tstrings;var rejetes : boolean; filtre: string): boolean;
+function tparticipant.affichage_p(ligne: tstrings; filtre: string): boolean;
 var
    flt : string;
 begin
@@ -356,22 +384,17 @@ begin
       {if err_ then ligne[col_] := 'X';
       if err_ then ligne[col_] := 'X';   }
    end;
-   rejetes := rejected;
 end;
 
 
 { tmessage }
 
 function tmessage.affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = ''): boolean;
-var
-   rj_part : boolean;
 begin
-   stg_tmp.Assign(ligne);
-   result := participant.affichage_p(stg_tmp, rj_part, filtre) ;// il faut que affichage_p  soit appellé dans tous les cas
-   result := result and ((not rejets) or rejected or rj_part);
-   result := (vnr or est_vote) and result ;  
+   result := ((not rejets) or rejected ); // rejected prend aussi en compte participant.rejected
+   result := (vnr or est_vote) and result ;
+   result := result and participant.affichage_p(ligne,  filtre) ;// il faut que affichage_p  soit appellé dans tous les cas
    if result then begin
-      ligne.Assign(stg_tmp);
       ligne[0] := texte;
       if err_choix then ligne[col_choix] := 'X';
       if err_nombre then ligne[col_nombre] := 'X';
@@ -380,7 +403,7 @@ begin
       if choix = 'contre' then ligne[col_contre] := inttostr(nombre) else
       if choix = 'abs' then ligne[col_abs] := inttostr(nombre) ; // sera éventuellement réécrit par la recherche du dernier message concernant ce choix
       //ligne[col_] := ;
-   end;
+   end;;
 end;
 
 function tmessage.cherche_participant(msg: string): tparticipant;
@@ -406,7 +429,8 @@ var
    nbgrl, nbgrc : integer;
    dans_grl, dans_grc : boolean;
 begin
-   stg_tmp := TStringList.Create;
+   {stg_clear := TStringList.Create;
+   for i := 1 to strgrd_colcount do stg_clear.Add(''); }
    participant := cherche_participant(msg);  //tparticipant.create(msg );
    m_secret := secret;
    texte := msg;
@@ -447,12 +471,12 @@ end;
 
 function tmessage.rejected: boolean;
 begin
-   result := err_choix or err_nombre;
+   result := err_choix or err_nombre or participant.rejected;
 end;
 
 destructor tmessage.destroy;
 begin
-  stg_tmp.free;
+  //stg_clear.free;
   inherited;
 end;
 
@@ -631,5 +655,38 @@ end;*)
 }
 
 
+
+{ telement_scrutin }
+
+constructor telement_scrutin.create;
+begin
+//
+end;
+
+destructor telement_scrutin.destroy;
+begin
+  //
+  inherited;
+end;
+
+{ tscrutin }
+
+constructor tscrutin.create(num : integer; nm : string);
+begin
+   numero := num;
+   nom := nm;
+   lelement_scrutin := tstringlist.Create;
+   aux1.lscrutin.AddObject(inttostr(num), self);
+end;
+
+destructor tscrutin.destroy;
+begin
+   while lelement_scrutin.Count > 0 do begin
+    lelement_scrutin.Objects[0].Free;  // destruction des telement_scrutin
+    lelement_scrutin.Delete(0);
+   end;
+   lelement_scrutin.Free;
+   inherited;
+end;
 
 end.

@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math;
+  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -126,7 +126,7 @@ type
     BAff_lparticipants: TButton;
     Label5: TLabel;
     Lnomvote: TLabel;
-    Edit1: TEdit;
+    Enomvote: TEdit;
     Binfo: TButton;
     Rrejetes: TRadioButton;
     Rtousmsg: TRadioButton;
@@ -140,6 +140,10 @@ type
     Bvidelistes: TButton;
     Bsel_strggd: TButton;
     LNb_msg: TLabel;
+    UpDown1: TUpDown;
+    procedure maj_entrees;
+    procedure maj_resultats;
+    procedure clear_messages;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -169,7 +173,6 @@ type
     procedure BAff_lvoteClick(Sender: TObject);
     procedure BAff_lparticipantsClick(Sender: TObject);
     procedure aff_strigrid(str : tstrings);
-    procedure Edit1Change(Sender: TObject);
     procedure StringGrid1MouseDown(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure BinfoClick(Sender: TObject);
@@ -178,6 +181,13 @@ type
     procedure Baff_messagesClick(Sender: TObject);
     procedure BvidelistesClick(Sender: TObject);
     procedure Bsel_strggdClick(Sender: TObject);
+    procedure LRejetesMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure LTous_msgMouseUp(Sender: TObject; Button: TMouseButton;
+      Shift: TShiftState; X, Y: Integer);
+    procedure EfiltreChange(Sender: TObject);
+    procedure EnomvoteChange(Sender: TObject);
+    procedure ENoVoteChange(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -202,6 +212,8 @@ var
    i, l : integer;
 begin
    aux1 := taux.create;
+   i := strtointdef(ENoVote.Text, 0) ;
+   if i > 0 then aux1.scrutin_encours := tscrutin.create(i, enomvote.text);
    //aux1.initialise;
    
    l := 25;
@@ -218,6 +230,7 @@ begin
    image1.Hint := hint_image1;
    memo_tests := mtest.Lines;
    stringgrid1rowscount := StringGrid1.RowCount;
+   strgrd_colcount := StringGrid1.colcount;
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -278,6 +291,7 @@ begin
    Ettlpour.Text := '';
    Ettlcontre.Text := '';
    Ettlabs.Text := '';
+   //aux1.aff_lvote(StringGrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text) ;
 end;
 
 
@@ -445,10 +459,7 @@ begin
    StringGrid1.cols[0].Assign(str);
 end;
 
-procedure TForm1.Edit1Change(Sender: TObject);
-begin
-   StringGrid1.Font.Charset := strtointdef(edit1.text, 1);
-   StringGrid1.Font.Name := Efiltre.text;
+
 {ANSI_CHARSET	0	Caractères ANSI.
 DEFAULT_CHARSET	1	La fonte est choisie en se basant seulement sur le nom et la taille. Si la fonte décrite n'est pas disponible sur le système, Windows lui substituera une autre fonte.
 SYMBOL_CHARSET	2	Jeu symbole standard.
@@ -470,7 +481,7 @@ RUSSIAN_CHARSET	204	Caractères Cyrilliques. Non disponible sur NT 3.51.
 THAI_CHARSET	222	Caractères Thaï. Non disponible sur NT 3.51
 EASTEUROPE_CHARSET	238	Comprend les marques diacritiques pour les pays de l'Europe de l'Est. Non disponible sur NT 3.51.
 OEM_CHARSET	255	Dépend de la page de code du système d'exploitation.}
-end;  
+
 
 procedure TForm1.StringGrid1MouseDown(Sender: TObject; Button: TMouseButton; Shift: TShiftState; X, Y: Integer);
 var
@@ -546,6 +557,62 @@ begin
    //TCustomGrid(StringGrid1).FocusCell(0,0);
    //tcustomgrid(StringGrid1).FocusCell(0,0);
 
+end;
+
+procedure TForm1.LRejetesMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+//
+end;
+
+procedure TForm1.LTous_msgMouseUp(Sender: TObject; Button: TMouseButton;
+  Shift: TShiftState; X, Y: Integer);
+begin
+//
+end;
+
+procedure TForm1.EfiltreChange(Sender: TObject);
+begin
+//
+end;
+
+procedure TForm1.EnomvoteChange(Sender: TObject);
+var
+   i : integer;
+begin
+   i := aux1.lscrutin.IndexOf(trim(ENoVote.Text));
+   if i >=0 then begin
+      tscrutin(aux1.lscrutin.Objects[i]).nom := Enomvote.text;
+   end;
+end;
+
+procedure TForm1.ENoVoteChange(Sender: TObject);
+var
+   i : integer;
+begin
+   i := aux1.lscrutin.IndexOf(trim(ENoVote.Text));
+   if i >=0 then begin
+      Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
+      Enomvote.text := Aux1.scrutin_encours.nom ;
+      maj_entrees;
+      maj_resultats;
+      clear_messages;
+   end;
+end;
+
+procedure TForm1.clear_messages;
+begin
+//
+end;
+
+procedure TForm1.maj_entrees;
+begin
+//
+end;
+
+procedure TForm1.maj_resultats;
+begin
+ //
 end;
 
 end.
