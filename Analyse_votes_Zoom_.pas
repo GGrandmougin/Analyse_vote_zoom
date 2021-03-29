@@ -39,33 +39,28 @@ type
     Ppour: TPanel;
     Label11: TLabel;
     Epour: TEdit;
-    Edit3: TEdit;
-    Edit4: TEdit;
-    Panel1: TPanel;
+    Ep_ppc_exp: TEdit;
+    Ep_ppc_nbmb: TEdit;
+    Pcontre: TPanel;
     Label12: TLabel;
-    Edit5: TEdit;
-    Edit6: TEdit;
-    Edit7: TEdit;
-    Panel4: TPanel;
-    Label15: TLabel;
-    Edit14: TEdit;
-    Edit15: TEdit;
-    Edit16: TEdit;
-    Panel5: TPanel;
+    Econtre: TEdit;
+    Ec_ppc_exp: TEdit;
+    Ec_ppc_nbmb: TEdit;
+    Pabs: TPanel;
     Label16: TLabel;
-    Edit17: TEdit;
-    Edit18: TEdit;
-    Edit19: TEdit;
-    Panel6: TPanel;
+    Eabs: TEdit;
+    Ea_ppc_exp: TEdit;
+    Ea_ppc_nbmb: TEdit;
+    Pnon_exp: TPanel;
     Label17: TLabel;
-    Edit20: TEdit;
+    Enon_exp: TEdit;
     Edit21: TEdit;
-    Edit22: TEdit;
-    Panel2: TPanel;
+    Ene_ppc_nbmb: TEdit;
+    Pvotants: TPanel;
     Label13: TLabel;
-    Edit8: TEdit;
+    Evotants: TEdit;
     Edit9: TEdit;
-    Edit10: TEdit;
+    Ev_ppc_nbmb: TEdit;
     Label14: TLabel;
     Label18: TLabel;
     Label19: TLabel;
@@ -142,8 +137,7 @@ type
     LNb_msg: TLabel;
     UpDown1: TUpDown;
     procedure maj_entrees;
-    procedure maj_resultats;
-    procedure clear_messages;
+    procedure clear_aff_messages;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
@@ -188,6 +182,9 @@ type
     procedure EfiltreChange(Sender: TObject);
     procedure EnomvoteChange(Sender: TObject);
     procedure ENoVoteChange(Sender: TObject);
+    procedure BTraitementClick(Sender: TObject);
+    procedure clear_resultats;
+    procedure init_resultats;
   private
     { Déclarations privées }
   public
@@ -231,6 +228,8 @@ begin
    memo_tests := mtest.Lines;
    stringgrid1rowscount := StringGrid1.RowCount;
    strgrd_colcount := StringGrid1.colcount;
+   clear_resultats;
+   init_resultats;
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -443,8 +442,8 @@ end;
 
 procedure TForm1.BAff_lvoteClick(Sender: TObject);
 begin
-   aff_strigrid(aux1.lvotes)   ;
-   l_aff := aux1.lvotes
+   aff_strigrid(aux1.lvotes_dbg)   ;
+   l_aff := aux1.lvotes_dbg
 end;
 
 procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
@@ -588,31 +587,67 @@ end;
 
 procedure TForm1.ENoVoteChange(Sender: TObject);
 var
-   i : integer;
+   i , num : integer;
 begin
-   i := aux1.lscrutin.IndexOf(trim(ENoVote.Text));
-   if i >=0 then begin
-      Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
-      Enomvote.text := Aux1.scrutin_encours.nom ;
-      maj_entrees;
-      maj_resultats;
-      clear_messages;
+   num := strtointdef(ENoVote.Text, 0);
+   if num > 0 then begin
+      i := aux1.lscrutin.IndexOf(inttostr(num));
+      if (i >=0) then begin
+         if (Aux1.scrutin_encours <> tscrutin(aux1.lscrutin.Objects[i])) then begin
+            Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
+            Enomvote.text := Aux1.scrutin_encours.nom ;
+            maj_entrees;
+            Aux1.scrutin_encours.maj_resultats;
+         end else begin
+            Aux1.scrutin_encours := tscrutin.create(num, Enomvote.Text);
+            clear_resultats;
+         end;
+         clear_aff_messages;
+      end;
    end;
 end;
 
-procedure TForm1.clear_messages;
+procedure TForm1.clear_aff_messages;
 begin
-//
+   eff_stringgrid1;
+   RrejetesClick(nil);
 end;
 
 procedure TForm1.maj_entrees;
 begin
-//
+   ME_heure.Text := Aux1.scrutin_encours.heure_debut;
+   ME_duree.Text := Aux1.scrutin_encours.duree;
 end;
 
-procedure TForm1.maj_resultats;
+
+procedure TForm1.BTraitementClick(Sender: TObject);
+var
+   num : integer;
 begin
- //
+   num := strtointdef( ENoVote.Text, 0);
+   if num > 0 then begin
+      PEntrees.Enabled := false;
+      if aux1.scrutin_encours = nil then begin
+         aux1.scrutin_encours := tscrutin.create(num , Enomvote.Text);
+      end;
+
+   end else begin
+      showmessage( 'N° incorrect pour "Vote N°');
+   end;
+end;
+
+procedure TForm1.clear_resultats;
+begin
+   Epour.Text       := '0'; Econtre.Text     := '0'; Eabs.Text        := '0' ; Enon_exp.Text    := '0'; Evotants.Text    := '0';
+   Ep_ppc_exp.Text  := '0'; Ec_ppc_exp.Text  := '0'; Ea_ppc_exp.Text  := '0';
+   Ep_ppc_nbmb.Text := '0'; Ec_ppc_nbmb.Text := '0'; Ea_ppc_nbmb.Text := '0'; Ene_ppc_nbmb.Text := '0'; Ev_ppc_nbmb.Text := '0';
+end;
+
+procedure TForm1.init_resultats;
+begin
+   Epour_       := Epour        ; Econtre_     := Econtre     ; Eabs_        := Eabs          ; Enon_exp_     :=   Enon_exp    ; Evotants_    := Evotants    ;
+   Ep_ppc_exp_  := Ep_ppc_exp   ; Ec_ppc_exp_  := Ec_ppc_exp  ; Ea_ppc_exp_  := Ea_ppc_exp    ;
+   Ep_ppc_nbmb_ := Ep_ppc_nbmb  ; Ec_ppc_nbmb_ := Ec_ppc_nbmb ; Ea_ppc_nbmb_ := Ea_ppc_nbmb   ; Ene_ppc_nbmb_ :=  Ene_ppc_nbmb ; Ev_ppc_nbmb_ := Ev_ppc_nbmb ;
 end;
 
 end.

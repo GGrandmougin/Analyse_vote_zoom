@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 381
-  Top = 251
+  Left = 563
+  Top = 63
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -256,6 +256,7 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 0
+      OnClick = BTraitementClick
     end
     object ENoVote: TEdit
       Left = 72
@@ -307,9 +308,10 @@ object Form1: TForm1
     BevelWidth = 3
     BorderWidth = 3
     BorderStyle = bsSingle
+    Enabled = False
     TabOrder = 2
     object LResultats: TLabel
-      Left = 328
+      Left = 300
       Top = 0
       Width = 66
       Height = 16
@@ -408,7 +410,7 @@ object Form1: TForm1
         TabOrder = 0
         Text = '125'
       end
-      object Edit3: TEdit
+      object Ep_ppc_exp: TEdit
         Left = 32
         Top = 56
         Width = 25
@@ -422,7 +424,7 @@ object Form1: TForm1
         TabOrder = 1
         Text = '53'
       end
-      object Edit4: TEdit
+      object Ep_ppc_nbmb: TEdit
         Left = 32
         Top = 88
         Width = 25
@@ -437,7 +439,7 @@ object Form1: TForm1
         Text = '25'
       end
     end
-    object Panel1: TPanel
+    object Pcontre: TPanel
       Left = 224
       Top = 16
       Width = 89
@@ -457,7 +459,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Edit5: TEdit
+      object Econtre: TEdit
         Left = 24
         Top = 24
         Width = 49
@@ -472,7 +474,7 @@ object Form1: TForm1
         TabOrder = 0
         Text = '63'
       end
-      object Edit6: TEdit
+      object Ec_ppc_exp: TEdit
         Left = 32
         Top = 56
         Width = 25
@@ -486,7 +488,7 @@ object Form1: TForm1
         TabOrder = 1
         Text = '27'
       end
-      object Edit7: TEdit
+      object Ec_ppc_nbmb: TEdit
         Left = 32
         Top = 88
         Width = 25
@@ -501,19 +503,19 @@ object Form1: TForm1
         Text = '12'
       end
     end
-    object Panel4: TPanel
+    object Pabs: TPanel
       Left = 328
       Top = 16
       Width = 89
       Height = 113
       BevelOuter = bvNone
       TabOrder = 2
-      object Label15: TLabel
+      object Label16: TLabel
         Left = 24
         Top = 0
-        Width = 45
+        Width = 37
         Height = 24
-        Caption = 'Pour'
+        Caption = 'Abs'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -19
@@ -521,7 +523,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Edit14: TEdit
+      object Eabs: TEdit
         Left = 24
         Top = 24
         Width = 49
@@ -534,9 +536,9 @@ object Form1: TForm1
         ParentFont = False
         ReadOnly = True
         TabOrder = 0
-        Text = '125'
+        Text = '6'
       end
-      object Edit15: TEdit
+      object Ea_ppc_exp: TEdit
         Left = 32
         Top = 56
         Width = 25
@@ -548,9 +550,9 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 1
-        Text = '53'
+        Text = '5'
       end
-      object Edit16: TEdit
+      object Ea_ppc_nbmb: TEdit
         Left = 32
         Top = 88
         Width = 25
@@ -562,74 +564,10 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 2
-        Text = '25'
-      end
-      object Panel5: TPanel
-        Left = 0
-        Top = 0
-        Width = 89
-        Height = 113
-        BevelOuter = bvNone
-        TabOrder = 3
-        object Label16: TLabel
-          Left = 24
-          Top = 0
-          Width = 37
-          Height = 24
-          Caption = 'Abs'
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -19
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-        end
-        object Edit17: TEdit
-          Left = 24
-          Top = 24
-          Width = 49
-          Height = 32
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -19
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          ReadOnly = True
-          TabOrder = 0
-          Text = '6'
-        end
-        object Edit18: TEdit
-          Left = 32
-          Top = 56
-          Width = 25
-          Height = 24
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 1
-          Text = '5'
-        end
-        object Edit19: TEdit
-          Left = 32
-          Top = 88
-          Width = 25
-          Height = 24
-          Font.Charset = DEFAULT_CHARSET
-          Font.Color = clWindowText
-          Font.Height = -13
-          Font.Name = 'MS Sans Serif'
-          Font.Style = [fsBold]
-          ParentFont = False
-          TabOrder = 2
-          Text = '2'
-        end
+        Text = '2'
       end
     end
-    object Panel6: TPanel
+    object Pnon_exp: TPanel
       Left = 440
       Top = 16
       Width = 89
@@ -649,7 +587,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Edit20: TEdit
+      object Enon_exp: TEdit
         Left = 24
         Top = 24
         Width = 49
@@ -679,7 +617,7 @@ object Form1: TForm1
         Text = '4'
         Visible = False
       end
-      object Edit22: TEdit
+      object Ene_ppc_nbmb: TEdit
         Left = 32
         Top = 88
         Width = 25
@@ -694,7 +632,7 @@ object Form1: TForm1
         Text = '2'
       end
     end
-    object Panel2: TPanel
+    object Pvotants: TPanel
       Left = 552
       Top = 16
       Width = 89
@@ -714,7 +652,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Edit8: TEdit
+      object Evotants: TEdit
         Left = 24
         Top = 24
         Width = 57
@@ -744,7 +682,7 @@ object Form1: TForm1
         Text = '49'
         Visible = False
       end
-      object Edit10: TEdit
+      object Ev_ppc_nbmb: TEdit
         Left = 32
         Top = 88
         Width = 25
