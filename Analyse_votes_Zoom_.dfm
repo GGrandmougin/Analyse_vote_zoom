@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 563
-  Top = 63
+  Left = 458
+  Top = 166
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -112,6 +112,34 @@ object Form1: TForm1
       Font.Style = []
       ParentFont = False
     end
+    object Linformation: TLabel
+      Left = 8
+      Top = 8
+      Width = 13
+      Height = 25
+      Caption = '?'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -20
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      OnClick = LinformationClick
+    end
+    object LUtilisation: TLabel
+      Left = 20
+      Top = 12
+      Width = 45
+      Height = 13
+      Caption = 'Utilisation'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      OnClick = LinformationClick
+    end
     object ME_heure: TMaskEdit
       Left = 112
       Top = 24
@@ -128,6 +156,7 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 0
       Text = '12:00:00'
+      OnChange = ME_heureChange
     end
     object Efic_msg: TEdit
       Left = 8
@@ -159,8 +188,9 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 2
       Text = '05:00'
+      OnChange = ME_heureChange
     end
-    object Edit11: TEdit
+    object Enb_membres: TEdit
       Left = 112
       Top = 64
       Width = 49
@@ -172,7 +202,7 @@ object Form1: TForm1
       Font.Style = []
       ParentFont = False
       TabOrder = 3
-      Text = '   8521'
+      Text = '   4214'
     end
     object BEditer: TButton
       Left = 312

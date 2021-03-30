@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls;
+  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls, informations;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -66,7 +66,7 @@ type
     Label19: TLabel;
     Label20: TLabel;
     Label21: TLabel;
-    Edit11: TEdit;
+    Enb_membres: TEdit;
     Image1: TImage;
     StaticText1: TStaticText;
     Label3: TLabel;
@@ -136,6 +136,8 @@ type
     Bsel_strggd: TButton;
     LNb_msg: TLabel;
     UpDown1: TUpDown;
+    Linformation: TLabel;
+    LUtilisation: TLabel;
     procedure maj_entrees;
     procedure clear_aff_messages;
     procedure traite_params;
@@ -185,6 +187,8 @@ type
     procedure BTraitementClick(Sender: TObject);
     procedure clear_resultats;
     procedure init_resultats;
+    procedure ME_heureChange(Sender: TObject);
+    procedure LinformationClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -617,6 +621,8 @@ procedure TForm1.maj_entrees;
 begin
    ME_heure.Text := Aux1.scrutin_encours.heure_debut;
    ME_duree.Text := Aux1.scrutin_encours.duree;
+   Efic_msg.Text := Aux1.scrutin_encours.fichier_message;
+   Enb_membres.Text := inttostr(Aux1.scrutin_encours.nombre_membres);
 end;
 
 
@@ -634,6 +640,7 @@ begin
    end else begin
       showmessage( 'N° incorrect pour "Vote N°');
    end;
+   
 end;
 
 procedure TForm1.clear_resultats;
@@ -648,6 +655,37 @@ begin
    Epour_       := Epour        ; Econtre_     := Econtre     ; Eabs_        := Eabs          ; Enon_exp_     :=   Enon_exp    ; Evotants_    := Evotants    ;
    Ep_ppc_exp_  := Ep_ppc_exp   ; Ec_ppc_exp_  := Ec_ppc_exp  ; Ea_ppc_exp_  := Ea_ppc_exp    ;
    Ep_ppc_nbmb_ := Ep_ppc_nbmb  ; Ec_ppc_nbmb_ := Ec_ppc_nbmb ; Ea_ppc_nbmb_ := Ea_ppc_nbmb   ; Ene_ppc_nbmb_ :=  Ene_ppc_nbmb ; Ev_ppc_nbmb_ := Ev_ppc_nbmb ;
+end;
+
+procedure TForm1.ME_heureChange(Sender: TObject);
+var
+   st, nb, txtlim, ori : string;
+   me : TMaskEdit;
+   lim, i, j, d : integer;
+begin
+   me := TMaskEdit(sender);
+   st := me.Text;
+   ori := st;
+   lim := 23;
+   i := 1;
+   if me = ME_duree then begin st := '00:' +st; d := -3 end else d:= 0;
+   for j := 1 to 3  do begin
+      nb := copy(st, i, 2);
+      if strtointdef(nb, 99) > lim then begin
+         txtlim := inttostr(lim);
+         ori[i + d] := txtlim[1];
+         ori[i + 1 + d] := txtlim[2];
+         me.selectall;
+         me.SetSelTextBuf(pchar(ori));
+      end;
+      lim := 59;
+      i := i + 3;
+   end;
+end;
+
+procedure TForm1.LinformationClick(Sender: TObject);
+begin
+      Finformation.Showmodal;;
 end;
 
 end.
