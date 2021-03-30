@@ -419,6 +419,7 @@ end;
 
 procedure TForm1.Bch_msgClick(Sender: TObject);
 begin
+   aux1.videlistes;
    aux1.charge_fic_msg(Efic_msg.Text);
 end;
 
@@ -436,12 +437,12 @@ end
 }
 procedure TForm1.Baff_lmsgClick(Sender: TObject);
 begin
-   aff_strigrid(aux1.lmessages); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
+   aff_strigrid(aux1.lmessages_gen); // lorsque StringGrid1.rowscount étéil = à 20 et lmessages.count était = à 121, cela n'a pa pasréé d'erreue, seules les 20 premièrsmessage étaient affichés
 end;
 
 procedure TForm1.Benr_lmsgClick(Sender: TObject);
 begin
-   Aux1.lmessages.SaveToFile(dir_trv + 'lmessages.txt');
+   Aux1.lmessages_gen.SaveToFile(dir_trv + 'lmessages.txt');
 end;
 
 procedure TForm1.Bcree_lvoteClick(Sender: TObject);
@@ -641,7 +642,16 @@ begin
       if aux1.scrutin_encours = nil then begin
          aux1.scrutin_encours := tscrutin.create(num , Enomvote.Text);
       end;
-
+      aux1.scrutin_encours.heure_debut := ME_heure.Text;
+      aux1.scrutin_encours.duree := ME_duree.Text;
+      if aux1.scrutin_encours.fichier_message = '' then begin   // pour l'instant
+         aux1.scrutin_encours.fichier_message := Efic_msg.text;
+      end else begin
+         Efic_msg.Text := aux1.scrutin_encours.fichier_message;
+      end;
+      aux1.scrutin_encours.nom := Enomvote.Text;;
+      aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 0);
+      aux1.traitement;
    end else begin
       showmessage( 'N° incorrect pour "Vote N°');
    end;

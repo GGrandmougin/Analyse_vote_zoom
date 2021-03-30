@@ -40,6 +40,7 @@ const
 type
   ttbnoms = array[0..9] of string;
   tliste_vote = tstringlist;
+  tliste_message = tstringlist;
   telement_scrutin = class;
   tscrutin = class;
   tparticipant = class
@@ -75,7 +76,7 @@ type
     function rejected : boolean;
     function affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = '') : boolean;
     function cherche_participant(msg : string): tparticipant ;
-    constructor create(idx_msg : integer; msg  : string; secret : boolean);
+    constructor create(idx_msg : integer; msg  : string; secret : boolean; lmsg : tliste_message = nil);
     destructor destroy;  override;
   end;
   telement_scrutin = class
@@ -97,13 +98,16 @@ type
     //nombre_votants : integer;
     ttl_pour, ttl_contre, ttl_abs, ttl_exp, ttl_votants : integer;
     lelement_scrutin : tstringlist;
+    liste_votes : tstringlist;
+    scr_secret : boolean;
+    secret_only : boolean;
     procedure maj_resultats;
     procedure init_totaux;
     constructor create(num : integer; nm : string);
     destructor destroy;  override;
   end;
   taux = class
-    lmessages : tstringlist;
+    lmessages_gen : tliste_message;
     lvotes_dbg : tliste_vote;
     lparticipants: tstringlist;
     lrejetes: tstringlist;
@@ -113,14 +117,15 @@ type
     scrutin_encours : tscrutin;
     //lremplacement: tstringlist;
     procedure videlistes;
-    procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; list_vote: tliste_vote = nil);
-    procedure traitement_lvotes( lvotes: tliste_vote );
-    function aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote = nil): integer;
+    procedure select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message = nil; list_vote: tliste_vote = nil);
+    procedure traitement_lvotes( lvotes: tliste_vote; lmsg : tliste_message = nil );
+    function aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message = nil; list_vote: tliste_vote = nil): integer;
     function remplace_accents(str : string): string;
-    procedure pretraitement_lmsg;
+    procedure pretraitement_lmsg( lmsg : tliste_message = nil); // concaténation et recherche configuration
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
-    procedure charge_fic_msg(fic : string);
+    function charge_fic_msg(fic: string; lmsg : tliste_message = nil): boolean;
+    procedure traitement;
     constructor create;
     destructor destroy;  override;
   private
@@ -169,25 +174,39 @@ begin
    end;
 end;
 
-procedure taux.charge_fic_msg(fic: string);
+function taux.charge_fic_msg(fic: string; lmsg : tliste_message = nil): boolean;
+var
+   lmessages, lmfic : tstringlist;
+   i : integer;
 begin
-   videlistes;
+   result := false;
+   if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
+   if lmessages.Count = 0 then lmfic := lmessages else lmfic := TStringList.Create;
    if fileexists(fic) then begin
       try
-         lmessages.loadfromfile(fic);
+         lmfic.loadfromfile(fic);
+         result := lmfic.Count > 0;
       except
          on E: Exception do memo_tests.add('ERREUR: ' + E.Message + ' pour le fichier: ' + fic);
       end;
    end else begin
       log_infos('fichier des messages: ' + fic + ' non trouvé' );
    end;
-   if lmessages.count > 0 then begin
-      pretraitement_lmsg;
-      if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
-   end else begin
-      if debug then memo_tests.Add('erreur chargement fichier');
-      log_infos('problème au fichier des messages: ' + fic );
+   if result then begin
+      if lmfic.count > 0 then begin
+         pretraitement_lmsg(lmfic);
+         if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
+      end else begin
+         if debug then memo_tests.Add('erreur chargement fichier');
+         log_infos('problème au fichier des messages: ' + fic );
+      end;
+      if (lmfic <> lmessages) and (lmfic.Count > lmessages.Count)  then begin
+         for i := lmessages.Count to lmfic.Count - 1 do begin
+            lmessages.Add(lmfic[i]);
+         end;
+      end;
    end;
+   if lmfic <> lmessages then lmfic.Free;
 {
 stringlist.loadfromfile(fichier_entree);
 for i := stringlist.count -1 downto 0 do begin
@@ -207,7 +226,7 @@ begin
     lnmembre2index := tstringlist.create;
     lnmembre2index.Sorted := true;
     lnmembre2index.Duplicates := dupAccept;
-    lmessages := tstringlist.Create;
+    lmessages_gen := tstringlist.Create;
     lvotes_dbg := tstringlist.Create;
     lparticipants:= tstringlist.Create;
     lrejetes:= tstringlist.Create;
@@ -230,7 +249,7 @@ begin
     lnmembre2index.Free;
     lrejetes.free;
     lvotes_dbg.free;
-    lmessages.free;
+    lmessages_gen.free;
     lparticipants.free;
     lconfig.Free;
     lscrutin.Free;
@@ -244,9 +263,9 @@ begin
     lvotes_dbg.clear;
     lconfig.Clear;
     lnmembre2index.Clear;
-    while lmessages.Count > 0 do begin  //les tmessages seront créés lors de l'analyse d'un vote s'il n'existent pas déjà et reste sur cette liste
-       lmessages.Objects[0].Free;  // destruction des tmessages
-       lmessages.Delete(0);
+    while lmessages_gen.Count > 0 do begin  //les tmessages seront créés lors de l'analyse d'un vote s'il n'existent pas déjà et reste sur cette liste
+       lmessages_gen.Objects[0].Free;  // destruction des tmessages
+       lmessages_gen.Delete(0);
     end;
     while lparticipants.Count > 0 do begin
        lparticipants.Objects[0].Free;  // destruction des tparticipant
@@ -436,15 +455,17 @@ begin
    end;
 end;
 
-constructor tmessage.create(idx_msg : integer; msg  : string; secret : boolean);
+constructor tmessage.create(idx_msg : integer; msg  : string; secret : boolean ; lmsg : tliste_message = nil);
 var
    st, tlm_scrt, nb : string;
    v, i : integer;
    nbgrl, nbgrc : integer;
    dans_grl, dans_grc : boolean;
+   lmessages : tstringlist;
 begin
    {stg_clear := TStringList.Create;
    for i := 1 to strgrd_colcount do stg_clear.Add(''); }
+   if lmsg = nil then lmessages := aux1.lmessages_gen else lmessages := lmsg;
    participant := cherche_participant(msg);  //tparticipant.create(msg );
    m_secret := secret;
    texte := msg;
@@ -480,7 +501,7 @@ begin
    if nbgrc = 0 then nombre := 1;
    err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
    est_vote := participant.electeur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
-   aux1.lmessages.Objects[idx_msg] := self;
+   lmessages.Objects[idx_msg] := self;
 end;
 
 function tmessage.rejected: boolean;
@@ -494,11 +515,12 @@ begin
   inherited;
 end;
 
-procedure taux.pretraitement_lmsg;
+procedure taux.pretraitement_lmsg( lmsg : tliste_message = nil);  // concaténation et recherche configuration
 var
    i, n : integer;
-
+   lmessages: tstringlist;
 begin
+   if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    n := 0;
    for i := lmessages.Count - 1 downto 1  do begin
       if (length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
@@ -515,12 +537,14 @@ begin
    end;
 end;
 
-procedure taux.select_lvotes(heure, duree: string ; secret, secret_exclusif : boolean; list_vote: tliste_vote = nil);
+procedure taux.select_lvotes(heure, duree: string ; secret, secret_exclusif : boolean; lmsg : tliste_message = nil; list_vote: tliste_vote = nil);
 var
    hfin : string;
    i : integer;
    lvotes : tstringlist;
+   lmessages : tstringlist;
 begin
+   if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    if list_vote = nil then lvotes := lvotes_dbg else lvotes := list_vote;
    i := -1;
    lvotes.Clear;
@@ -538,13 +562,15 @@ begin
    traitement_lvotes(lvotes); // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 
-procedure taux.traitement_lvotes(lvotes: tliste_vote );
+procedure taux.traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message = nil  );
 var
    i, idx_msg ,p  : integer;
    st, nv : string;
    tlm, secret : boolean;
+   lmessages: tstringlist;
    //msg  : tmessage;
-begin    
+begin
+   if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;   
    for i := lvotes.Count -1 downto 0 do begin
       idx_msg := cardinal(lvotes.Objects[i]);
       if lmessages.Objects[idx_msg] = nil then begin
@@ -586,13 +612,26 @@ begin
 
 end;
 
-function taux.aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; list_vote: tliste_vote = nil): integer;
+procedure taux.traitement;
+begin
+   with scrutin_encours do begin
+      if charge_fic_msg(fichier_message) then begin
+      //select_lvotes(heure_debut, duree, scr_secret, secret_only, le);
+
+      end else
+         fichier_message := '';
+   end;
+end;
+
+function taux.aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message = nil; list_vote: tliste_vote = nil): integer;
 var
    i, j : integer;
    lv : tliste_vote;
+   lmessages: tstringlist;
 begin
    i := 0;
    j := 0;
+   if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    if list_vote = nil then lv := lvotes_dbg else lv := list_vote;
    while ((i < lv.count) and (j < stringgrid.RowCount)) do begin
       try
@@ -693,14 +732,14 @@ begin
       Ep_ppc_exp_.text := '0' ; Ep_ppc_nbmb_.text := '0' ;
       Ep_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
       Ea_ppc_exp_.text := '0' ; Ea_ppc_nbmb_.text := '0' ;
-      Ene_ppc_exp_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
+      Ene_ppc_nbmb_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
    end else begin
       Ep_ppc_exp_.text := inttostr(100 * 100 * ttl_pour div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr(100 * ttl_pour div nombre_membres) ;
       Ep_ppc_exp_.text := inttostr(100 * ttl_contre div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr(100 * ttl_contre) ;
       Ea_ppc_exp_.text := inttostr(100 * ttl_abs div ttl_exp) ; Ea_ppc_nbmb_.text := inttostr(100 * ttl_abs) ;
-      Ene_ppc_exp_.text := inttostr(100 * (nombre_votants - ttl_exp) div ttl_exp) ; Ev_ppc_nbmb_.text := inttostr(100 * ttl_votants) ;
+      Ene_ppc_nbmb_.text := inttostr(100 * (ttl_votants - ttl_exp) div ttl_exp) ; Ev_ppc_nbmb_.text := inttostr(100 * ttl_votants) ;
    end ;
-   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(nombre_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
+   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
 end;
 
 constructor tscrutin.create(num : integer; nm : string);
@@ -708,9 +747,11 @@ begin
    numero := num;
    nom := nm;
    lelement_scrutin := tstringlist.Create;
+   liste_votes := tstringlist.Create;
    aux1.lscrutin.AddObject(inttostr(num), self);
    init_totaux;
-
+   scr_secret := false;
+   secret_only := false;
 end;
 
 destructor tscrutin.destroy;
@@ -719,6 +760,7 @@ begin
     lelement_scrutin.Objects[0].Free;  // destruction des telement_scrutin
     lelement_scrutin.Delete(0);
    end;
+   liste_votes.Free; // pas d'objets à detruire
    lelement_scrutin.Free;
    inherited;
 end;
@@ -727,5 +769,6 @@ procedure tscrutin.init_totaux;
 begin
    ttl_pour :=0; ttl_contre :=0; ttl_abs :=0; ttl_exp :=0; ttl_votants :=0;
 end;
+
 
 end.
