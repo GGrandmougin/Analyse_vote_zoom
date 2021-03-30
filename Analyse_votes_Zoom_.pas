@@ -8,7 +8,7 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls, informations;
+  Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls, informations, StdActns;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -138,6 +138,7 @@ type
     UpDown1: TUpDown;
     Linformation: TLabel;
     LUtilisation: TLabel;
+    Bfcolor: TButton;
     procedure maj_entrees;
     procedure clear_aff_messages;
     procedure traite_params;
@@ -189,12 +190,14 @@ type
     procedure init_resultats;
     procedure ME_heureChange(Sender: TObject);
     procedure LinformationClick(Sender: TObject);
+    procedure BfcolorClick(Sender: TObject);
   private
     { Déclarations privées }
   public
     { Déclarations publiques }
     mx, my : integer ;
     en_deplacement: boolean;
+    colorselect : tcolorselect;
   end;
 
 var
@@ -234,6 +237,8 @@ begin
    strgrd_colcount := StringGrid1.colcount;
    clear_resultats;
    init_resultats;
+   if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
+   color := tcolor(10867674);  //(4227327);
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -686,6 +691,14 @@ end;
 procedure TForm1.LinformationClick(Sender: TObject);
 begin
       Finformation.Showmodal;;
+end;
+
+procedure TForm1.BfcolorClick(Sender: TObject);
+begin
+   colorselect.Execute;
+   form1.Color := colorselect.Dialog.Color;
+   Mtest.Lines.Add('couleur Form1 : ' + inttostr(cardinal(form1.Color)));
+   //par défaut from1.color = clBtnShadow
 end;
 
 end.

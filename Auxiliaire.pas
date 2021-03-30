@@ -94,9 +94,11 @@ type
     fichier_message: string;
     fichier_pouvoirs : string;
     nombre_membres : integer;
-    nombre_votants : integer;
+    //nombre_votants : integer;
+    ttl_pour, ttl_contre, ttl_abs, ttl_exp, ttl_votants : integer;
     lelement_scrutin : tstringlist;
     procedure maj_resultats;
+    procedure init_totaux;
     constructor create(num : integer; nm : string);
     destructor destroy;  override;
   end;
@@ -687,7 +689,18 @@ end;
 
 procedure tscrutin.maj_resultats;
 begin
- //
+   if (ttl_votants = 0) or (ttl_exp = 0) or (nombre_membres = 0)  then begin
+      Ep_ppc_exp_.text := '0' ; Ep_ppc_nbmb_.text := '0' ;
+      Ep_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
+      Ea_ppc_exp_.text := '0' ; Ea_ppc_nbmb_.text := '0' ;
+      Ene_ppc_exp_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
+   end else begin
+      Ep_ppc_exp_.text := inttostr(100 * 100 * ttl_pour div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr(100 * ttl_pour div nombre_membres) ;
+      Ep_ppc_exp_.text := inttostr(100 * ttl_contre div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr(100 * ttl_contre) ;
+      Ea_ppc_exp_.text := inttostr(100 * ttl_abs div ttl_exp) ; Ea_ppc_nbmb_.text := inttostr(100 * ttl_abs) ;
+      Ene_ppc_exp_.text := inttostr(100 * (nombre_votants - ttl_exp) div ttl_exp) ; Ev_ppc_nbmb_.text := inttostr(100 * ttl_votants) ;
+   end ;
+   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(nombre_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
 end;
 
 constructor tscrutin.create(num : integer; nm : string);
@@ -696,6 +709,8 @@ begin
    nom := nm;
    lelement_scrutin := tstringlist.Create;
    aux1.lscrutin.AddObject(inttostr(num), self);
+   init_totaux;
+
 end;
 
 destructor tscrutin.destroy;
@@ -706,6 +721,11 @@ begin
    end;
    lelement_scrutin.Free;
    inherited;
+end;
+
+procedure tscrutin.init_totaux;
+begin
+   ttl_pour :=0; ttl_contre :=0; ttl_abs :=0; ttl_exp :=0; ttl_votants :=0;
 end;
 
 end.

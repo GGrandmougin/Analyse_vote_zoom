@@ -19,7 +19,7 @@ object Form1: TForm1
   TextHeight = 13
   object PEntrees: TPanel
     Left = 12
-    Top = 16
+    Top = 12
     Width = 401
     Height = 145
     BevelInner = bvRaised
@@ -237,7 +237,7 @@ object Form1: TForm1
   end
   object PAction: TPanel
     Left = 424
-    Top = 16
+    Top = 12
     Width = 141
     Height = 145
     BevelInner = bvRaised
@@ -330,7 +330,7 @@ object Form1: TForm1
   end
   object PResultats: TPanel
     Left = 576
-    Top = 16
+    Top = 12
     Width = 673
     Height = 145
     BevelInner = bvRaised
@@ -730,7 +730,7 @@ object Form1: TForm1
   end
   object PRejets: TPanel
     Left = 12
-    Top = 172
+    Top = 168
     Width = 1237
     Height = 549
     BevelInner = bvRaised
@@ -2557,6 +2557,15 @@ object Form1: TForm1
       Caption = 'Bsel_strggd'
       TabOrder = 14
       OnClick = Bsel_strggdClick
+    end
+    object Bfcolor: TButton
+      Left = 56
+      Top = 264
+      Width = 49
+      Height = 17
+      Caption = 'Bfcolor'
+      TabOrder = 15
+      OnClick = BfcolorClick
     end
   end
 end
