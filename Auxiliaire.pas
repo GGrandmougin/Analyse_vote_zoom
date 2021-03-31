@@ -1,6 +1,12 @@
 unit Auxiliaire;
 // Les suffrages exprimés sont les votes valablement émis dans le cadre d’une proposition mise aux voix ou d’une élection, les suffrages recueillis étant comptabilisés, déduction faite des abstentions ou des bulletins rejetés.
 
+{ à terminer :
+   tparticipant.additionne   ( non_exp en fonction de present_ds_elements
+   telement_scrutin additionne : verification pouvoirs  ( -> non_exp et err_pouvoir dans tmessage
+   tscrutin.decomptage;
+   tscrutin.cree_elements cas ou element existe déjà
+ }
 interface
 
 uses
@@ -44,6 +50,7 @@ type
      idx_fin : integer;
   end;
   tliste_message = tstringlist;
+  tliste_participant = tstringlist;
   telement_scrutin = class;
   tscrutin = class;
   tparticipant = class
@@ -53,13 +60,15 @@ type
     numero : integer;
     pouvoirs : Byte	;
     partage_nomembre : boolean;
-    electeur_legitime : boolean;
+    electeur_legitime : boolean; // non retrouvé dans liste pouvoirs ou autre
     element_scrutin : telement_scrutin; // reinitialisé à chaque chagement de scrutin
-    no_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
+    num_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
+    present_ds_elements : boolean; // pour comptage des non-exprimés
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string) : boolean;
+    procedure additionne(var votants, non_exp : integer);
     constructor create(msg  : string);
     destructor destroy;  override;
   end;
@@ -75,7 +84,9 @@ type
     m_secret : boolean;
     err_choix : boolean;
     err_nombre : boolean;
+    err_pouvoirs : boolean;
     est_vote : boolean;
+    function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
     function affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = '') : boolean;
     function cherche_participant(msg : string): tparticipant ;
@@ -86,8 +97,9 @@ type
     participant : tparticipant;
     msg_pour : tmessage;
     msg_abs  : tmessage;
-    ms_contre: tmessage;
-    constructor create;
+    msg_contre: tmessage;
+    procedure additionne(var pour, contre, abs, non_exp : integer );
+    constructor create(msg : tmessage);
     destructor destroy;  override;
   end;
   tscrutin = class
@@ -106,6 +118,7 @@ type
     secret_only : boolean;
     liste_message : tliste_message;
     procedure decomptage;
+    procedure cree_elements;
     procedure maj_resultats;
     procedure init_totaux;
     constructor create(num : integer; nm : string);
@@ -114,7 +127,7 @@ type
   taux = class
     lmessages_gen : tliste_message;
     lvotes_dbg : tliste_vote;
-    lparticipants: tstringlist;
+    lparticipants: tliste_participant;
     //lrejetes: tstringlist;   inutile ?
     lconfig: tstringlist;
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
@@ -122,6 +135,7 @@ type
     scrutin_encours : tscrutin;
     //lremplacement: tstringlist;
     procedure videlistes;
+    procedure init_part_present(lpart : tliste_participant);
     function select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message ;lvotes: tliste_vote ): tliste_vote;
     procedure traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message  );
     function aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
@@ -315,9 +329,11 @@ function taux.get_fichier_msg(rep : string): string;
 var
   sr: TSearchRec ;
   dt_rep : integer;
+  fic : string;
 begin
    if debug then begin memo_tests.Add(''); memo_tests.Add(rep) end;
    dt_rep := 0;
+   fic := '';
    if FindFirst(rep + '*.*', faDirectory, sr) = 0 then begin
       repeat
          if Length(sr.Name)>= 20 then begin
@@ -329,9 +345,22 @@ begin
          end;
       until FindNext(sr) <> 0;
       FindClose(sr);
-      if result <> '' then result := rep + result + '\meeting_saved_chat.txt' ;
-      if debug then memo_tests.Add('-> ' + result);
    end;
+   if (result <> '') then begin
+      if FileExists(rep + result + '\meeting_saved_chat.txt') then begin
+         result := rep + result + '\meeting_saved_chat.txt' ;
+         fic := '\meeting_saved_chat.txt'
+      end else begin
+         if FindFirst(rep + result + '\meeting_*.*', faDirectory, sr) = 0 then begin
+            repeat
+               if Length(sr.Name)>= 5 then  fic := sr.Name;
+            until (FindNext(sr) <> 0) or (fic <> '');
+            FindClose(sr);
+         end;
+         if fic <>'' then result := rep + result + '\' + fic;
+      end;
+   end;
+   if debug and (fic <> '') then memo_tests.Add('-> ' + result);
 end;
 
 
@@ -356,7 +385,7 @@ begin
    dans_grc := false;
    pouvoirs := 1;
    partage_nomembre := false;
-   no_legitime := true; // rtrouvé dans liste pouvoirs ou autre
+   num_legitime := true;
    for i := 1 to length(msg) do begin
       v := ord(msg[i]);
       if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
@@ -391,17 +420,18 @@ begin
    err_num := (nbgrc <> 1) or (numero = 0);
    if not err_num then begin
       err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
-      if err_num then no_legitime := false;
+      if err_num then num_legitime := false;
    end;
    aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
-   electeur_legitime := true;
+   electeur_legitime := true; // non retrouvé dans liste pouvoirs ou autre
    texte := msg;
    aux1.lparticipants.AddObject(msg, self);
 end;
 
 function tparticipant.rejected: boolean;
 begin
-   result := err_ID or err_region or err_prenom or err_nom or (err_num and not no_legitime) ;
+   result := err_ID or err_region or err_prenom or err_nom or (err_num and not num_legitime) ;
+   result := result and electeur_legitime;
 end;
 
 destructor tparticipant.destroy;
@@ -428,6 +458,11 @@ begin
    end;
 end;
 
+
+procedure tparticipant.additionne(var votants, non_exp: integer);
+begin
+//
+end;
 
 { tmessage }
 
@@ -515,7 +550,7 @@ end;
 
 function tmessage.rejected: boolean;
 begin
-   result := err_choix or err_nombre or participant.rejected;
+   result := err_pouvoirs or err_choix or err_nombre or participant.rejected;
 end;
 
 destructor tmessage.destroy;
@@ -553,21 +588,21 @@ var
    lmessages : tstringlist;
 begin
    i := -1;
-   lvotes_dbg.idx_deb := -1;
-   lvotes_dbg.idx_fin := -1;
+   result.idx_deb := -1;
+   result.idx_fin := -1;
    lmessages := lmsg;
    hfin := TimeToStr(strtotime(heure) + strtotime( '00:' + duree));
    if debug then memo_tests.add('sélection de ' + heure + ' à ' + hfin);
    repeat
       inc(i)
    until (i >= lmessages.Count) or (heure < lmessages.Strings[i]);
-   if i < lmessages.Count then lvotes.idx_deb := i;
+   if i < lmessages.Count then result.idx_deb := i;
    while (i < lmessages.Count) and (lmessages.Strings[i] < hfin) do begin
-      lvotes.idx_fin := i;
+      result.idx_fin := i;
       inc(i);
    end;
-   if debug then memo_tests.add( inttostr(lvotes.idx_fin - lvotes.idx_fin * 1) + ' messages sélectionnés');
-   traitement_lvotes(lvotes, lmsg); // filtrage "tout le monde" , "secret" , 'secret uniquement"
+   if debug then memo_tests.add( inttostr(result.idx_fin - result.idx_deb - 1) + ' messages sélectionnés');
+   traitement_lvotes(result, lmsg); // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 
 procedure taux.traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message   );
@@ -724,22 +759,82 @@ end;*)
 
 
 
+function tmessage.valide(secret_, secret_only_: boolean): boolean;
+begin
+   if secret_ then begin
+      result := m_secret or not secret_only_;
+   end else begin
+      result := not m_secret ;
+   end;
+   result := result and not rejected;
+end;
+
 { telement_scrutin }
 
-constructor telement_scrutin.create;
+procedure telement_scrutin.additionne(var pour, contre, abs, non_exp : integer);
+var
+   p, c, a : integer;
 begin
+   // err_pouvoirs de tous les message remis à false dans cree_elements;
+   p := msg_pour.nombre ;
+   c := msg_contre.nombre ;
+end;
 
+constructor telement_scrutin.create(msg : tmessage);
+begin
+   participant := msg.participant;
+   participant.present_ds_elements := true;
+   msg_pour := nil;
+   msg_contre := nil;
+   msg_abs := nil;
+   if msg.choix = 'pour' then msg_pour := msg else if msg.choix = 'contre' then msg_contre := msg else if msg.choix = 'abs' then msg_abs := msg else begin
+      log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msg.choix);
+   end;
 end;
 
 procedure tscrutin.decomptage;
 var
    i : integer;
+   elem : telement_scrutin;
+begin
+   aux1.init_part_present(aux1.lparticipants);
+   cree_elements;
+
+
+end;
+
+procedure tscrutin.cree_elements;
+var
+   i, j : integer;
    part : tparticipant;
    msg : tmessage;
+   elem : telement_scrutin;
 begin
+   elem := nil;
+   part := nil;
+   while lelement_scrutin.Count > 0 do begin
+      lelement_scrutin.Objects[0].Free;
+      lelement_scrutin.Delete(0);
+   end;
    for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
       msg := tmessage(liste_message.Objects[i]);
+      msg.err_pouvoirs := false;
+      if msg.valide(scr_secret, secret_only) then begin
+         part := msg.participant;
+         j := 0;
+         while (j < lelement_scrutin.Count - 1) and ( elem = nil) do begin
+            elem := telement_scrutin(lelement_scrutin.Objects[j]);
+            if not (elem.participant = part) then elem := nil;
+            inc(j);
+         end;
+         if elem = nil then begin
+            elem := telement_scrutin.create(msg);
+         end else begin
+
+         end;
+      end;
    end;
+
 end;
 
 destructor telement_scrutin.destroy;
@@ -796,5 +891,14 @@ begin
    ttl_pour :=0; ttl_contre :=0; ttl_abs :=0; ttl_exp :=0; ttl_votants :=0;
 end;
 
+
+procedure taux.init_part_present( lpart : tliste_participant);
+var
+   i : integer;
+begin
+   for i := 0 to lpart.Count - 1 do begin
+      tparticipant(lpart.Objects[i]).present_ds_elements := false;
+   end;
+end;
 
 end.
