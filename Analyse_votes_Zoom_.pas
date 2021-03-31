@@ -239,6 +239,7 @@ begin
    init_resultats;
    if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
    color := tcolor(10867674);  //(4227327);
+
 end;
 
 procedure TForm1.test_presentation(n : integer);
@@ -403,6 +404,7 @@ begin
       if paramstr(i) = 'debug' then begin debug := true ; Pdebug.Visible := true; end;
 
    end;
+   fi_debug := debug
 end;
 
 

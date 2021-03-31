@@ -101,6 +101,8 @@ type
     liste_votes : tstringlist;
     scr_secret : boolean;
     secret_only : boolean;
+    liste_message : tliste_message;
+    procedure decomptage;
     procedure maj_resultats;
     procedure init_totaux;
     constructor create(num : integer; nm : string);
@@ -110,7 +112,7 @@ type
     lmessages_gen : tliste_message;
     lvotes_dbg : tliste_vote;
     lparticipants: tstringlist;
-    lrejetes: tstringlist;
+    //lrejetes: tstringlist;   inutile ?
     lconfig: tstringlist;
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
     lscrutin : tstringlist;
@@ -187,7 +189,7 @@ begin
          lmfic.loadfromfile(fic);
          result := lmfic.Count > 0;
       except
-         on E: Exception do memo_tests.add('ERREUR: ' + E.Message + ' pour le fichier: ' + fic);
+         on E: Exception do log_infos('ERREUR: ' + E.Message + ' pour le fichier: ' + fic); // log_infos dupplique l message dans memo_tests
       end;
    end else begin
       log_infos('fichier des messages: ' + fic + ' non trouvé' );
@@ -229,7 +231,7 @@ begin
     lmessages_gen := tstringlist.Create;
     lvotes_dbg := tstringlist.Create;
     lparticipants:= tstringlist.Create;
-    lrejetes:= tstringlist.Create;
+    //lrejetes:= tstringlist.Create;
     lconfig:= tstringlist.Create;
     lscrutin := tstringlist.Create;
     //lremplacement := tstringlist.Create;
@@ -247,7 +249,7 @@ destructor taux.destroy;
 begin
     videlistes;
     lnmembre2index.Free;
-    lrejetes.free;
+    //lrejetes.free;
     lvotes_dbg.free;
     lmessages_gen.free;
     lparticipants.free;
@@ -259,7 +261,7 @@ end;
 
 procedure taux.videlistes;
 begin
-    lrejetes.clear;
+    //lrejetes.clear;
     lvotes_dbg.clear;
     lconfig.Clear;
     lnmembre2index.Clear;
@@ -613,13 +615,19 @@ begin
 end;
 
 procedure taux.traitement;
+var
+   st : string;
 begin
    with scrutin_encours do begin
       if charge_fic_msg(fichier_message) then begin
-      //select_lvotes(heure_debut, duree, scr_secret, secret_only, le);
-
-      end else
+         select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
+         decomptage;
+      end else begin
+         st := 'fichier message invalide: ' + fichier_message;
          fichier_message := '';
+         log_infos(st);
+         ShowMessage(st);
+      end;
    end;
 end;
 
@@ -715,7 +723,18 @@ end;*)
 
 constructor telement_scrutin.create;
 begin
-//
+
+end;
+
+procedure tscrutin.decomptage;
+var
+   i : integer;
+   part : tparticipant;
+   msg : tmessage;
+begin
+   for i := 0 to liste_votes.Count - 1 do begin
+      msg := tmessage(liste_message.Objects[crdinal(liste_votes.Objects[i])]);
+   end;
 end;
 
 destructor telement_scrutin.destroy;
@@ -752,6 +771,7 @@ begin
    init_totaux;
    scr_secret := false;
    secret_only := false;
+   liste_message := aux1.lmessages_gen;
 end;
 
 destructor tscrutin.destroy;
