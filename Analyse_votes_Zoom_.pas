@@ -422,7 +422,7 @@ end;
 procedure TForm1.Bch_msgClick(Sender: TObject);
 begin
    aux1.videlistes;
-   aux1.charge_fic_msg(Efic_msg.Text);
+   aux1.charge_fic_msg(Efic_msg.Text, aux1.lmessages_gen);
 end;
 
 {
@@ -449,13 +449,21 @@ end;
 
 procedure TForm1.Bcree_lvoteClick(Sender: TObject);
 begin
-   Aux1.select_lvotes(ME_heure.Text, ME_duree.Text, true, false);
+   aux1.lvotes_dbg := Aux1.select_lvotes(ME_heure.Text, ME_duree.Text, true, false, Aux1.lmessages_gen, aux1.lvotes_dbg);
 end;
 
 procedure TForm1.BAff_lvoteClick(Sender: TObject);
+var
+   sl : tstringlist;
+   i : integer;
 begin
-   aff_strigrid(aux1.lvotes_dbg)   ;
-   l_aff := aux1.lvotes_dbg
+   sl := TStringList.Create;
+   if aux1.lvotes_dbg.idx_deb >=0 then begin
+      for i := aux1.lvotes_dbg.idx_deb to aux1.lvotes_dbg.idx_fin do sl.Add(aux1.lmessages_gen.Strings[i]);
+      aff_strigrid(sl)   ;
+      l_aff := nil;
+   end;
+   sl.Free;
 end;
 
 procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
@@ -535,9 +543,9 @@ var
 begin
    eff_stringgrid1;
    if Rrejetes.Checked then begin
-      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, false, '');
+      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, false, '', aux1.lmessages_gen, aux1.lvotes_dbg);
    end else begin
-      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text);
+      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text, aux1.lmessages_gen, aux1.lvotes_dbg);
    end;
    LNb_msg.Caption := inttostr(nb) + ' messages affichés';
 end;
