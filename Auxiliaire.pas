@@ -12,7 +12,7 @@ interface
 uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids ;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids  ;
 
 
 const
@@ -58,14 +58,15 @@ type
     texte : string;
     tbnom : ttbnoms;
     numero : integer;
-    pouvoirs : Byte	;
+    pouvoirs : integer	;
     partage_nomembre : boolean;
     electeur_legitime : boolean; // non retrouvé dans liste pouvoirs ou autre
-    element_scrutin : telement_scrutin; // reinitialisé à chaque chagement de scrutin
+    //element_scrutin : telement_scrutin;
     num_legitime : boolean; // retrouvé dans liste pouvoirs ou autre
     err_region, err_prenom, err_nom, err_num, err_ID : boolean;
     //p_en_erreur : boolean;
-    present_ds_elements : boolean; // pour comptage des non-exprimés
+    //present_ds_elements : boolean; // pour comptage des non-exprimés -> fait avec elem_srutin
+    elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string) : boolean;
     procedure additionne(var votants, non_exp : integer);
@@ -99,7 +100,7 @@ type
     msg_abs  : tmessage;
     msg_contre: tmessage;
     procedure additionne(var pour, contre, abs, non_exp : integer );
-    constructor create(msg : tmessage);
+    constructor create(msge : tmessage);
     destructor destroy;  override;
   end;
   tscrutin = class
@@ -139,12 +140,12 @@ type
     function select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message ;lvotes: tliste_vote ): tliste_vote;
     procedure traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message  );
     function aff_lvote(stringgrid: tstringgrid; rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
-    function remplace_accents(str : string): string;
     procedure pretraitement_lmsg( lmsg : tliste_message); // concaténation et recherche configuration
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
     function charge_fic_msg(fic: string; lmsg : tliste_message ): boolean;
     procedure traitement;
+    function remplace_caracteres_UTF8( texte : string) : string ;
     constructor create;
     destructor destroy;  override;
   private
@@ -277,6 +278,26 @@ begin
     lscrutin.Free;
     //lremplacement.Free;
   inherited;
+end;
+
+function Taux.remplace_caracteres_UTF8( texte : string) : string ; // https://www.charset.org/utf-8  (https://graphemica.com/%F0%9F%92%BB)
+var
+  st : string;
+  p : integer;
+begin
+   st := texte ;
+   st := stringreplace(st, #$C2 , '', [rfReplaceAll]);
+   p := pos(#$C3, st) ;
+   while p > 0 do begin
+      st[p+1]  := chr(ord(st[p+1]) + 64);
+      p := PosEx(#$C3, st, p + 1) ;
+   end ;
+   st := stringreplace(st, #$C3 , '', [rfreplaceall]);
+   p := pos(#$E2, st) ;
+   if p > 0 then begin
+      st := stringreplace(st, #$E2#$80#$99 , '''', [rfreplaceall]); //E2 80 99    8217	U+2019		’	Right Single Quotation Mark
+   end;
+   result := st;
 end;
 
 procedure taux.videlistes;
@@ -461,7 +482,8 @@ end;
 
 procedure tparticipant.additionne(var votants, non_exp: integer);
 begin
-//
+   votants := votants + pouvoirs;
+   if elem_scrutin = nil then non_exp := non_exp + pouvoirs;
 end;
 
 { tmessage }
@@ -540,7 +562,7 @@ begin
    if choix = 'abstention' then choix := 'abs';
    err_choix :=  (choix = 'oui') or (choix = 'non');
    if not((choix = 'pour') or (choix = 'contre') or (choix = 'abs') or (choix = 'oui') or (choix = 'non')) then choix := '';
-   if nb <> '' then nombre := strtoint(nb);
+   if nb <> '' then nombre := strtoint(nb); // caractère "-" non accepté -> nombre forcément positif
    err_choix := err_choix and (nbgrl <> 1) or (choix = '');
    if nbgrc = 0 then nombre := 1;
    err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
@@ -630,7 +652,7 @@ begin
                end;
             end;
             if secret or tlm then begin
-               nv := remplace_accents(nv);
+               nv := remplace_caracteres_UTF8(nv);
                tmessage.create(idx_msg, nv, secret); // dans create : lmessages.Objects[idx_msg] := msg;
                //lvotes.strings[i] := nv;
             end else begin
@@ -645,7 +667,7 @@ begin
    if debug then memo_tests.add( inttostr(lparticipants.Count) + ' tparticipants');
 end;
 
-function taux.remplace_accents(str : string) : string;
+{function taux.remplace_accents(str : string) : string;
 var
    i : integer;
 begin
@@ -654,7 +676,7 @@ begin
       result := StringReplace(result, rempl_acc[i, 1]  , rempl_acc[i, 0] , [rfReplaceAll] );
    end;
 
-end;
+end;  }
 
 procedure taux.traitement;
 var
@@ -773,68 +795,95 @@ end;
 
 procedure telement_scrutin.additionne(var pour, contre, abs, non_exp : integer);
 var
-   p, c, a : integer;
+   ne  : integer;
+   errpv : boolean;
 begin
    // err_pouvoirs de tous les message remis à false dans cree_elements;
-   p := msg_pour.nombre ;
-   c := msg_contre.nombre ;
+   ne := msg_pour.participant.pouvoirs  - msg_pour.nombre - msg_contre.nombre - msg_abs.nombre;
+   errpv := ne < 0;
+   if errpv then begin
+      if msg_pour.nombre + msg_contre.nombre = 0 then begin errpv := false ; abs := abs + msg_pour.participant.pouvoirs end;
+      if msg_contre.nombre + msg_abs.nombre = 0  then begin errpv := false ; pour := pour + msg_pour.participant.pouvoirs end;
+      if msg_abs.nombre + msg_pour.nombre = 0    then begin errpv := false ; contre := contre + msg_pour.participant.pouvoirs end;
+      msg_contre.err_pouvoirs := errpv;
+      msg_contre.err_pouvoirs := errpv;
+      msg_abs.err_pouvoirs := errpv;
+      if errpv then non_exp := non_exp + msg_pour.participant.pouvoirs; // sinon pas d'ajout
+   end else begin;
+      pour := pour + msg_pour.nombre;
+      contre := contre + msg_contre.nombre;
+      abs := abs + msg_abs.nombre;
+      non_exp := non_exp + ne ;
+   end;
 end;
 
-constructor telement_scrutin.create(msg : tmessage);
+constructor telement_scrutin.create(msge : tmessage);
 begin
-   participant := msg.participant;
-   participant.present_ds_elements := true;
+   participant := msge.participant;
+   participant.elem_scrutin := self;
    msg_pour := nil;
    msg_contre := nil;
    msg_abs := nil;
-   if msg.choix = 'pour' then msg_pour := msg else if msg.choix = 'contre' then msg_contre := msg else if msg.choix = 'abs' then msg_abs := msg else begin
-      log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msg.choix);
+   if msge.choix = 'pour' then msg_pour := msge else if msge.choix = 'contre' then msg_contre := msge else if msge.choix = 'abs' then msg_abs := msge else begin
+      log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
    end;
 end;
 
 procedure tscrutin.decomptage;
 var
    i : integer;
-   elem : telement_scrutin;
+   p, c, a, ne, v  : integer;
+   st1, st2 : string;
 begin
    aux1.init_part_present(aux1.lparticipants);
    cree_elements;
-
-
+   p := 0; c := 0; a := 0; ne := 0; v := 0; ne := 0;
+   for i := 0 to lelement_scrutin.Count - 1 do begin
+      telement_scrutin(lelement_scrutin.Objects[i]).additionne(p, c, a, ne);
+   end;
+   ttl_pour := p;
+   ttl_contre := c;
+   ttl_abs := a;
+   for i := 0 to aux1.lparticipants.Count - 1 do begin
+      tparticipant(aux1.lparticipants.Objects[i]).additionne(v , ne);
+   end;
+   ttl_votants := v;
+   ttl_exp := a + c + a;
+   if ne + ttl_exp <> v then begin
+      st1 := 'inchérence dans les résultats: ' + inttostr(ttl_exp) + ' suffrages exprimés ';
+      st2 := inttostr(ne) + ' suffrages non exprimés différent de ' + inttostr(ttl_votants) + ' votants';
+      log_infos(st1 + st2);
+      showmessage(st1  + #13#10 + st2);
+   end;
+   maj_resultats;
 end;
 
 procedure tscrutin.cree_elements;
 var
-   i, j : integer;
+   i : integer;
    part : tparticipant;
-   msg : tmessage;
-   elem : telement_scrutin;
+   msge : tmessage; // msg remplacé par msge car msg est une variable globale dans une untité Delphi
 begin
-   elem := nil;
-   part := nil;
    while lelement_scrutin.Count > 0 do begin
       lelement_scrutin.Objects[0].Free;
       lelement_scrutin.Delete(0);
    end;
    for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
-      msg := tmessage(liste_message.Objects[i]);
-      msg.err_pouvoirs := false;
-      if msg.valide(scr_secret, secret_only) then begin
-         part := msg.participant;
-         j := 0;
-         while (j < lelement_scrutin.Count - 1) and ( elem = nil) do begin
-            elem := telement_scrutin(lelement_scrutin.Objects[j]);
-            if not (elem.participant = part) then elem := nil;
-            inc(j);
-         end;
-         if elem = nil then begin
-            elem := telement_scrutin.create(msg);
+      msge := tmessage(liste_message.Objects[i]);
+      msge.err_pouvoirs := false;
+      if msge.valide(scr_secret, secret_only) then begin
+         part := msge.participant;
+         if part.elem_scrutin = nil then begin
+            lelement_scrutin.AddObject('', telement_scrutin.create(msge));
          end else begin
-
-         end;
+            with part.elem_scrutin do begin
+               if msge.choix = 'pour' then msg_pour := msge else if msge.choix = 'contre' then msg_contre := msge else if msge.choix = 'abs' then msg_abs := msge else begin
+                  log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
+               end;
+            end;   
+         end; // chacune des trois variables msg_pour, msg_contre et msg_abs est finalement instanciée par le dernier message la concernant
       end;
    end;
-
 end;
 
 destructor telement_scrutin.destroy;
@@ -897,7 +946,7 @@ var
    i : integer;
 begin
    for i := 0 to lpart.Count - 1 do begin
-      tparticipant(lpart.Objects[i]).present_ds_elements := false;
+      tparticipant(lpart.Objects[i]).elem_scrutin := nil;
    end;
 end;
 
