@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 430
-  Top = 339
+  Left = 411
+  Top = 223
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -203,6 +203,7 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 3
       Text = '   4214'
+      OnClick = Enb_membresClick
     end
     object BEditer: TButton
       Left = 312
@@ -217,6 +218,7 @@ object Form1: TForm1
       Font.Style = [fsBold]
       ParentFont = False
       TabOrder = 4
+      OnClick = BEditerClick
     end
     object CheckBox1: TCheckBox
       Left = 176
@@ -674,6 +676,7 @@ object Form1: TForm1
         Top = 0
         Width = 70
         Height = 24
+        Hint = 'nombre de voix des participants  et  leurs pouvoirs'
         Caption = 'Votants'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -1778,7 +1781,7 @@ object Form1: TForm1
       Height = 369
       ColCount = 15
       FixedCols = 0
-      RowCount = 3000
+      RowCount = 1000
       FixedRows = 0
       ScrollBars = ssVertical
       TabOrder = 0
@@ -2281,6 +2284,9 @@ object Form1: TForm1
         Top = 28
         Width = 48
         Height = 16
+        Hint = 
+          'indique des valaurs max  que les prises en compte des rejets aur' +
+          'aient chang'#233'es'
         Caption = 'Totaux'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2289,11 +2295,14 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
-      object Ettlpour: TEdit
+      object Erjpour: TEdit
         Left = 4
         Top = 4
         Width = 24
         Height = 21
+        Hint = 
+          'prend en compte  le contexte  (pouvoirs  , message  plus r'#233'cent ' +
+          'etc ..)'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -2303,11 +2312,14 @@ object Form1: TForm1
         TabOrder = 2
         Text = '7'
       end
-      object Ettlcontre: TEdit
+      object Erjcontre: TEdit
         Left = 28
         Top = 4
         Width = 24
         Height = 21
+        Hint = 
+          'prend en compte  le contexte  (pouvoirs  , message  plus r'#233'cent ' +
+          'etc ..)'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11
@@ -2317,11 +2329,14 @@ object Form1: TForm1
         TabOrder = 0
         Text = '6'
       end
-      object Ettlabs: TEdit
+      object Erjabs: TEdit
         Left = 52
         Top = 4
         Width = 24
         Height = 21
+        Hint = 
+          'prend en compte  le contexte  (pouvoirs  , message  plus r'#233'cent ' +
+          'etc ..)'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
         Font.Height = -11

@@ -1,6 +1,10 @@
 unit Analyse_votes_Zoom_;
 
 //Un clic sur le bouton "Editer" fait disparaitre un composant transparent(label vide ?) au-dessus e la zone "Entrée" et remet à zéro les résultats
+// sendmessage -> équivalet clic souris sur tstringgrid ?
+{
+
+]
 
 {$DEFINE Mensa } //aide: compilation conditionnelle
 
@@ -72,9 +76,9 @@ type
     StaticText1: TStaticText;
     Label3: TLabel;
     BEditer: TButton;
-    Ettlpour: TEdit;
-    Ettlcontre: TEdit;
-    Ettlabs: TEdit;
+    Erjpour: TEdit;
+    Erjcontre: TEdit;
+    Erjabs: TEdit;
     Ltotaux: TLabel;
     CheckBox1: TCheckBox;
     ButtonA: TButton;
@@ -192,6 +196,9 @@ type
     procedure ME_heureChange(Sender: TObject);
     procedure LinformationClick(Sender: TObject);
     procedure BfcolorClick(Sender: TObject);
+    procedure enable_entrees( horaire, fic_mess, fic_csv : boolean);
+    procedure BEditerClick(Sender: TObject);
+    procedure Enb_membresClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -234,6 +241,7 @@ begin
    traite_params;
    image1.Hint := hint_image1;
    memo_tests := mtest.Lines;
+   f1stringgrid := stringgrid1;
    stringgrid1rowscount := StringGrid1.RowCount;
    strgrd_colcount := StringGrid1.colcount;
    clear_resultats;
@@ -293,16 +301,21 @@ begin
    end;
 end;
 
-procedure TForm1.ButtonAClick(Sender: TObject);
+procedure TForm1.ButtonAClick(Sender: TObject);  // appelé par tous les bouton affichant les lettres de l'alphabet
 var
    lettre : string;
 
 begin
    lettre := tbutton(sender).Caption;
-   Lmessages.caption := 'Messages "' + lettre + '"';
-   Ettlpour.Text := '';
-   Ettlcontre.Text := '';
-   Ettlabs.Text := '';
+   RtousmsgClick(sender);
+   Ltous_mess.caption := 'Messages "' + lettre + '"';
+   Efiltre.Text := lettre;
+   Aux1.aff_messages(false, Cbvnreconnus.Checked, lettre, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   //casse sans importance pour filtre
+
+   {Erjpour.Text := '';
+   Erjcontre.Text := '';
+   Erjlabs.Text := ''; }
    //aux1.aff_lvote(StringGrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text) ;
 end;
 
@@ -469,6 +482,19 @@ begin
    sl.Free;
 end;
 
+procedure TForm1.Baff_messagesClick(Sender: TObject);
+var
+   nb : integer;
+begin
+   eff_stringgrid1;
+   if Rrejetes.Checked then begin
+      nb := Aux1.aff_messages( Rrejetes.Checked, false, '', aux1.lmessages_gen, aux1.lvotes_dbg);
+   end else begin
+      nb := Aux1.aff_messages( Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text, aux1.lmessages_gen, aux1.lvotes_dbg);
+   end;
+   LNb_msg.Caption := inttostr(nb) + ' messages affichés';
+end;
+
 procedure TForm1.BAff_lparticipantsClick(Sender: TObject);
 begin
    aff_strigrid(aux1.lparticipants);
@@ -529,7 +555,9 @@ begin
    Rtousmsg.Checked := true;
    Pmasque_totaux.Visible := false;
    Ptous_msg.Visible := true;
-   //Lmessages.Caption := 'Messages';
+   LTous_msg.Caption := 'Messages';
+   Efiltre.Text := '';
+   Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
 procedure TForm1.RrejetesClick(Sender: TObject);
@@ -538,19 +566,7 @@ begin
    Pmasque_totaux.Visible := true;
    Ptous_msg.Visible := false;
    //Lmessages. := 'Messages rejetés';
-end;
-
-procedure TForm1.Baff_messagesClick(Sender: TObject);
-var
-   nb : integer;
-begin
-   eff_stringgrid1;
-   if Rrejetes.Checked then begin
-      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, false, '', aux1.lmessages_gen, aux1.lvotes_dbg);
-   end else begin
-      nb := Aux1.aff_lvote(stringgrid1, Rrejetes.Checked, Cbvnreconnus.Checked, Efiltre.Text, aux1.lmessages_gen, aux1.lvotes_dbg);
-   end;
-   LNb_msg.Caption := inttostr(nb) + ' messages affichés';
+   Aux1.aff_messages(true, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
 procedure TForm1.BvidelistesClick(Sender: TObject);
@@ -595,7 +611,10 @@ end;
 
 procedure TForm1.EfiltreChange(Sender: TObject);
 begin
-//
+   RtousmsgClick(sender);
+   Ltous_mess.caption := 'Messages "' + Efiltre.text;
+   Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   //casse sans importance pour filtre
 end;
 
 procedure TForm1.EnomvoteChange(Sender: TObject);
@@ -614,19 +633,26 @@ var
 begin
    num := strtointdef(ENoVote.Text, 0);
    if num > 0 then begin
-      i := aux1.lscrutin.IndexOf(inttostr(num));
-      if (i >=0) then begin
-         if (Aux1.scrutin_encours <> tscrutin(aux1.lscrutin.Objects[i])) then begin
-            Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
-            Enomvote.text := Aux1.scrutin_encours.nom ;
-            maj_entrees;
-            Aux1.scrutin_encours.maj_resultats;
+      try
+         i := aux1.lscrutin.IndexOf(inttostr(num));
+         if (i >=0) then begin
+            if (Aux1.scrutin_encours <> tscrutin(aux1.lscrutin.Objects[i])) then begin
+               Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
+               Enomvote.text := Aux1.scrutin_encours.nom ;
+               maj_entrees;
+               Aux1.scrutin_encours.maj_resultats;
+            end;
          end else begin
             Aux1.scrutin_encours := tscrutin.create(num, Enomvote.Text);
             clear_resultats;
          end;
          clear_aff_messages;
-      end;
+      except
+         On E: exception do begin
+            log_infos('Erreur dans ENoVoteChange : ' + e.message);
+            showmessage('Erreur changement de numéro de vote');
+         end;
+      end
    end;
 end;
 
@@ -649,9 +675,10 @@ procedure TForm1.BTraitementClick(Sender: TObject);
 var
    num : integer;
 begin
+   RrejetesClick(Rrejetes);
    num := strtointdef( ENoVote.Text, 0);
    if num > 0 then begin
-      PEntrees.Enabled := false;
+      enable_entrees(false, false, false);
       if aux1.scrutin_encours = nil then begin
          aux1.scrutin_encours := tscrutin.create(num , Enomvote.Text);
       end;
@@ -683,6 +710,7 @@ begin
    Epour_       := Epour        ; Econtre_     := Econtre     ; Eabs_        := Eabs          ; Enon_exp_     :=   Enon_exp    ; Evotants_    := Evotants    ;
    Ep_ppc_exp_  := Ep_ppc_exp   ; Ec_ppc_exp_  := Ec_ppc_exp  ; Ea_ppc_exp_  := Ea_ppc_exp    ;
    Ep_ppc_nbmb_ := Ep_ppc_nbmb  ; Ec_ppc_nbmb_ := Ec_ppc_nbmb ; Ea_ppc_nbmb_ := Ea_ppc_nbmb   ; Ene_ppc_nbmb_ :=  Ene_ppc_nbmb ; Ev_ppc_nbmb_ := Ev_ppc_nbmb ;
+   Erjpour_     := Erjpour      ; Erjcontre_   := Erjcontre   ; Erjabs_      := Erjabs;
 end;
 
 procedure TForm1.ME_heureChange(Sender: TObject);
@@ -709,6 +737,8 @@ begin
       lim := 59;
       i := i + 3;
    end;
+   aux1.scrutin_encours.init_totaux;
+   aux1.scrutin_encours.maj_resultats;
 end;
 
 procedure TForm1.LinformationClick(Sender: TObject);
@@ -722,6 +752,24 @@ begin
    form1.Color := colorselect.Dialog.Color;
    Mtest.Lines.Add('couleur Form1 : ' + inttostr(cardinal(form1.Color)));
    //par défaut from1.color = clBtnShadow
+end;
+
+procedure TForm1.enable_entrees(horaire, fic_mess, fic_csv: boolean);
+begin
+   ME_heure.Enabled := horaire;
+   Efic_msg.Enabled := fic_mess;
+   Enb_membres.Enabled := fic_mess;
+end;
+
+procedure TForm1.BEditerClick(Sender: TObject);
+begin
+   enable_entrees(true, true, true);
+end;
+
+procedure TForm1.Enb_membresClick(Sender: TObject);
+begin
+   Aux1.scrutin_encours.init_totaux;
+   aux1.scrutin_encours.maj_resultats;
 end;
 
 end.
