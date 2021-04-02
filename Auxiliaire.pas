@@ -2,9 +2,18 @@ unit Auxiliaire;
 // Les suffrages exprimés sont les votes valablement émis dans le cadre d’une proposition mise aux voix ou d’une élection, les suffrages recueillis étant comptabilisés, déduction faite des abstentions ou des bulletins rejetés.
 
 { à terminer :
-   affichage des rejetetés dans tscrutin decomptage
 
- }
+
+}
+{ à corriger
+ok % trop importants
+ok nb de message jamais indiqués
+ok nouveau vote -> appui sur "editer" necessaire
+ok les messages rejetés s'affichent losqu'on change de scrutin
+ok les totaux rejetes ne se modifient pas il ne sont pas à zéro (ou à blanc)  au départ
+ok totaux décalés
+ok perte des entrées lorsqu'on cree un nouveau scrutin
+}
 interface
 
 uses
@@ -177,11 +186,13 @@ var
   stringgrid1rowscount : integer;
   strgrd_colcount : integer;
   message_nil : tmessage;
+  nb_pouvoirs_max : integer = 20;
   l_aff : tstringlist = nil;
    Epour_, Econtre_, Eabs_, Enon_exp_, Evotants_ : tedit;
    Ep_ppc_exp_,Ec_ppc_exp_, Ea_ppc_exp_ : tedit;
    Ep_ppc_nbmb_, Ec_ppc_nbmb_, Ea_ppc_nbmb_, Ene_ppc_nbmb_, Ev_ppc_nbmb_ : tedit;
    Erjpour_, Erjcontre_, Erjabs_ : tedit;
+   LNb_msg_ : tlabel;
 implementation
 
 var
@@ -756,6 +767,7 @@ begin
       inc(i);
    end;
    scrutin_encours.decompte_rejetes ;
+   LNb_msg_.Caption := inttostr(j) + ' messages affichés';
    result := j;
 end;
 
@@ -899,8 +911,8 @@ begin
       log_infos(st1 + st2);
       showmessage(st1  + #13#10 + st2);
    end;
-   maj_resultats;
    aux1.aff_messages(true, false, '', liste_message, liste_votes);
+   maj_resultats;
 end;
 
 procedure tscrutin.cree_elements;
@@ -946,11 +958,12 @@ begin
       Ec_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
       Ea_ppc_exp_.text := '0' ; Ea_ppc_nbmb_.text := '0' ;
       Ene_ppc_nbmb_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
+      Erjpour_.text := '0'; Erjcontre_.text := '0'; Erjabs_.text := '0';
    end else begin
-      Ep_ppc_exp_.text := inttostr(100 * 100 * ttl_pour div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr(100 * ttl_pour div nombre_membres) ;
-      Ec_ppc_exp_.text := inttostr(100 * ttl_contre div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr(100 * ttl_contre) ;
-      Ea_ppc_exp_.text := inttostr(100 * ttl_abs div ttl_exp) ; Ea_ppc_nbmb_.text := inttostr(100 * ttl_abs) ;
-      Ene_ppc_nbmb_.text := inttostr(100 * (ttl_votants - ttl_exp) div ttl_exp) ; Ev_ppc_nbmb_.text := inttostr(100 * ttl_votants) ;
+      Ep_ppc_exp_.text := inttostr((100 *  ttl_pour) div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr((100 * ttl_pour) div nombre_membres) ;
+      Ec_ppc_exp_.text := inttostr((100 * ttl_contre) div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr((100 * ttl_contre) div nombre_membres) ;
+      Ea_ppc_exp_.text := inttostr((100 * ttl_abs) div ttl_exp) ; Ea_ppc_nbmb_.text := inttostr((100 * ttl_abs) div nombre_membres) ;
+      Ene_ppc_nbmb_.text := inttostr((100 * (ttl_votants - ttl_exp)) div nombre_membres) ; Ev_ppc_nbmb_.text := inttostr((100 * ttl_votants)div nombre_membres) ;
    end ;
    Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
 end;
@@ -1017,11 +1030,11 @@ var
    elem_scr : telement_scrutin;
 begin
    try
+      bpour := (choix = 'pour') or (choix = 'oui');
+      bcontre :=  (choix = 'contre') or (choix = 'non');
+      babs := choix = 'abs' ;
       if part <> nil then begin
          elem_scr := part.elem_scrutin;
-         bpour := (choix = 'pour') or (choix = 'oui');
-         bcontre :=  (choix = 'contre') or (choix = 'non');
-         babs := choix = 'abs' ;
          if bpour or bcontre or babs then begin
             if elem_scr <> nil then begin
                if bpour then mess := elem_scr.msg_pour else if bcontre then mess := elem_scr.msg_abs else mess := elem_scr.msg_abs;
@@ -1029,14 +1042,18 @@ begin
                   if mess.est_msg_nil then nb := min(nombre, elem_scr.suff_n_exp) else nb := min(nombre, part.pouvoirs);
                   if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
                end else begin
-                  nb := 0:
+                  nb := 0;
                end;
             end else begin
                nb := min(nombre, part.pouvoirs);
             end;
             if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
          end;
-      end
+      end else begin // pb identification du participant
+         nb := min(nombre, nb_pouvoirs_max);
+         if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
+      end;
+      Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);
    except
       on E : exception do log_infos('Erreur dans additionne_rejetes: ' + E.message);
    end;

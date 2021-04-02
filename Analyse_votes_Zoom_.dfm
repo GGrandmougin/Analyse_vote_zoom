@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 411
-  Top = 223
+  Left = 447
+  Top = 306
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -1770,8 +1770,9 @@ object Form1: TForm1
     object LNb_msg: TLabel
       Left = 152
       Top = 488
-      Width = 96
+      Width = 150
       Height = 13
+      AutoSize = False
       Caption = '0 messages affich'#233's'
     end
     object StringGrid1: TStringGrid
@@ -1868,6 +1869,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 1
+        OnClick = ButtonAClick
       end
       object Button5: TButton
         Left = 72
@@ -1883,6 +1885,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 2
+        OnClick = ButtonAClick
       end
       object Button7: TButton
         Left = 104
@@ -1898,6 +1901,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 17
+        OnClick = ButtonAClick
       end
       object Button8: TButton
         Left = 8
@@ -1913,6 +1917,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 18
+        OnClick = ButtonAClick
       end
       object Button9: TButton
         Left = 40
@@ -1928,6 +1933,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 19
+        OnClick = ButtonAClick
       end
       object Button10: TButton
         Left = 72
@@ -1943,6 +1949,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 20
+        OnClick = ButtonAClick
       end
       object Button11: TButton
         Left = 104
@@ -1958,6 +1965,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 21
+        OnClick = ButtonAClick
       end
       object Button12: TButton
         Left = 8
@@ -1973,6 +1981,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 22
+        OnClick = ButtonAClick
       end
       object Button13: TButton
         Left = 40
@@ -1988,6 +1997,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 23
+        OnClick = ButtonAClick
       end
       object Button14: TButton
         Left = 72
@@ -2003,6 +2013,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 24
+        OnClick = ButtonAClick
       end
       object Button15: TButton
         Left = 104
@@ -2018,6 +2029,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 25
+        OnClick = ButtonAClick
       end
       object Button24: TButton
         Left = 8
@@ -2049,6 +2061,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 16
+        OnClick = ButtonAClick
       end
       object Button26: TButton
         Left = 72
@@ -2064,6 +2077,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 9
+        OnClick = ButtonAClick
       end
       object Button27: TButton
         Left = 104
@@ -2079,6 +2093,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 11
+        OnClick = ButtonAClick
       end
       object Button20: TButton
         Left = 8
@@ -2094,6 +2109,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 7
+        OnClick = ButtonAClick
       end
       object Button21: TButton
         Left = 40
@@ -2109,6 +2125,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 8
+        OnClick = ButtonAClick
       end
       object Button22: TButton
         Left = 72
@@ -2124,6 +2141,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 10
+        OnClick = ButtonAClick
       end
       object Button23: TButton
         Left = 104
@@ -2139,6 +2157,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 12
+        OnClick = ButtonAClick
       end
       object Button16: TButton
         Left = 8
@@ -2154,6 +2173,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 3
+        OnClick = ButtonAClick
       end
       object Button17: TButton
         Left = 40
@@ -2169,6 +2189,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 26
+        OnClick = ButtonAClick
       end
       object Button18: TButton
         Left = 72
@@ -2184,6 +2205,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 5
+        OnClick = ButtonAClick
       end
       object Button19: TButton
         Left = 104
@@ -2199,6 +2221,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 6
+        OnClick = ButtonAClick
       end
       object Button28: TButton
         Left = 40
@@ -2214,6 +2237,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 13
+        OnClick = ButtonAClick
       end
       object Button29: TButton
         Left = 72
@@ -2229,6 +2253,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         TabOrder = 15
+        OnClick = ButtonAClick
       end
       object Efiltre: TEdit
         Left = 8
@@ -2273,7 +2298,7 @@ object Form1: TForm1
       end
     end
     object Pmasque_totaux: TPanel
-      Left = 852
+      Left = 860
       Top = 484
       Width = 80
       Height = 52
@@ -2285,8 +2310,8 @@ object Form1: TForm1
         Width = 48
         Height = 16
         Hint = 
-          'indique des valaurs max  que les prises en compte des rejets aur' +
-          'aient chang'#233'es'
+          'indique des valaurs max que les prises en compte des rejets aura' +
+          'ient chang'#233'es'
         Caption = 'Totaux'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2358,8 +2383,9 @@ object Form1: TForm1
       object Ltous_mess: TLabel
         Left = 416
         Top = 8
-        Width = 100
+        Width = 200
         Height = 25
+        AutoSize = False
         Caption = 'Messages'
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
