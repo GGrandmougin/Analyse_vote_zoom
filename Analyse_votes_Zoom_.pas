@@ -777,7 +777,7 @@ end;
 procedure TForm1.enable_entrees(horaire, fic_mess, fic_csv: boolean);
 begin
    ME_heure.Enabled := horaire;
-   ME_duree.Enabled := horaires;
+   ME_duree.Enabled := horaire;
    Efic_msg.Enabled := fic_mess;
    Enb_membres.Enabled := fic_mess;
 end;
