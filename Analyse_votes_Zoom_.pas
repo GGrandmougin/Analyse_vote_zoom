@@ -13,7 +13,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls,
-  informations, StdActns;
+  informations, StdActns, pouvoirs_in;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -80,7 +80,7 @@ type
     Erjcontre: TEdit;
     Erjabs: TEdit;
     Ltotaux: TLabel;
-    CheckBox1: TCheckBox;
+    Cbpouvoirs: TCheckBox;
     ButtonA: TButton;
     Button4: TButton;
     Button5: TButton;
@@ -144,6 +144,7 @@ type
     Linformation: TLabel;
     LUtilisation: TLabel;
     Bfcolor: TButton;
+    Btest: TButton;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -189,6 +190,7 @@ type
     procedure LTous_msgMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
     procedure EfiltreChange(Sender: TObject);
+    procedure set_Efiltre_sans_aff( texte : string);
     procedure EnomvoteChange(Sender: TObject);
     procedure ENoVoteChange(Sender: TObject);
     procedure BTraitementClick(Sender: TObject);
@@ -200,6 +202,8 @@ type
     procedure enable_entrees( horaire, fic_mess, fic_csv : boolean);
     procedure BEditerClick(Sender: TObject);
     procedure Enb_membresClick(Sender: TObject);
+    procedure BtestClick(Sender: TObject);
+    procedure CbpouvoirsClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -207,11 +211,11 @@ type
     mx, my : integer ;
     en_deplacement: boolean;
     colorselect : tcolorselect;
-    modif_sans_action : boolean;
   end;
 
 var
   Form1: TForm1;
+  cbpouvoirs_Checked : boolean = false;
 
 implementation
 
@@ -220,6 +224,8 @@ implementation
 uses
     Clipbrd ;
 
+const
+    tag_stop = -3;
 
 procedure TForm1.FormCreate(Sender: TObject);
 var
@@ -250,7 +256,6 @@ begin
    init_resultats;
    if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
    color := tcolor(10867674);  //(4227327);
-   modif_sans_action := false;
 end;
 
 
@@ -311,9 +316,7 @@ begin
    lettre := tbutton(sender).Caption;
    RtousmsgClick(nil); // nil -> aff_messages non lancé
    Ltous_mess.caption := 'Messages "' + lettre + '"';
-   modif_sans_action := true;
-   Efiltre.Text := lettre;
-   modif_sans_action := false;
+   set_Efiltre_sans_aff(lettre);
    Aux1.aff_messages(false, Cbvnreconnus.Checked, lettre, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
    //casse sans importance pour filtre
 
@@ -424,7 +427,8 @@ begin
       if paramstr(i) = 'debug' then begin debug := true ; Pdebug.Visible := true; end;
 
    end;
-   fi_debug := debug
+   fi_debug := debug ;
+   fp_debug := debug ;
 end;
 
 
@@ -562,8 +566,15 @@ begin
    LTous_mess.Caption := 'Messages';
    if sender <> nil then begin
       Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
-      Efiltre.Text := '';
+      set_Efiltre_sans_aff('');
    end;   
+end;
+
+procedure TForm1.set_Efiltre_sans_aff( texte : string);
+begin
+   Efiltre.Tag := tag_stop;
+   Efiltre.Text := texte;
+   Efiltre.Tag := 0;
 end;
 
 procedure TForm1.RrejetesClick(Sender: TObject);
@@ -617,7 +628,7 @@ end;
 
 procedure TForm1.EfiltreChange(Sender: TObject);
 begin
-   if not modif_sans_action then begin
+   if efiltre.Tag <> tag_stop then begin   // sender <> Efiltre then begin (n'est pas bon : c'est le message de efiiltre qui a été changé)
       RtousmsgClick(nil); // nil -> aff_messages non lancé
       Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
       Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
@@ -794,5 +805,19 @@ begin
 end;
 
 
+procedure TForm1.BtestClick(Sender: TObject);
+
+begin
+   //f1stringgrid.perform(WM_MBUTTONDOWN, 0, 0);
+   //f1stringgrid.perform(WM_ACTIVATE, 0, 0);
+   StringGrid1.row := 0;
+   StringGrid1.col := 0;
+end;
+
+procedure TForm1.CbpouvoirsClick(Sender: TObject);
+begin
+   cbpouvoirs.Checked := cbpouvoirs_Checked;
+   Fpouv_in.ShowModal;
+end;
 
 end.

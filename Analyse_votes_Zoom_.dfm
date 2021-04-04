@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 447
-  Top = 306
+  Left = 673
+  Top = 112
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -220,7 +220,7 @@ object Form1: TForm1
       TabOrder = 4
       OnClick = BEditerClick
     end
-    object CheckBox1: TCheckBox
+    object Cbpouvoirs: TCheckBox
       Left = 176
       Top = 67
       Width = 121
@@ -235,6 +235,7 @@ object Form1: TForm1
       ParentFont = False
       State = cbChecked
       TabOrder = 5
+      OnClick = CbpouvoirsClick
     end
   end
   object PAction: TPanel
@@ -2607,6 +2608,15 @@ object Form1: TForm1
       Caption = 'Bfcolor'
       TabOrder = 15
       OnClick = BfcolorClick
+    end
+    object Btest: TButton
+      Left = 104
+      Top = 264
+      Width = 49
+      Height = 17
+      Caption = 'Btest'
+      TabOrder = 16
+      OnClick = BtestClick
     end
   end
 end
