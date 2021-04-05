@@ -1,6 +1,6 @@
 object Fpouv_in: TFpouv_in
-  Left = 626
-  Top = 280
+  Left = 484
+  Top = 277
   Width = 1280
   Height = 768
   Caption = 'Importation des pouvoirs'
@@ -121,6 +121,58 @@ object Fpouv_in: TFpouv_in
       ParentFont = False
       Visible = False
     end
+    object LServeur: TLabel
+      Left = 32
+      Top = 72
+      Width = 55
+      Height = 20
+      Caption = 'Serveur'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object Lidentifiant: TLabel
+      Left = 164
+      Top = 88
+      Width = 71
+      Height = 20
+      Caption = 'Identifiant'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object LMot_de_passe: TLabel
+      Left = 120
+      Top = 120
+      Width = 115
+      Height = 20
+      Caption = 'LMot_de_passe'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
+    object LNom_du_fichier: TLabel
+      Left = 136
+      Top = 152
+      Width = 101
+      Height = 20
+      Caption = 'Nom du fichier'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+    end
     object Cbftp: TCheckBox
       Left = 8
       Top = 16
@@ -161,12 +213,12 @@ object Fpouv_in: TFpouv_in
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 2
+      TabOrder = 5
       Text = 'vote_zoom@catho-rama.net'
     end
     object Eftp_pw: TEdit
       Left = 240
-      Top = 128
+      Top = 120
       Width = 281
       Height = 21
       Font.Charset = DEFAULT_CHARSET
@@ -178,69 +230,9 @@ object Fpouv_in: TFpouv_in
       TabOrder = 3
       Text = 'Y76Sj4qlsyVjrb58TZFm'
     end
-    object Blist: TButton
-      Left = 32
-      Top = 96
-      Width = 75
-      Height = 25
-      Caption = 'Blist'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 4
-      OnClick = BlistClick
-    end
-    object Bconnect: TButton
-      Left = 32
-      Top = 72
-      Width = 113
-      Height = 25
-      Caption = 'Bconnect'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 5
-      OnClick = BconnectClick
-    end
-    object Bdeconnexion: TButton
-      Left = 32
-      Top = 152
-      Width = 153
-      Height = 25
-      Caption = 'Bdeconnexion'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 6
-      OnClick = BdeconnexionClick
-    end
-    object Bget: TButton
-      Left = 32
-      Top = 120
-      Width = 75
-      Height = 25
-      Caption = 'Bget'
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -13
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 7
-      OnClick = BgetClick
-    end
     object Eget: TEdit
       Left = 240
-      Top = 160
+      Top = 152
       Width = 281
       Height = 24
       Font.Charset = DEFAULT_CHARSET
@@ -249,16 +241,84 @@ object Fpouv_in: TFpouv_in
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 8
-      Text = 'xyz.csv'
+      TabOrder = 2
+      Text = 'ExempleExport.csv'
     end
-    object Cbdetails: TCheckBox
-      Left = 120
-      Top = 104
-      Width = 97
-      Height = 17
-      Caption = 'Cbdetails'
-      TabOrder = 9
+    object Pftp_dbg: TPanel
+      Left = 32
+      Top = 72
+      Width = 185
+      Height = 97
+      BevelOuter = bvNone
+      TabOrder = 4
+      object Blist: TButton
+        Left = 8
+        Top = 24
+        Width = 75
+        Height = 25
+        Caption = 'Blist'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 3
+        OnClick = BlistClick
+      end
+      object Bconnect: TButton
+        Left = 8
+        Top = 0
+        Width = 113
+        Height = 25
+        Caption = 'Bconnect'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 2
+        OnClick = BconnectClick
+      end
+      object Bdeconnexion: TButton
+        Left = 8
+        Top = 72
+        Width = 153
+        Height = 25
+        Caption = 'Bdeconnexion'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 0
+        OnClick = BdeconnexionClick
+      end
+      object Bget: TButton
+        Left = 8
+        Top = 48
+        Width = 75
+        Height = 25
+        Caption = 'Bget'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -13
+        Font.Name = 'MS Sans Serif'
+        Font.Style = []
+        ParentFont = False
+        TabOrder = 1
+        OnClick = BgetClick
+      end
+      object Cbdetails: TCheckBox
+        Left = 88
+        Top = 32
+        Width = 97
+        Height = 17
+        Caption = 'Cbdetails'
+        TabOrder = 4
+      end
     end
   end
   object Pweb: TPanel
@@ -330,6 +390,23 @@ object Fpouv_in: TFpouv_in
       Font.Style = []
       ParentFont = False
       TabOrder = 1
+      Text = 'pouvoirs\ExempleExport.csv'
+    end
+    object Cb_relatif: TCheckBox
+      Left = 32
+      Top = 88
+      Width = 313
+      Height = 17
+      Caption = 'relatif au r'#233'pertoire de l'#39#233'x'#233'cutable'
+      Checked = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      State = cbChecked
+      TabOrder = 2
     end
   end
   object IdFTP1: TIdFTP
@@ -337,9 +414,11 @@ object Fpouv_in: TFpouv_in
     MaxLineAction = maException
     ReadTimeout = 0
     OnDisconnected = IdFTP1Disconnected
+    OnWorkEnd = IdFTP1WorkEnd
     OnConnected = IdFTP1Connected
     ProxySettings.ProxyType = fpcmNone
     ProxySettings.Port = 0
+    OnAfterGet = IdFTP1AfterGet
     Left = 856
     Top = 16
   end

@@ -19,7 +19,7 @@ interface
 uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids  ;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun  ;
 
 
 const
@@ -33,11 +33,16 @@ const
                                                  (char($AB), char($C2) + char($AB)),  // «
                                                  (char($BB), char($C2) + char($BB))) ; // »
         // manque ç et  a, i, o , u  avec tréma et accent circonflexe ,…(133) ,
-    remplAcc  : array[0..63 ] of byte = (
+{    remplAcc  : array[0..63 ] of byte = (
+                           97,97,97,97,97,97,198,99,101,101,101,101,105,105,105,105,
+                           208,110,111,111,111,111,111,215,216,117,117,117,117,221,222,223,
+                           97,97,97,227,97,229,230,99,101,101,101,101,105,105,105,105,
+                           240,110,111,111,111,245,111,247,248,117,117,117,117,117,254,255);   dans commun.pas }
+{(
                            192,193,194,195,196,197,198,199,200,201,202,203,204,205,206,207,
                            208,209,210,211,212,213,214,215,216,217,218,219,220,221,222,223,
                            97,97,97,227,97,229,230,99,101,101,101,101,105,105,105,105,
-                           240,110,111,111,111,245,111,247,248,117,117,117,117,117,254,255);
+                           240,110,111,111,111,245,111,247,248,117,117,117,117,117,254,255);   sans les majuscules accentuées }
     col_pouvoirs = 1;
     col_pour = 2;
     col_contre = 3;
@@ -135,7 +140,7 @@ type
     scr_secret : boolean;
     secret_only : boolean;
     liste_message : tliste_message;
-    procedure additionne_rejetes(idx_mess, nombre : integer; choix : string; part : tparticipant );
+    function additionne_rejetes(idx_mess, nombre : integer; choix : string; part : tparticipant ): boolean;
     procedure decompte_rejetes;
     procedure raz_rejetes;
     procedure decomptage;
@@ -174,14 +179,12 @@ type
 
   end;
 
-procedure log_infos(mess : string; typ : integer = 0);
+
 var
   Aux1 : taux;
-  dir_exe : string;
-  dir_trv : string;
   rep_msg_def: string;
   memo_tests : tstrings;
-  debug : boolean;
+  
   f1stringgrid : tstringgrid;
   stringgrid1rowscount : integer;
   strgrd_colcount : integer;
@@ -195,29 +198,10 @@ var
    LNb_msg_ : tlabel;
 implementation
 
-var
-   ficlog : string;
 
 
-procedure log_infos(mess : string; typ : integer = 0);
-var
-   tf : textfile;
-begin
-   try
-      if debug then memo_tests.Add(mess);
-      assignfile(tf,ficlog);
-      if fileexists(ficlog) then
-         append(tf)
-      else
-         rewrite(tf);
-      writeln(tf,datetostr(date)+' '+timetostr(time)+' '+ mess);
-      { Insérer ici un code nécessitant un Flush avant de fermer le fichier }
-      //Flush(tf);
-      closefile(tf);
-   except
-      //pour ne pas ajouter l'erreur à l'erreur
-   end;
-end;
+
+
 
 function taux.charge_fic_msg(fic: string; lmsg : tliste_message): boolean;
 var
@@ -517,6 +501,8 @@ end;
 { tmessage }
 
 function tmessage.affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = ''): boolean;
+var
+   str_nb : string;
 begin
    result := false;
    try
@@ -528,12 +514,15 @@ begin
          if err_choix then ligne[col_choix] := 'X';
          if err_nombre then ligne[col_nombre] := 'X';
          if err_choix or err_nombre then ligne[col_suffrage] := 'X';  // sera peut-être rempli aussi par le controle des pouvoirs
-         if (choix = 'pour') or (choix = 'oui') then ligne[col_pour] := inttostr(nombre) else
-         if (choix = 'contre') or (choix = 'non') then ligne[col_contre] := inttostr(nombre) else
-         if choix = 'abs' then ligne[col_abs] := inttostr(nombre) ;
+         str_nb := inttostr(nombre);
          //ligne[col_] := ;
-         if rejets then Aux1.scrutin_encours.additionne_rejetes(index, nombre, choix, participant);
-      end;;
+         if rejets then begin
+            if not Aux1.scrutin_encours.additionne_rejetes(index, nombre, choix, participant) then str_nb := '(' + str_nb + ')';
+         end;
+         if (choix = 'pour') or (choix = 'oui') then ligne[col_pour] := str_nb else
+         if (choix = 'contre') or (choix = 'non') then ligne[col_contre] := str_nb else
+         if choix = 'abs' then ligne[col_abs] := str_nb ;
+      end;
    except
       on E: exception do
          log_infos( 'Erreur dans affichage_m ' + inttostr(index) + ': ' + E.message);
@@ -1022,13 +1011,14 @@ begin
    ttl_rj_a :=0;
 end;
 
-procedure tscrutin.additionne_rejetes(idx_mess, nombre: integer; choix: string ; part : tparticipant);
+function tscrutin.additionne_rejetes(idx_mess, nombre: integer; choix: string ; part : tparticipant): boolean;
 var
    mess : tmessage;
    bpour, bcontre, babs : boolean;
    nb : integer;
    elem_scr : telement_scrutin;
 begin
+   nb := 0;
    try
       bpour := (choix = 'pour') or (choix = 'oui');
       bcontre :=  (choix = 'contre') or (choix = 'non');
@@ -1040,23 +1030,22 @@ begin
                if bpour then mess := elem_scr.msg_pour else if bcontre then mess := elem_scr.msg_abs else mess := elem_scr.msg_abs;
                if idx_mess > mess.index then begin  // message plus récent dans le choix
                   if mess.est_msg_nil then nb := min(nombre, elem_scr.suff_n_exp) else nb := min(nombre, part.pouvoirs);
-                  if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
                end else begin
                   nb := 0;
                end;
             end else begin
                nb := min(nombre, part.pouvoirs);
             end;
-            if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
          end;
       end else begin // pb identification du participant
          nb := min(nombre, nb_pouvoirs_max);
-         if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
       end;
+      if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
       Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);
    except
       on E : exception do log_infos('Erreur dans additionne_rejetes: ' + E.message);
    end;
+   result := nb > 0;
 end;
 
 end.
