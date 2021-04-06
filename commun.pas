@@ -19,7 +19,7 @@ const
     PrenomMandataire = 2;
     MailMandataire = 3;
     RegionMandataire = 4;
-    ID_Mandant = 5;
+    IDMandant = 5;
     NomMandant =6;
     PrenomMandant = 7;
     MailMandant = 8;

@@ -6,6 +6,9 @@ unit Auxiliaire;
 
 }
 {reste à faire :
+ajout pour fichier messages plus complet
+participant des messages lorsque participant du fichier csv déjà présent
+compare lorsque particpant a un jumeau ayant le même numéro
 configuration
 sortie sur fichier
 enregistrement -reprisede laconfiguration sur fichier ?
@@ -83,6 +86,7 @@ type
     tbnom : ttbnoms;
     numero : integer;
     pouvoirs : integer	;
+    part_meme_id : tparticipant;
     partage_nomembre : boolean;
     electeur_legitime : boolean; // non retrouvé dans liste pouvoirs ou autre
     //element_scrutin : telement_scrutin;
@@ -92,7 +96,8 @@ type
     //present_ds_elements : boolean; // pour comptage des non-exprimés -> fait avec elem_srutin
     elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
     procedure renseigne(nm, prenm, regn: string; id : integer);
-    function compare(nm, prenm, regn: string): tparticipant;
+    function compare(nm, prenm, regn: string): tparticipant;  overload;
+    function compare(texte :string;  const tab : ttbnoms): tparticipant; overload;
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string) : boolean;
     procedure additionne(var votants, non_exp : integer);
@@ -286,6 +291,7 @@ begin
     scrutin_encours := nil;
     message_nil := tmessage.create(idx_msg_nil,'', false);
     procedure_test := ptest;
+    p_traite_pouvoirs := traite_pouvoirs;
 end;
 
 destructor taux.destroy;
@@ -432,6 +438,7 @@ begin
    partage_nomembre := false;
    num_legitime := true;
    pouvoirs := 1;
+   part_meme_id := nil;
    if msg <> '' then begin
       for i := 1 to length(msg) do begin
          v := ord(msg[i]);
@@ -546,11 +553,19 @@ begin
    end else result := self;
    if partage_nomembre then begin
       num_legitime := false;
-      i := aux1.lnmembre2index.indexof(inttostr(numero));
-      if i >= 0 then aux1.lnmembre2index.delete(i) ;
+      //i := aux1.lnmembre2index.indexof(inttostr(numero));
+      //if i >= 0 then aux1.lnmembre2index.delete(i) ;
       result := tparticipant.create('');
       result.renseigne(nm, prenm, regn, numero);
+      result.partage_nomembre := true;
+      part_meme_id := result;
+      result.part_meme_id := self;
    end;
+end;
+
+function tparticipant.compare(texte :string;  const tab : ttbnoms): tparticipant;
+begin
+//
 end;
 
 procedure tparticipant.renseigne(nm, prenm, regn: string; id: integer);
@@ -560,7 +575,7 @@ begin
    numero := id;
    region := regn;
    texte := prenm + ' ' + nm + ' ' + regn + ' ' + inttostr(ID);
-   aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
+   if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
 end;
 
 { tmessage }
@@ -1135,7 +1150,16 @@ var
    l_csv, l_champs, l_ID  : tstringlist ;
    i, idx_id : integer;
    receveur, donneur : tparticipant;  //r = receveur, d= donneur
-   id_deja_traite : boolean;
+function est_valide(pst : byte) : boolean ;
+var
+   j : integer;
+begin
+   result := (l_champs.Count >= pst + 5) and (strtointdef(l_champs.Strings[pst], 0 ) > 0 ) ;
+   if result then begin
+      for j := 0 to l_champs.Count - 1 do l_champs.Strings[j] := trim(l_champs.Strings[j]);
+      for j := 1 to 4 do result := result and  ((l_champs.Strings[pst + j]) <> '');
+   end;
+end;
 begin
    l_champs :=  tstringlist.Create ;
    l_ID :=  tstringlist.Create ;
@@ -1143,24 +1167,32 @@ begin
    if l_csv.Count > 0 then begin
       for i := 0 to l_csv.Count - 1 do begin
          l_champs.Text := StringReplace(l_csv.Strings[i], ',' , #13#10 , [rfReplaceAll	]);
-         if (l_champs.Count >= 5) and (strtointdef(l_champs.Strings[0], 0 ) > 0 ) then begin
+         if est_valide(IDMandataire) then begin
             idx_id := l_ID.IndexOf(l_champs.Strings[IDMandataire]);
             if idx_id < 0 then begin
-
                receveur := cherche_participant(l_champs.Strings[NomMandataire], l_champs.Strings[PrenomMandataire], l_champs.Strings[RegionMandataire], l_champs.Strings[IDMandataire]); //strtointdef( l_champs.Strings[IDMandataire]), 0);
-               if receveur <> nil then begin  // cas où les paramètres sont incomplets
-
-               end;
-
                l_ID.AddObject(l_champs.Strings[IDMandataire], receveur);
             end else begin
                receveur := tparticipant(l_ID.Objects[idx_id]);
             end ;
-
             setCbPouvoirschecked ;
+            if est_valide(IDMandant) then begin
+               idx_id := l_ID.IndexOf(l_champs.Strings[IDMandant]);
+               if idx_id < 0 then begin
+                  donneur := nil;
+                  log_infos('plusieurs mandant avec le même N° de membre: ' + l_champs.Strings[IDMandant]);
+                  //donneur := cherche_participant(l_champs.Strings[NomMandant], l_champs.Strings[PrenomMandant], l_champs.Strings[RegionMandant], l_champs.Strings[IDMandant]); //strtointdef( l_champs.Strings[IDMandataire]), 0);
+                  //l_ID.AddObject(l_champs.Strings[IDMandant], donneur);
+               end else begin
+                  donneur := tparticipant(l_ID.Objects[idx_id]);
+               end ;
+               if donneur <> nil then begin
+                  donneur.pouvoirs := 0;
+                  receveur.pouvoirs := receveur.pouvoirs + 1;
+               end;
+            end;
          end;
       end;
-
    end;
    cb_pouv_val.Checked := cbpouvoirs_Checked;
    l_champs.Free;
