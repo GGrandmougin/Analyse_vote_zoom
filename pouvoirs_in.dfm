@@ -94,6 +94,15 @@ object Fpouv_in: TFpouv_in
       ScrollBars = ssBoth
       TabOrder = 3
     end
+    object Button2: TButton
+      Left = 8
+      Top = 592
+      Width = 75
+      Height = 25
+      Caption = 'Button2'
+      TabOrder = 4
+      OnClick = Button2Click
+    end
   end
   object Pftp: TPanel
     Left = 32
@@ -227,6 +236,7 @@ object Fpouv_in: TFpouv_in
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
+      PasswordChar = '*'
       TabOrder = 3
       Text = 'Y76Sj4qlsyVjrb58TZFm'
     end
@@ -409,6 +419,21 @@ object Fpouv_in: TFpouv_in
       TabOrder = 2
     end
   end
+  object cbaucunpouvoirs: TCheckBox
+    Left = 592
+    Top = 24
+    Width = 241
+    Height = 25
+    Caption = 'Aucun pouvoir donn'#233
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 4
+    OnClick = CbftpClick
+  end
   object IdFTP1: TIdFTP
     OnStatus = IdFTP1Status
     MaxLineAction = maException
@@ -419,8 +444,8 @@ object Fpouv_in: TFpouv_in
     ProxySettings.ProxyType = fpcmNone
     ProxySettings.Port = 0
     OnAfterGet = IdFTP1AfterGet
-    Left = 856
-    Top = 16
+    Left = 840
+    Top = 672
   end
   object IdHTTP1: TIdHTTP
     OnStatus = IdHTTP1Status
@@ -437,7 +462,7 @@ object Fpouv_in: TFpouv_in
     Request.BasicAuthentication = False
     Request.UserAgent = 'Firefox/86.0.1'
     HTTPOptions = [hoForceEncodeParams]
-    Left = 776
-    Top = 16
+    Left = 808
+    Top = 672
   end
 end

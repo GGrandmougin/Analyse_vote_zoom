@@ -5,7 +5,14 @@ unit Auxiliaire;
 
 
 }
-{ à corriger
+{reste à faire :
+configuration
+sortie sur fichier
+enregistrement -reprisede laconfiguration sur fichier ?
+entree CSV web
+
+}
+{ à corriger :
 ok % trop importants
 ok nb de message jamais indiqués
 ok nouveau vote -> appui sur "editer" necessaire
@@ -84,6 +91,8 @@ type
     //p_en_erreur : boolean;
     //present_ds_elements : boolean; // pour comptage des non-exprimés -> fait avec elem_srutin
     elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
+    procedure renseigne(nm, prenm, regn: string; id : integer);
+    function compare(nm, prenm, regn: string): tparticipant;
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string) : boolean;
     procedure additionne(var votants, non_exp : integer);
@@ -160,6 +169,9 @@ type
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
     //lremplacement: tstringlist;
+    procedure ptest(Sender: tobject);
+    procedure traite_pouvoirs(Sender: tobject);
+    function cherche_participant(nm, prenm, regn, ID: string) : tparticipant;
     procedure videlistes;
     procedure init_part_present(lpart : tliste_participant);
     function select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message ;lvotes: tliste_vote ): tliste_vote;
@@ -273,6 +285,7 @@ begin
     rep_msg_def := GetEnvironmentVariable('USERPROFILE') + '\documents\zoom\';
     scrutin_encours := nil;
     message_nil := tmessage.create(idx_msg_nil,'', false);
+    procedure_test := ptest;
 end;
 
 destructor taux.destroy;
@@ -416,47 +429,53 @@ begin
    nbgrc := 0;
    dans_grl := false;
    dans_grc := false;
-   pouvoirs := 1;
    partage_nomembre := false;
    num_legitime := true;
-   for i := 1 to length(msg) do begin
-      v := ord(msg[i]);
-      if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
-         if not dans_grl then begin
-            if tbnom[nbgrl] = '-' then tbnom[nbgrl] := '' else inc(nbgrl);
+   pouvoirs := 1;
+   if msg <> '' then begin
+      for i := 1 to length(msg) do begin
+         v := ord(msg[i]);
+         if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
+            if not dans_grl then begin
+               if tbnom[nbgrl] = '-' then tbnom[nbgrl] := '' else inc(nbgrl);
+            end;
+            dans_grl := true;
+            if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
+         end else begin
+            dans_grl := false;
          end;
-         dans_grl := true;
-         if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
-      end else begin
-         dans_grl := false;
-      end;
-      if  (v > 47) and (v < 58) then begin // chiffre
-         if not dans_grc then inc(nbgrc);
-         dans_grc := true;
-         if nbgrc = 1 then nb := nb + msg[i];
-      end else begin
-         dans_grc := false;
-      end;
-   end;
-   if nb <> '' then numero := strtoint(nb);
-   err_ID := nbgrl < 3 ;
-   for i := 0 to high(tbnom) do begin
-      if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
-         j := 0;
-         while (j <= high(tb_regions)) and err_region do begin
-            err_region := not (tbnom[i] = tb_regions[j]);
-            inc(j);
+         if  (v > 47) and (v < 58) then begin // chiffre
+            if not dans_grc then inc(nbgrc);
+            dans_grc := true;
+            if nbgrc = 1 then nb := nb + msg[i];
+         end else begin
+            dans_grc := false;
          end;
-         if not err_region then region := tbnom[i];
       end;
+      if nb <> '' then numero := strtoint(nb);
+      err_ID := nbgrl < 3 ;
+      for i := 0 to high(tbnom) do begin
+         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
+            j := 0;
+            while (j <= high(tb_regions)) and err_region do begin
+               err_region := not (tbnom[i] = tb_regions[j]);
+               inc(j);
+            end;
+            if not err_region then region := tbnom[i];
+         end;
+      end;
+      err_num := (nbgrc <> 1) or (numero = 0);
+      if not err_num then begin
+         err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
+         if err_num then num_legitime := false;
+      end;
+      aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
+      electeur_legitime := true; // non retrouvé en tant qu'ayant donné son pouvoir dans liste pouvoirs ou autre
+   end else begin
+      err_region := false;
+      err_num := false;
+      err_ID := false;
    end;
-   err_num := (nbgrc <> 1) or (numero = 0);
-   if not err_num then begin
-      err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
-      if err_num then num_legitime := false;
-   end;
-   aux1.lnmembre2index.AddObject(nb + '=' + inttostr(aux1.lparticipants.Count), self);
-   electeur_legitime := true; // non retrouvé en tant qu'ayant donné son pouvoir dans liste pouvoirs ou autre
    texte := msg;
    aux1.lparticipants.AddObject(msg, self);
 end;
@@ -496,6 +515,52 @@ procedure tparticipant.additionne(var votants, non_exp: integer);
 begin
    votants := votants + pouvoirs;
    if elem_scrutin = nil then non_exp := non_exp + pouvoirs;
+end;
+
+function tparticipant.compare(nm, prenm, regn: string): tparticipant;
+var
+   i : integer;
+   bnom, bprenom : boolean;
+begin
+   bnom := false;
+   bprenom := false;
+   result := nil;
+   if (nm <> nom) or (prenm <> prenom) or ((regn <> region ) and (regn <> '')) then begin
+      if (nom = '') and (prenom = '') then begin
+         if ((regn <> region ) and (regn <> '')) then begin
+            partage_nomembre := true;
+         end else begin
+            for i :=  0 to high(tbnom) do begin
+               if tbnom[i] = nm then bnom := true;
+               if tbnom[i] = prenm then bprenom := true;
+            end;
+            if bnom and bprenom then begin
+               result := self;
+               prenom := prenm;
+               nom := nm
+            end else begin
+               partage_nomembre := true;
+            end;
+         end;
+      end;
+   end else result := self;
+   if partage_nomembre then begin
+      num_legitime := false;
+      i := aux1.lnmembre2index.indexof(inttostr(numero));
+      if i >= 0 then aux1.lnmembre2index.delete(i) ;
+      result := tparticipant.create('');
+      result.renseigne(nm, prenm, regn, numero);
+   end;
+end;
+
+procedure tparticipant.renseigne(nm, prenm, regn: string; id: integer);
+begin
+   nom := nm;
+   prenom := prenm;
+   numero := id;
+   region := regn;
+   texte := prenm + ' ' + nm + ' ' + regn + ' ' + inttostr(ID);
+   aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
 end;
 
 { tmessage }
@@ -1046,6 +1111,84 @@ begin
       on E : exception do log_infos('Erreur dans additionne_rejetes: ' + E.message);
    end;
    result := nb > 0;
+end;
+
+procedure taux.ptest(Sender: tobject);
+begin
+   ShowMessage('procedure test');
+end;
+
+{    IDMandataire = 0;
+    NomMandataire = 1
+    PrenomMandataire = 2;
+    MailMandataire = 3
+    RegionMandataire = 4;
+    ID_Mandant = 5;
+    NomMandant =6;
+    PrenomMandant = 7;
+    MailMandant = 8;
+    RegionMandant = 9;
+    DateEnvoisPouvoir = 10;
+    DateRéceptionPouvoir = 11;}
+procedure taux.traite_pouvoirs(Sender: tobject);
+var
+   l_csv, l_champs, l_ID  : tstringlist ;
+   i, idx_id : integer;
+   receveur, donneur : tparticipant;  //r = receveur, d= donneur
+   id_deja_traite : boolean;
+begin
+   l_champs :=  tstringlist.Create ;
+   l_ID :=  tstringlist.Create ;
+   l_csv := tstringlist(sender);
+   if l_csv.Count > 0 then begin
+      for i := 0 to l_csv.Count - 1 do begin
+         l_champs.Text := StringReplace(l_csv.Strings[i], ',' , #13#10 , [rfReplaceAll	]);
+         if (l_champs.Count >= 5) and (strtointdef(l_champs.Strings[0], 0 ) > 0 ) then begin
+            idx_id := l_ID.IndexOf(l_champs.Strings[IDMandataire]);
+            if idx_id < 0 then begin
+
+               receveur := cherche_participant(l_champs.Strings[NomMandataire], l_champs.Strings[PrenomMandataire], l_champs.Strings[RegionMandataire], l_champs.Strings[IDMandataire]); //strtointdef( l_champs.Strings[IDMandataire]), 0);
+               if receveur <> nil then begin  // cas où les paramètres sont incomplets
+
+               end;
+
+               l_ID.AddObject(l_champs.Strings[IDMandataire], receveur);
+            end else begin
+               receveur := tparticipant(l_ID.Objects[idx_id]);
+            end ;
+
+            setCbPouvoirschecked ;
+         end;
+      end;
+
+   end;
+   cb_pouv_val.Checked := cbpouvoirs_Checked;
+   l_champs.Free;
+   l_ID.Free;
+end;
+
+function taux.cherche_participant(nm, prenm, regn, ID: string): tparticipant;
+var
+   i, j : integer;
+   err_regn : boolean ;
+   reg : string;
+begin
+   j := 0;
+   err_regn := true;
+   while (j <= high(tb_regions)) and err_regn do begin
+      err_regn := not (regn = tb_regions[j]);
+      inc(j);
+   end;
+   if err_regn then reg := '' else reg := regn;
+   i := lnmembre2index.IndexOfName(ID);
+   if i < 0 then begin
+      result := tparticipant.create('');
+      result.renseigne(nm, prenm, regn, strtointdef(ID, 0));
+      result.err_region := err_regn;
+   end else begin
+      result := tparticipant(lnmembre2index.objects[i]);
+      result := result.compare(nm, prenm, reg);
+   end;
 end;
 
 end.

@@ -215,7 +215,7 @@ type
 
 var
   Form1: TForm1;
-  cbpouvoirs_Checked : boolean = false;
+  
 
 implementation
 
@@ -256,6 +256,7 @@ begin
    init_resultats;
    if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
    color := tcolor(10867674);  //(4227327);
+   cb_pouv_val := Cbpouvoirs;
 end;
 
 
@@ -816,8 +817,12 @@ end;
 
 procedure TForm1.CbpouvoirsClick(Sender: TObject);
 begin
-   cbpouvoirs.Checked := cbpouvoirs_Checked;
-   Fpouv_in.ShowModal;
+   if Cbpouvoirs.Tag = 0 then begin
+      Cbpouvoirs.Tag :=1;
+      Cbpouvoirs.Checked := cbpouvoirs_Checked;
+      Fpouv_in.ShowModal;
+      Cbpouvoirs.Tag := 0;
+   end;
 end;
 
 end.

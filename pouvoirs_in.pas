@@ -5,7 +5,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, IdHTTP, IdBaseComponent, IdComponent, IdTCPConnection,
-  IdTCPClient, IdFTP, StdCtrls, ExtCtrls, math, commun;
+  IdTCPClient, IdFTP, StdCtrls, ExtCtrls, math, commun, Mask;
 
 const
    tag_encours = -3;
@@ -45,6 +45,8 @@ type
     Lidentifiant: TLabel;
     LMot_de_passe: TLabel;
     LNom_du_fichier: TLabel;
+    Button2: TButton;
+    cbaucunpouvoirs: TCheckBox;
     procedure place_ifl_ext;
     procedure recois_http;
     procedure IcroixMouseDown(Sender: TObject; Button: TMouseButton;
@@ -80,6 +82,8 @@ type
     procedure FormShow(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
+    procedure Button2Click(Sender: TObject);
+    procedure cbaucunpouvoirsClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -204,6 +208,10 @@ end;
 procedure TFpouv_in.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    if LConnected.Visible then IdFTP1.Disconnect;
+   if cbaucunpouvoirs.Checked then begin
+      cb_pouv_val.Checked := true;
+      cbpouvoirs_Checked := true;
+   end;
 end;
 
 procedure TFpouv_in.FormDestroy(Sender: TObject);
@@ -218,8 +226,11 @@ begin
       Cbftp.tag := tag_encours;
       Cbftp.Checked := false;
       Cbweb.Checked := false;
+      cbaucunpouvoirs.Checked := false;
       Cblocal.Checked := false;
+      setCbPouvoirschecked;
       TCheckBox(sender).Checked := true;
+      if sender = cbaucunpouvoirs then cbaucunpouvoirs.Color := clYellow else cbaucunpouvoirs.Color := clBtnFace;
       Cbftp.tag := 0;
    end;
 end;
@@ -241,7 +252,8 @@ begin
    end;
    if strm.Size > 0 then begin
       convertit_UTF8_accents;
-      Mrecu.Lines.Assign(strl);
+      if debug then Mrecu.Lines.Assign(strl);
+      p_traite_pouvoirs(strl);
    end;
 
 end;
@@ -391,20 +403,24 @@ var
    suivant : boolean ;
 begin
    lim := -1;
+   suivant := true;
+   p := pointer(0); //pour éviter message du compilateur
    if debug then Mtest.Lines.Add('strm.size: ' + inttostr(strm.size));
    for i := 0 to strm.Size -1 do begin
       j := i mod 32700;   // < 32768 -> p peut adresser des bytes à une osition supérieure à celle en cours
-      if j = 0 then p := pointer(cardinal(strm.Memory) + i );
+      if j = 0 then p := pointer(longint(cardinal(strm.Memory)) + i );
       if i > lim then begin  // permet de sauter des caractères
          b := p^[j];
          if (b >= 65) and ( b <= 90) then begin
-            texte := texte + chr(b + 32);
-         end else if (b = $C3) and suivant then begin
+            texte := texte + chr(b + 32);  // remplacement des mauscules par des minuscules
+         end else if (b = $C3) and suivant then begin  // UTF-8
             p^[j + 1] := remplAcc[p^[j + 1] - $80] ;
             suivant := false;  // empêche pb ds cas du caractère $C3
          end else if (b = $E2)  and (p^[j +1 ] = $80) and (p^[j +2 ] = $99 ) then begin
             texte := texte + '''';
             lim := i + 2;
+         end else if b = 34 then begin
+            //on saute le caractère: "  (34)   
          end else begin
             texte := texte + chr(b) ;
             suivant := true;
@@ -412,7 +428,7 @@ begin
       end;
    end;
    strl.Text := texte;
-   if debug then begin Mtest.Lines.Add('length(texte): ' + inttostr(length(texte))); strl.SaveToFile(dir_exe + 'tests\tests.txt');  end;   
+   //if debug then begin Mtest.Lines.Add('length(texte): ' + inttostr(length(texte))); strl.SaveToFile(dir_exe + 'tests\tests.txt');  end;   
 end;
 // A 65   Z 90      a 97     z 122
 {function Taux.remplace_caracteres_UTF8( texte : string) : string ; // https://www.charset.org/utf-8  (https://graphemica.com/%F0%9F%92%BB)
@@ -479,12 +495,26 @@ idHttp1.Request.UserAgent :=  'Firefox/86.0.1';
 
 procedure TFpouv_in.recois_http;
 begin
-   try
+   showmessage('Le mode WEB n''est pas encore fonctionnel');
+   {try
       IdHTTP1.Get(Ech_web.Text, strm);
    except
       on E: Exception do log_infos('ERREUR: ' + E.Message, 0, mtest);
-   end;
+   end; }
 end;
 
+
+procedure TFpouv_in.Button2Click(Sender: TObject);
+begin
+   procedure_test(nil)
+end;
+
+procedure TFpouv_in.cbaucunpouvoirsClick(Sender: TObject);
+begin
+   if cbaucunpouvoirs.Checked then begin
+
+
+   end;
+end;
 
 end.
