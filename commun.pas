@@ -26,7 +26,8 @@ const
     RegionMandant = 9;
     DateEnvoisPouvoir = 10;
     DateReceptionPouvoir = 11;
-
+type
+    timport = procedure(strl: Tstringlist; fichier : string) of object;
 
 procedure log_infos(mess : string; typ : integer = 0; memo : tmemo = nil);
 procedure setCbPouvoirschecked(ok : boolean = true) ;
@@ -36,7 +37,8 @@ var
    dir_exe : string;
    dir_trv : string;
    procedure_test : TNotifyEvent;
-   p_traite_pouvoirs : TNotifyEvent;
+   //p_traite_pouvoirs : TNotifyEvent;
+   p_traite_pouvoirs : timport;
    cb_pouv_val : TCheckBox;
    cbpouvoirs_Checked : boolean = false;
 implementation

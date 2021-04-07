@@ -2616,5 +2616,14 @@ object Form1: TForm1
       TabOrder = 16
       OnClick = BtestClick
     end
+    object BExport_CSV_lparticpants: TButton
+      Left = 0
+      Top = 96
+      Width = 137
+      Height = 17
+      Caption = 'BExport_CSV_lparticpants'
+      TabOrder = 17
+      OnClick = BExport_CSV_lparticpantsClick
+    end
   end
 end

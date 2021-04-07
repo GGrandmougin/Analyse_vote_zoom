@@ -83,7 +83,6 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure cbaucunpouvoirsClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -238,6 +237,8 @@ end;
 
 
 procedure TFpouv_in.Button1Click(Sender: TObject);
+var
+   fichier : string;
 begin
    strl.Clear;
    if cbweb.Checked then begin
@@ -247,13 +248,15 @@ begin
          BgetClick(nil);
       end;
       BdeconnexionClick(nil);
+      fichier := Ech_ftp.Text;
    end else if Cblocal.Checked then begin
       charge_fichier;
+      fichier := Ech_local.Text;
    end;
    if strm.Size > 0 then begin
       convertit_UTF8_accents;
       if debug then Mrecu.Lines.Assign(strl);
-      p_traite_pouvoirs(strl);
+      p_traite_pouvoirs(strl, ExtractFileName(fichier ));
    end;
 
 end;
@@ -507,14 +510,6 @@ end;
 procedure TFpouv_in.Button2Click(Sender: TObject);
 begin
    procedure_test(nil)
-end;
-
-procedure TFpouv_in.cbaucunpouvoirsClick(Sender: TObject);
-begin
-   if cbaucunpouvoirs.Checked then begin
-
-
-   end;
 end;
 
 end.

@@ -145,6 +145,7 @@ type
     LUtilisation: TLabel;
     Bfcolor: TButton;
     Btest: TButton;
+    BExport_CSV_lparticpants: TButton;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -204,6 +205,7 @@ type
     procedure Enb_membresClick(Sender: TObject);
     procedure BtestClick(Sender: TObject);
     procedure CbpouvoirsClick(Sender: TObject);
+    procedure BExport_CSV_lparticpantsClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -734,6 +736,7 @@ begin
    Epour.Text       := '0'; Econtre.Text     := '0'; Eabs.Text        := '0' ; Enon_exp.Text    := '0'; Evotants.Text    := '0';
    Ep_ppc_exp.Text  := '0'; Ec_ppc_exp.Text  := '0'; Ea_ppc_exp.Text  := '0';
    Ep_ppc_nbmb.Text := '0'; Ec_ppc_nbmb.Text := '0'; Ea_ppc_nbmb.Text := '0'; Ene_ppc_nbmb.Text := '0'; Ev_ppc_nbmb.Text := '0';
+   Erjpour.Text     := '';  Erjcontre.Text   := ''; Erjabs.Text      := '';
 end;
 
 procedure TForm1.init_resultats;
@@ -813,6 +816,7 @@ begin
    //f1stringgrid.perform(WM_ACTIVATE, 0, 0);
    StringGrid1.row := 0;
    StringGrid1.col := 0;
+   //memo_tests.Add(format('essai: %s', [booltostr(true)]));
 end;
 
 procedure TForm1.CbpouvoirsClick(Sender: TObject);
@@ -823,6 +827,11 @@ begin
       Fpouv_in.ShowModal;
       Cbpouvoirs.Tag := 0;
    end;
+end;
+
+procedure TForm1.BExport_CSV_lparticpantsClick(Sender: TObject);
+begin
+   Aux1.Export_CSV_lparticpants;
 end;
 
 end.

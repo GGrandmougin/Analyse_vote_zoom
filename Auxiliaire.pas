@@ -3,6 +3,9 @@ unit Auxiliaire;
 
 { à terminer :
 
+}
+{ CHAINES
+chaine_meme_id : tparticipant; // reférence un autre tparticipant ayant de meme no de membre chaucun des particpant ayant un numéro identique référence un tparticpant différent(si en prend un, on peut acceder à tous les autres - jusqu'à ce qu'on trouveun participant référençant celui du départ)
 
 }
 {reste à faire :
@@ -86,7 +89,7 @@ type
     tbnom : ttbnoms;
     numero : integer;
     pouvoirs : integer	;
-    part_meme_id : tparticipant;
+    chaine_meme_id : tparticipant; // reférence un autre tparticipant ayant de meme no de membre chaucun des particpant ayant un numéro identique référence un tparticpant différent(si en prend un, on peut acceder à tous les autres - jusqu'à ce qu'on trouveun participant référençant celui du départ)
     partage_nomembre : boolean;
     electeur_legitime : boolean; // non retrouvé dans liste pouvoirs ou autre
     //element_scrutin : telement_scrutin;
@@ -95,13 +98,19 @@ type
     //p_en_erreur : boolean;
     //present_ds_elements : boolean; // pour comptage des non-exprimés -> fait avec elem_srutin
     elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
-    procedure renseigne(nm, prenm, regn: string; id : integer);
-    function compare(nm, prenm, regn: string): tparticipant;  overload;
-    function compare(texte :string;  const tab : ttbnoms): tparticipant; overload;
+    fichier_CSV : string;
+    function ecrit_csv(idx : integer; s : char):string;
+    procedure renseigne(nm, prenm, regn: string; id : integer);overload;
+    procedure renseigne(const tab : ttbnoms; regn: string; id : integer);overload;
+    function compare(nm, prenm, regn: string; part_initial : tparticipant): tparticipant;  overload;
+    function compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant; overload;
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string) : boolean;
     procedure additionne(var votants, non_exp : integer);
-    constructor create(msg  : string);
+    constructor create(msg  : string);overload;
+    constructor create(msg, regn  : string; num : integer; const tab : ttbnoms);overload;
+    constructor create;overload;
+
     destructor destroy;  override;
   end;
   tmessage = class
@@ -120,6 +129,7 @@ type
     err_pouvoirs : boolean;
     est_vote : boolean;
     est_msg_nil : boolean;
+    function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
     function affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = '') : boolean;
@@ -174,8 +184,9 @@ type
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
     //lremplacement: tstringlist;
+    procedure Export_CSV_lparticpants;
     procedure ptest(Sender: tobject);
-    procedure traite_pouvoirs(Sender: tobject);
+    procedure traite_pouvoirs(strl: Tstringlist; fichier : string);
     function cherche_participant(nm, prenm, regn, ID: string) : tparticipant;
     procedure videlistes;
     procedure init_part_present(lpart : tliste_participant);
@@ -419,7 +430,7 @@ end;
 { tparticipant }
 
 
-constructor tparticipant.create(msg  : string); // msg mis à lowercase dans fonction appelante cherche_participant
+constructor tparticipant.create(msg  : string);  // msg mis à lowercase dans fonction appelante cherche_participant
 var
    nbgrl, nbgrc, i, v, j : integer;
    dans_grl, dans_grc : boolean;
@@ -438,7 +449,7 @@ begin
    partage_nomembre := false;
    num_legitime := true;
    pouvoirs := 1;
-   part_meme_id := nil;
+   chaine_meme_id := nil;
    if msg <> '' then begin
       for i := 1 to length(msg) do begin
          v := ord(msg[i]);
@@ -487,6 +498,150 @@ begin
    aux1.lparticipants.AddObject(msg, self);
 end;
 
+constructor tparticipant.create(msg, regn: string; num: integer;const tab: ttbnoms);
+//var
+   //nbgrl, nbgrc, i, v, j : integer;
+   //dans_grl, dans_grc : boolean;
+   //nb : string;
+begin
+   err_region := true;
+   err_prenom := false;
+   err_nom := false;
+   err_num := false;
+   err_ID := false;
+   numero := 0;
+   //nbgrl := 0;
+   //nbgrc := 0;
+   //dans_grl := false;
+   //dans_grc := false;
+   partage_nomembre := false;
+   num_legitime := true;
+   pouvoirs := 1;
+   chaine_meme_id := nil;
+   {if msg <> '' then begin
+      for i := 1 to length(msg) do begin
+         v := ord(msg[i]);
+         if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
+            if not dans_grl then begin
+               if tbnom[nbgrl] = '-' then tbnom[nbgrl] := '' else inc(nbgrl);
+            end;
+            dans_grl := true;
+            if nbgrl <= high(tbnom)  then tbnom[nbgrl] := tbnom[nbgrl] + msg[i];
+         end else begin
+            dans_grl := false;
+         end;
+         if  (v > 47) and (v < 58) then begin // chiffre
+            if not dans_grc then inc(nbgrc);
+            dans_grc := true;
+            if nbgrc = 1 then nb := nb + msg[i];
+         end else begin
+            dans_grc := false;
+         end;
+      end;
+      if nb <> '' then numero := strtoint(nb);
+      err_ID := nbgrl < 3 ;
+      for i := 0 to high(tbnom) do begin
+         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
+            j := 0;
+            while (j <= high(tb_regions)) and err_region do begin
+               err_region := not (tbnom[i] = tb_regions[j]);
+               inc(j);
+            end;
+            if not err_region then region := tbnom[i];
+         end;
+      end;
+      err_num := (nbgrc <> 1) or (numero = 0);
+      if not err_num then begin
+         err_num := aux1.lnmembre2index.IndexOfName(nb) >= 0;
+         if err_num then num_legitime := false;
+      end;}
+   tbnom := tab;
+   region := regn;
+   err_region:= region = '';
+   numero := num;
+   aux1.lnmembre2index.AddObject(inttostr(numero) + '=' + inttostr(aux1.lparticipants.Count), self);
+   electeur_legitime := true; // non retrouvé en tant qu'ayant donné son pouvoir dans liste pouvoirs ou autre
+   texte := msg;
+   aux1.lparticipants.AddObject(msg, self);
+end;
+
+
+constructor tparticipant.create;
+begin
+   err_region := true;
+   err_prenom := false;
+   err_nom := false;
+   err_num := false;
+   err_ID := false;
+   numero := 0;
+   partage_nomembre := false;
+   num_legitime := true;
+   pouvoirs := 1;
+   chaine_meme_id := nil;
+   err_region := false;
+   err_num := false;
+   err_ID := false;
+   aux1.lparticipants.AddObject('', self);
+end; 
+
+
+
+function tmessage.analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
+
+var
+   nbgrl, nbgrc, i, v, j : integer;
+   dans_grl, dans_grc : boolean;
+   nb : string;
+   err_region : boolean;
+begin
+   num := 0;
+   nbgrl := 0;
+   nbgrc := 0;
+   dans_grl := false;
+   dans_grc := false;
+   err_region := true;
+   regn := '';
+   if msg <> '' then begin
+      for i := 1 to length(msg) do begin
+         v := ord(msg[i]);
+         if ((v > 96) and (v < 123)) or (v in [45, 39]) then begin  // lettres  + "-" + "'"
+            if not dans_grl then begin
+               if result[nbgrl] = '-' then result[nbgrl] := '' else inc(nbgrl);
+            end;
+            dans_grl := true;
+            if nbgrl <= high(result)  then result[nbgrl] := result[nbgrl] + msg[i];
+         end else begin
+            dans_grl := false;
+         end;
+         if  (v > 47) and (v < 58) then begin // chiffre
+            if not dans_grc then inc(nbgrc);
+            dans_grc := true;
+            if nbgrc = 1 then nb := nb + msg[i];
+         end else begin
+            dans_grc := false;
+         end;
+      end;
+      if nb <> '' then num := strtoint(nb);
+      if (nbgrc <>  1) then num := 0;
+      for i := 0 to high(result) do begin
+         if (length(result[i]) = 3) and err_region then begin    // specifique Mensa
+            j := 0;
+            while (j <= high(tb_regions)) and err_region do begin
+               err_region := not (result[i] = tb_regions[j]);
+               inc(j);
+            end;
+            if not err_region then begin
+               regn := result[i];
+               for j := i to high(result) - 1 do begin  // suppression de region de result
+                  result[j] := result[j + 1];
+               end;
+               result[high(result)] := '';
+            end;
+         end;
+      end;
+   end;
+end;
+
 function tparticipant.rejected: boolean;
 begin
    result := err_ID or err_region or err_prenom or err_nom or (err_num and not num_legitime) ;
@@ -524,16 +679,18 @@ begin
    if elem_scrutin = nil then non_exp := non_exp + pouvoirs;
 end;
 
-function tparticipant.compare(nm, prenm, regn: string): tparticipant;
+function tparticipant.compare(nm, prenm, regn: string; part_initial : tparticipant): tparticipant;
 var
    i : integer;
-   bnom, bprenom : boolean;
+   //bnom, bprenom : boolean;
+   dprenom , dnom, dregion : integer;
 begin
+   result := nil;
+   {
    bnom := false;
    bprenom := false;
-   result := nil;
    if (nm <> nom) or (prenm <> prenom) or ((regn <> region ) and (regn <> '')) then begin
-      if (nom = '') and (prenom = '') then begin
+      {if (nom = '') and (prenom = '') then begin
          if ((regn <> region ) and (regn <> '')) then begin
             partage_nomembre := true;
          end else begin
@@ -550,22 +707,100 @@ begin
             end;
          end;
       end;
-   end else result := self;
+   end else result := self;  }
+   // ci-dessus: implémentation stricte , ce qui suit tolère une différence d'un élément sur 3 parmi: nom, prénom et région
+   if (regn = region)  then dregion := 1 else dregion := 0 ;// tous les deux peuvent être égal à ''
+   if fichier_CSV = '' then begin
+      dnom := 0;
+      dprenom := 0;
+      for i :=  0 to high(tbnom) do begin
+         if tbnom[i] = nm then dnom := 1 ;
+         if tbnom[i] = prenm then dprenom := 1 ;
+      end;
+   end else begin
+      if (nm = nom) and (nom <> '') then dnom := 1 else dnom := 0;
+      if (prenm = prenom) and (prenom <> '') then dprenom := 1 else dprenom := 0;
+   end;
+   partage_nomembre := dprenom + dnom + dregion < 2 ;
+   if not partage_nomembre then result := self;
+ // fin option moins sévère
    if partage_nomembre then begin
       num_legitime := false;
       //i := aux1.lnmembre2index.indexof(inttostr(numero));
       //if i >= 0 then aux1.lnmembre2index.delete(i) ;
-      result := tparticipant.create('');
-      result.renseigne(nm, prenm, regn, numero);
-      result.partage_nomembre := true;
-      part_meme_id := result;
-      result.part_meme_id := self;
+
+      if (chaine_meme_id <> nil) and (chaine_meme_id <> part_initial)  then begin
+         result := chaine_meme_id.compare(nm, prenm, regn, part_initial);
+      end;
+      if (result = nil) and ((chaine_meme_id = part_initial) or (chaine_meme_id = nil)) then begin //on est dans le sdernier participant de la chaine avant le retour
+         result := tparticipant.create;
+         result.renseigne(nm, prenm, regn, numero);
+         result.partage_nomembre := true;
+         chaine_meme_id := result;
+         result.chaine_meme_id := part_initial;
+      end;
    end;
 end;
 
-function tparticipant.compare(texte :string;  const tab : ttbnoms): tparticipant;
+function tparticipant.compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant;
+var
+   i : integer;
+   dprenom , dnom, dregion : integer;
 begin
-//
+   result := nil;
+   dnom := 0;
+   dprenom := 0;
+   if (regn = region)  then dregion := 1 else dregion := 0 ;// tous les deux peuvent être égal à ''
+   if fichier_CSV <> '' then begin
+      for i :=  0 to high(tab) do begin
+         if tab[i] = nom then dnom := 1 ;
+         if tab[i] = prenom then dprenom := 1 ;
+      end;
+   end else begin
+      for i :=  0 to high(tab) do begin
+         if (tab[i] <> regn) then begin
+            if (dnom = 1) and (pos(tab[i], texte ) > 0)  then dprenom := 1 ;
+            if (dnom = 0) and (pos(tab[i], texte ) > 0)  then dnom := 1 ;
+         end;   
+      end;
+   end;
+   {if (regn = region)  then dregion := 1 else dregion := 0 ;// tous les deux peuvent être égal à ''
+   if fichier_CSV <> '' then begin
+      for i :=  0 to high(tbnom) do begin
+         if tbnom[i] = nom then dnom := 1 ;
+         if tbnom[i] = prenom then dprenom := 1 ;
+         if tbnom[i] = prenom then dprenom := 1 ;
+      end;
+      if pos(tbnom[i], txte ) > 0  then dnom := 1 ;
+      if pos(tbnom[i], txte ) > 0  then dprenom := 1 ;
+   end else begin
+      for i :=  0 to high(tbnom) do begin
+         if pos(tbnom[i], txte ) > 0  then dnom := 1 ;
+         if pos(tbnom[i], txte ) > 0  then dprenom := 1 ;
+      end;
+   end;}
+   partage_nomembre := dprenom + dnom + dregion < 2 ;
+//fin option moins sévère (voir autre function compare au dessus )
+   if not partage_nomembre then begin
+      result := self;
+      if result.texte = '' then result.texte := txte;
+   end;
+   if partage_nomembre then begin
+      num_legitime := false;
+      //i := aux1.lnmembre2index.indexof(inttostr(numero));
+      //if i >= 0 then aux1.lnmembre2index.delete(i) ;
+
+      if (chaine_meme_id <> nil) and (chaine_meme_id <> part_initial)  then begin
+         result := chaine_meme_id.compare(txte, regn, tab, part_initial);
+      end;
+      if (result = nil) and ((chaine_meme_id = part_initial) or (chaine_meme_id = nil)) then begin //on est dans le sdernier participant de la chaine avant le retour
+         result := tparticipant.create(txte);
+         //result.renseigne(tab, regn, numero);
+         result.partage_nomembre := true;
+         chaine_meme_id := result;
+         result.chaine_meme_id := part_initial;
+      end;
+   end;
 end;
 
 procedure tparticipant.renseigne(nm, prenm, regn: string; id: integer);
@@ -577,6 +812,25 @@ begin
    texte := prenm + ' ' + nm + ' ' + regn + ' ' + inttostr(ID);
    if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
 end;
+
+
+
+procedure tparticipant.renseigne(const tab: ttbnoms; regn: string;
+  id: integer);
+begin
+//
+end;
+
+
+
+{function tparticipant.rejected: boolean;
+begin
+   result := err_ID or err_region or err_prenom or err_nom or (err_num and not num_legitime) ;
+   result := result and electeur_legitime;
+end; }
+
+
+
 
 { tmessage }
 
@@ -621,6 +875,7 @@ begin
    if i >= 0 then begin
       result := tparticipant(Aux1.lparticipants.objects[i]);
    end else begin
+      // introduire compare
       result := tparticipant.create(st);
    end;
 end;
@@ -1145,29 +1400,30 @@ end;
     RegionMandant = 9;
     DateEnvoisPouvoir = 10;
     DateRéceptionPouvoir = 11;}
-procedure taux.traite_pouvoirs(Sender: tobject);
+procedure taux.traite_pouvoirs(strl: Tstringlist; fichier : string);
 var
    l_csv, l_champs, l_ID  : tstringlist ;
    i, idx_id : integer;
    receveur, donneur : tparticipant;  //r = receveur, d= donneur
-function est_valide(pst : byte) : boolean ;
+function trim_valide(pst : byte) : boolean ;
 var
    j : integer;
 begin
    result := (l_champs.Count >= pst + 5) and (strtointdef(l_champs.Strings[pst], 0 ) > 0 ) ;
+   result := result and (l_champs.Count > pst + 4);
    if result then begin
-      for j := 0 to l_champs.Count - 1 do l_champs.Strings[j] := trim(l_champs.Strings[j]);
+      for j := 0 to 4 do l_champs.Strings[pst + j] := trim(l_champs.Strings[pst +j]);
       for j := 1 to 4 do result := result and  ((l_champs.Strings[pst + j]) <> '');
    end;
 end;
 begin
    l_champs :=  tstringlist.Create ;
    l_ID :=  tstringlist.Create ;
-   l_csv := tstringlist(sender);
+   l_csv := strl;
    if l_csv.Count > 0 then begin
       for i := 0 to l_csv.Count - 1 do begin
-         l_champs.Text := StringReplace(l_csv.Strings[i], ',' , #13#10 , [rfReplaceAll	]);
-         if est_valide(IDMandataire) then begin
+         l_champs.Text := StringReplace(l_csv.Strings[i], ';' , #13#10 , [rfReplaceAll	]);
+         if trim_valide(IDMandataire) then begin
             idx_id := l_ID.IndexOf(l_champs.Strings[IDMandataire]);
             if idx_id < 0 then begin
                receveur := cherche_participant(l_champs.Strings[NomMandataire], l_champs.Strings[PrenomMandataire], l_champs.Strings[RegionMandataire], l_champs.Strings[IDMandataire]); //strtointdef( l_champs.Strings[IDMandataire]), 0);
@@ -1175,8 +1431,9 @@ begin
             end else begin
                receveur := tparticipant(l_ID.Objects[idx_id]);
             end ;
+            receveur.fichier_CSV := fichier;
             setCbPouvoirschecked ;
-            if est_valide(IDMandant) then begin
+            if trim_valide(IDMandant) then begin
                idx_id := l_ID.IndexOf(l_champs.Strings[IDMandant]);
                if idx_id < 0 then begin
                   donneur := nil;
@@ -1187,6 +1444,7 @@ begin
                   donneur := tparticipant(l_ID.Objects[idx_id]);
                end ;
                if donneur <> nil then begin
+                  donneur.fichier_CSV := fichier;
                   donneur.pouvoirs := 0;
                   receveur.pouvoirs := receveur.pouvoirs + 1;
                end;
@@ -1214,13 +1472,59 @@ begin
    if err_regn then reg := '' else reg := regn;
    i := lnmembre2index.IndexOfName(ID);
    if i < 0 then begin
-      result := tparticipant.create('');
+      result := tparticipant.create;
       result.renseigne(nm, prenm, regn, strtointdef(ID, 0));
       result.err_region := err_regn;
    end else begin
       result := tparticipant(lnmembre2index.objects[i]);
-      result := result.compare(nm, prenm, reg);
+      result := result.compare(nm, prenm, reg, result);
    end;
+end;
+
+procedure taux.Export_CSV_lparticpants;
+const
+   s = ',';
+var
+   i : integer;
+   sl : TStringList;
+   st : string;
+begin
+   sl := TStringList.Create;
+   //st := 'index'+s+'no_membre'+s+'region'+s+'pouvoirs'+s+'prenom'+s+'nom'+s+'texte'+s+'fichier CSV'+s+'tableau_noms'+s+'idx_chaine';
+   st := 'index|no_membre|region|pouvoirs|prenom|nom|texte|fichier CSV|tableau_noms|idx_chaine' ;
+   st := st + '|err_ID|err_prenom|err_nom|err_num|electeur_legitime|num_legitime|partage_nomembre|elem_scrutin';
+   st := StringReplace(st, '|', s, [rfReplaceAll]);
+   sl.Add(st); 
+   for i := 0 to lparticipants.Count -  1 do begin
+      sl.Add(tparticipant(lparticipants.Objects[i]).ecrit_csv(i, s));
+   end;
+   try
+      sl.SaveToFile(dir_trv + 'participants.csv');
+   except
+      on E : exception do memo_tests.add('Erreur d''enregistrement de lparticipants: ' + E.message);
+   end;
+   sl.Free;
+end;
+
+function tparticipant.ecrit_csv(idx : integer; s : char):string; // %d %s booltostr  Format('Copy %s to %s?', [Edit1.Text, NewFileName]);
+var
+   st, tab_nm, txt : string;
+   i, ich  : integer;
+begin
+   //      i  n  r  p  p  n  t  f  t  i   
+   st := '%dx%dx%sx%dx%sx%sx%sx%sx%sx%dx'; //ok ich dernier inclus
+   //st := st + '%sx%sx%sx%sx%sx%sx%sx%d';
+   st := StringReplace(st, 'x', s, [rfReplaceAll]);
+   tab_nm := tbnom[0];
+   for i := 1 to high(tbnom) do begin
+      tab_nm := tab_nm + '|' + tbnom[i];
+   end;
+   txt := StringReplace(texte, s, '|', [rfReplaceAll]);
+   ich := aux1.lparticipants.IndexOfObject(chaine_meme_id);
+   //result := inttostr(i) +s+ texte +s+ fichier_CSV +s+ inttostr(pouvoirs) +s++s++s++s++s++s++s++s++s+
+   result := format( st, [idx, numero, region, pouvoirs, prenom, nom, txt, fichier_CSV, tab_nm, ich]);
+   result := result + booltostr(err_ID)+s+booltostr(err_prenom)+s+booltostr(err_nom)+s+booltostr(err_num)+s+booltostr(electeur_legitime)+s+booltostr(num_legitime)+s+booltostr(partage_nomembre);//+s+booltostr()+s+booltostr()+s+
+   result := result+s+inttostr(cardinal(pointer(elem_scrutin)));
 end;
 
 end.
