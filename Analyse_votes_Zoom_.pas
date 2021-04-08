@@ -357,7 +357,7 @@ begin
       dx := x  - mx;
       dy := y  - my;
       Pdebug.Left := Pdebug.Left + dx;
-      pdebug.Top := Pdebug.Top + dy;
+      pdebug.Top := max(Pdebug.Top + dy, 30);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -821,10 +821,10 @@ end;
 
 procedure TForm1.CbpouvoirsClick(Sender: TObject);
 begin
-   if Cbpouvoirs.Tag = 0 then begin
+   if (Cbpouvoirs.Tag = 0) then begin
       Cbpouvoirs.Tag :=1;
       Cbpouvoirs.Checked := cbpouvoirs_Checked;
-      Fpouv_in.ShowModal;
+      if not cbpouvoirs_Checked then Fpouv_in.ShowModal;
       Cbpouvoirs.Tag := 0;
    end;
 end;

@@ -37,6 +37,7 @@ var
    dir_exe : string;
    dir_trv : string;
    procedure_test : TNotifyEvent;
+   memo_tests : tstrings;
    //p_traite_pouvoirs : TNotifyEvent;
    p_traite_pouvoirs : timport;
    cb_pouv_val : TCheckBox;
@@ -58,7 +59,7 @@ var
    tf : textfile;
 begin
    try
-      if debug and (memo <> nil) then memo.lines.Add(mess);
+      if debug then begin if memo = nil then memo_tests.Add(mess) else memo.lines.Add(mess) end;
       assignfile(tf,ficlog);
       if fileexists(ficlog) then
          append(tf)
