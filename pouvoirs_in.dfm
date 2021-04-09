@@ -434,6 +434,21 @@ object Fpouv_in: TFpouv_in
     TabOrder = 4
     OnClick = CbftpClick
   end
+  object BImporter: TButton
+    Left = 608
+    Top = 320
+    Width = 185
+    Height = 41
+    Caption = 'Importer'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -21
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 5
+    OnClick = BImporterClick
+  end
   object IdFTP1: TIdFTP
     OnStatus = IdFTP1Status
     MaxLineAction = maException

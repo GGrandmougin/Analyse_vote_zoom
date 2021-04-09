@@ -1,6 +1,24 @@
 unit Auxiliaire;
 // Les suffrages exprimés sont les votes valablement émis dans le cadre d’une proposition mise aux voix ou d’une élection, les suffrages recueillis étant comptabilisés, déduction faite des abstentions ou des bulletins rejetés.
 
+{ENCHAINEMENT DES PROCEDURES:
+taux = TA
+tmessage = TM
+tparticipant = TP
+tscrutin = TS
+
+   TA.traitement
+      TA.char_fic_msg
+         TA.pretraitement_lmsg   concaténation  remplissage lconfig
+      TA.select_lvotes -> liste_votes
+         TA.traitement_lvotes
+            TA.remplace_caracteres_UTF8
+            TM.ceate
+               TM.cherche_participant  lowercase
+                  TP.compare
+      TS.decomptage
+         TS.cree_elements
+}
 { à terminer :
 
 }
@@ -38,7 +56,7 @@ interface
 uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun  ;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun, pouvoirs_in  ;
 
 
 const
@@ -76,9 +94,15 @@ const
     col_err_pouvoirs = 12;
     col_nombre = 13;
     col_choix = 14;
-    tb_regions : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
+    tb_regions_m : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
     idx_msg_nil = -2;
-
+    configuration_votes = 'configuration votes';
+    tableau_regions = 'tableau_regions' ;
+    fichier_pouvoirs_local = 'fichier pouvoirs local';
+    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP';
+    serveur_FTP = 'serveur FTP';
+    login_FTP = 'login FTP';
+    Mot_passe_FTP = 'mot de passe FTP';
 type
   ttbnoms = array[0..9] of string;
   tliste_vote = record//tstringlist;
@@ -184,10 +208,16 @@ type
     lparticipants: tliste_participant;
     //lrejetes: tstringlist;   inutile ?
     lconfig: tstringlist;
+    repere_lcongig : integer; // = lconfig.count lors du drenier traitement de lconfig
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
+    nb_pouvoirs : integer;
+    configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
+    procedure set_tb_regions(tabe : array of string );
+    procedure traite_lconfig;
+    function verif_configurateur(mess : string) : boolean;
     procedure Export_CSV_lparticpants;
     procedure ptest(Sender: tobject);
     procedure traite_pouvoirs(strl: Tstringlist; fichier : string);
@@ -213,21 +243,21 @@ type
 
 
 var
-  Aux1 : taux;
-  rep_msg_def: string;
-  
-  
-  f1stringgrid : tstringgrid;
-  stringgrid1rowscount : integer;
-  strgrd_colcount : integer;
-  message_nil : tmessage;
-  nb_pouvoirs_max : integer = 20;
-  l_aff : tstringlist = nil;
+   Aux1 : taux;
+   rep_msg_def: string;
+   tb_regions : array of string ; //tb_regions_m =('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
+   f1stringgrid : tstringgrid;
+   stringgrid1rowscount : integer;
+   strgrd_colcount : integer;
+   message_nil : tmessage;
+   nb_pouvoirs_max : integer = 20;
+   l_aff : tstringlist = nil;
    Epour_, Econtre_, Eabs_, Enon_exp_, Evotants_ : tedit;
    Ep_ppc_exp_,Ec_ppc_exp_, Ea_ppc_exp_ : tedit;
    Ep_ppc_nbmb_, Ec_ppc_nbmb_, Ea_ppc_nbmb_, Ene_ppc_nbmb_, Ev_ppc_nbmb_ : tedit;
    Erjpour_, Erjcontre_, Erjabs_ : tedit;
    LNb_msg_ : tlabel;
+   tab_idx : array[0.. 99] of integer;
 implementation
 
 
@@ -307,6 +337,9 @@ begin
     message_nil := tmessage.create(idx_msg_nil,'', false);
     procedure_test := ptest;
     p_traite_pouvoirs := traite_pouvoirs;
+    repere_lcongig := 0;
+    set_tb_regions(tb_regions_m);
+    nb_pouvoirs := 0;
 end;
 
 destructor taux.destroy;
@@ -959,6 +992,7 @@ var
 begin
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    n := 0;
+   lconfig.Clear;
    for i := lmessages.Count - 1 downto 1  do begin
       if (length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
          inc(n);
@@ -966,6 +1000,7 @@ begin
          lmessages.Delete(i);
       end else if pos('configuration votes', lmessages.Strings[i]) > 0 then begin
          lconfig.Add(lmessages.Strings[i]) ;
+         lmessages.Delete(i);
       end;
    end;
    if debug then begin
@@ -1067,6 +1102,7 @@ begin
    try
       with scrutin_encours do begin
          if charge_fic_msg(fichier_message, liste_message) then begin
+            traite_lconfig;
             liste_votes := select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
             decomptage;
          end else begin
@@ -1464,6 +1500,7 @@ begin
                      setCbPouvoirschecked ;  // au moins un pouvoir a été donné
                      donneur.pouvoirs := 0;
                      receveur.pouvoirs := receveur.pouvoirs + 1;
+                     inc(nb_pouvoirs);
                   end;
                end;
             end;
@@ -1545,6 +1582,80 @@ begin
    result := format( st, [idx, numero, region, pouvoirs, prenom, nom, txt, fichier_CSV, tab_nm, ich]);
    result := result + booltostr(err_ID)+s+booltostr(err_prenom)+s+booltostr(err_nom)+s+booltostr(err_num)+s+booltostr(electeur_legitime)+s+booltostr(num_legitime)+s+booltostr(partage_nomembre);//+s+booltostr()+s+booltostr()+s+
    result := result+s+inttostr(cardinal(pointer(elem_scrutin)));
+end;
+
+procedure taux.traite_lconfig;
+var
+   i, j, p : integer;
+   st, tab_reg ,cfg_ftp, ficp_local  : string;
+begin
+   for i := repere_lcongig to lconfig.Count - 1 do begin
+      st := lconfig.Strings[i];
+      if verif_configurateur(st) then begin
+         p := pos(tableau_regions, st);
+         if p > 0 then tab_reg := trim(RightStr(st, length(st) - p - length(tableau_regions)));
+         p := pos(fichier_pouvoirs_local , st);
+         if p > 0 then ficp_local := trim(RightStr(st, length(st) - p - length(tableau_regions)));
+      end;
+   end;
+   repere_lcongig := lconfig.Count;
+   if (tab_reg <> '') and (lparticipants.Count = 0 ) then  begin
+      i := 0;
+      p := 1;
+      repeat
+         p := PosEx(',', tab_reg, p ) ;
+         if p > 0 then begin
+            tab_idx[i] := p;
+            inc(i);
+         end;
+      until p <1;
+      if i > 0 then begin
+         SetLength(tb_regions, i);
+         tb_regions[0] := trim(copy(tab_reg, 1, tab_idx[0] - 1));
+         for j := 1 to i  do begin
+            tb_regions[j] := trim(copy(tab_reg, tab_idx[j-2] + 1, tab_idx[j-1] - 1 - tab_idx[j-2]));
+         end;
+      end;
+   end;
+   if (ficp_local <> '') and not cb_pouv_val.Checked then begin
+      Fpouv_in.Ech_local.Text := ficp_local;
+      Fpouv_in.Cb_relatif.Checked := true;
+      if not debug then Fpouv_in.BImporterClick(nil);
+   end;
+end;
+
+{   configuration_votes = 'configuration votes';
+    tableau_regions = 'tableau_regions' ;
+    fichier_pouvoirs_local = 'fichier pouvoirs local';
+    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP';
+    serveur_FTP = 'serveur FTP';
+    login_FTP = 'login FTP';
+    Mot_passe_FTP = 'mot de passe FTP';}
+
+procedure taux.set_tb_regions(tabe: array of string);
+var
+   i :integer;
+begin
+   SetLength(tb_regions, high(tabe) + 1);
+   for i := 0 to high(tabe) do tb_regions[i] := tabe[i];
+end;
+
+function taux.verif_configurateur(mess: string): boolean;
+var
+   st : string;
+   p : integer;
+begin
+   p := pos('Ã   Tout le monde', mess);
+   result := false;
+   if p > 0 then begin
+      st := copy(mess, 9 , p - 10);
+      if configurateur = '' then begin  // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
+         configurateur := st;
+         result := true;
+      end else begin
+         result := configurateur = st;
+      end;
+   end;
 end;
 
 end.
