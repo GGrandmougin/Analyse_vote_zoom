@@ -1587,7 +1587,7 @@ end;
 procedure taux.traite_lconfig;
 var
    i, j, p : integer;
-   st, tab_reg ,cfg_ftp, ficp_local  : string;
+   st, tab_reg , ficp_local  : string; //cfg_ftp,
 begin
    for i := repere_lcongig to lconfig.Count - 1 do begin
       st := lconfig.Strings[i];
@@ -1603,16 +1603,17 @@ begin
       i := 0;
       p := 1;
       repeat
-         p := PosEx(',', tab_reg, p ) ;
+         p := PosEx(',', tab_reg, p ) ;  // les noms de région son séparés par des virgules
          if p > 0 then begin
             tab_idx[i] := p;
             inc(i);
          end;
       until p <1;
+      tab_idx[i] := length(tab_reg) + 1;
       if i > 0 then begin
-         SetLength(tb_regions, i);
+         SetLength(tb_regions, i + 1); // nombre virgules
          tb_regions[0] := trim(copy(tab_reg, 1, tab_idx[0] - 1));
-         for j := 1 to i  do begin
+         for j := 1 to i + 1  do begin
             tb_regions[j] := trim(copy(tab_reg, tab_idx[j-2] + 1, tab_idx[j-1] - 1 - tab_idx[j-2]));
          end;
       end;
