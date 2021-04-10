@@ -42,6 +42,7 @@ var
    p_traite_pouvoirs : timport;
    cb_pouv_val : TCheckBox;
    cbpouvoirs_Checked : boolean = false;
+   LnbPouvoirsConfies : tlabel; 
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;

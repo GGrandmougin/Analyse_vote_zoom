@@ -2,22 +2,26 @@ unit Auxiliaire;
 // Les suffrages exprimés sont les votes valablement émis dans le cadre d’une proposition mise aux voix ou d’une élection, les suffrages recueillis étant comptabilisés, déduction faite des abstentions ou des bulletins rejetés.
 
 {ENCHAINEMENT DES PROCEDURES:
-taux = TA
-tmessage = TM
-tparticipant = TP
-tscrutin = TS
+TA = taux
+TM = tmessage
+TP = tparticipant
+TS = tscrutin
+TE = telement_scrutin
 
    TA.traitement
       TA.char_fic_msg
-         TA.pretraitement_lmsg   concaténation  remplissage lconfig
+      .  TA.pretraitement_lmsg   concaténation  remplissage lconfig
+      TA.traite_lconfig
       TA.select_lvotes -> liste_votes
-         TA.traitement_lvotes
-            TA.remplace_caracteres_UTF8
-            TM.ceate
-               TM.cherche_participant  lowercase
-                  TP.compare
+      .  TA.traitement_lvotes
+      .     TA.remplace_caracteres_UTF8
+      .     TM.create
+      .        TM.cherche_participant  lowercase
+      .           TP.compare
       TS.decomptage
          TS.cree_elements
+         TE.additionne
+         TP.additionne
 }
 { à terminer :
 
@@ -40,9 +44,10 @@ configuration
 sortie sur fichier
 enregistrement -reprise de la configuration sur fichier ?
 entree CSV web
-
+                   
 }
 { à corriger :
+établir règles précises pour les changements possible(entrées) aux différents stades de l'utilsation;
 ok % trop importants
 ok nb de message jamais indiqués
 ok nouveau vote -> appui sur "editer" necessaire
@@ -59,7 +64,18 @@ uses
    IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun, pouvoirs_in  ;
 
 
-const
+const  // sans accents
+    configuration_votes = 'configuration votes'; // exemple :  "configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv"
+    tableau_regions = 'tableau_regions' ;
+    //fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: configuration votes fichier pouvoirs local import immediat C:\tests\exemple.txt
+    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; // exemple:
+    serveur_FTP = 'serveur FTP';
+    login_FTP = 'login FTP';
+    Mot_passe_FTP = 'mot de passe FTP';
+    import_differe = 'import differe' ; // pour debug ne lance pas l'import dès la lesture de la config
+    heure_duree = 'heure duree' ; // exemple "configuration votes heure duree  16:22:00 00:05:00"   ou  "heure duree  16:22:00 05:00"
+    scrutin_heure_duree = 'scrutin heure duree' ; //exemple  "configuration votes 3 comptes  16:22:00 05:00" (nom du scutin sans espaces)
+    //---> problématique (pour le prchain N° de scrutin non enregistré ni à l'affichage (ne va pas changer le traitement en cours) ?
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -96,13 +112,8 @@ const
     col_choix = 14;
     tb_regions_m : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
     idx_msg_nil = -2;
-    configuration_votes = 'configuration votes';
-    tableau_regions = 'tableau_regions' ;
-    fichier_pouvoirs_local = 'fichier pouvoirs local';
-    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP';
-    serveur_FTP = 'serveur FTP';
-    login_FTP = 'login FTP';
-    Mot_passe_FTP = 'mot de passe FTP';
+
+
 type
   ttbnoms = array[0..9] of string;
   tliste_vote = record//tstringlist;
@@ -1000,7 +1011,7 @@ begin
          lmessages.Delete(i);
       end else if pos('configuration votes', lmessages.Strings[i]) > 0 then begin
          lconfig.Add(lmessages.Strings[i]) ;
-         lmessages.Delete(i);
+         lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
       end;
    end;
    if debug then begin
@@ -1512,6 +1523,7 @@ begin
    cb_pouv_val.Checked := cbpouvoirs_Checked;
    l_champs.Free;
    l_ID.Free;
+   LnbPouvoirsConfies.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
 end;
 
 function taux.cherche_participant(nm, prenm, regn, ID, fic_csv: string): tparticipant;
@@ -1588,14 +1600,22 @@ procedure taux.traite_lconfig;
 var
    i, j, p : integer;
    st, tab_reg , ficp_local  : string; //cfg_ftp,
+   bimp_differe, ok : boolean;
+function retrouve_param(st_in, param : string; var ok : boolean; st_sinon : string = '' ): string ;
+var
+   pst : integer;
+begin
+   pst := pos(param, st_in);
+   ok := pst > 0;
+   result := st_sinon;
+   if ok then result := trim(RightStr(st, length(st) - pst - length(param)))  ;
+end;   
 begin
    for i := repere_lcongig to lconfig.Count - 1 do begin
       st := lconfig.Strings[i];
       if verif_configurateur(st) then begin
-         p := pos(tableau_regions, st);
-         if p > 0 then tab_reg := trim(RightStr(st, length(st) - p - length(tableau_regions)));
-         p := pos(fichier_pouvoirs_local , st);
-         if p > 0 then ficp_local := trim(RightStr(st, length(st) - p - length(tableau_regions)));
+         tab_reg := retrouve_param(st, tableau_regions, ok);
+         ficp_local := retrouve_param(st, fichier_pouvoirs_local, ok);
       end;
    end;
    repere_lcongig := lconfig.Count;
@@ -1618,10 +1638,12 @@ begin
          end;
       end;
    end;
-   if (ficp_local <> '') and not cb_pouv_val.Checked then begin
+   if (ficp_local <> '') and not cbpouvoirs_Checked then begin
+      ficp_local := retrouve_param(ficp_local, import_differe, bimp_differe, ficp_local);
       Fpouv_in.Ech_local.Text := ficp_local;
+      Fpouv_in.CbftpClick(Fpouv_in.Cblocal);
       Fpouv_in.Cb_relatif.Checked := true;
-      if not debug then Fpouv_in.BImporterClick(nil);
+      if not bimp_differe then Fpouv_in.PImporterClick(nil);
    end;
 end;
 

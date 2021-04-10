@@ -146,6 +146,10 @@ type
     Bfcolor: TButton;
     Btest: TButton;
     BExport_CSV_lparticpants: TButton;
+    Bselectfic: TButton;
+    OpenDialog1: TOpenDialog;
+    StaticText2: TStaticText;
+    Lnb_pouvoirs_confies: TLabel;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -206,6 +210,7 @@ type
     procedure BtestClick(Sender: TObject);
     procedure CbpouvoirsClick(Sender: TObject);
     procedure BExport_CSV_lparticpantsClick(Sender: TObject);
+    procedure BselectficClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -259,6 +264,7 @@ begin
    if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
    color := tcolor(10867674);  //(4227327);
    cb_pouv_val := Cbpouvoirs;
+   LnbPouvoirsConfies := Lnb_pouvoirs_confies;
 end;
 
 
@@ -356,8 +362,8 @@ begin
       en_deplacement := true;
       dx := x  - mx;
       dy := y  - my;
-      Pdebug.Left := Pdebug.Left + dx;
-      pdebug.Top := max(Pdebug.Top + dy, 30);
+      Pdebug.Left := max(Pdebug.Left + dx, 0);
+      pdebug.Top := max(Pdebug.Top + dy, 0);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -372,8 +378,8 @@ begin
       en_deplacement := true;
       dx := x  - mx;
       dy := y  - my;
-      Pdebug.Left := Pdebug.Left + dx;
-      pdebug.Top := Pdebug.Top + dy;
+      Pdebug.Left := max(Pdebug.Left + dx, 0);
+      pdebug.Top := max(Pdebug.Top + dy, 0);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -832,6 +838,20 @@ end;
 procedure TForm1.BExport_CSV_lparticpantsClick(Sender: TObject);
 begin
    Aux1.Export_CSV_lparticpants;
+end;
+
+procedure TForm1.BselectficClick(Sender: TObject);
+begin
+   OpenDialog1.InitialDir := dir_exe;
+   OpenDialog1.Filter := 'Fichiers texte (*.txt)|*.TXT';
+   OpenDialog1.Title := ' Fichier des messages Zoom';
+   if OpenDialog1.Execute then begin
+      Efic_msg.Text := OpenDialog1.FileName;
+      if debug then begin
+         Aux1.charge_fic_msg(Efic_msg.Text, aux1.scrutin_encours.liste_message);
+         Aux1.traite_lconfig;
+      end;
+   end;
 end;
 
 end.

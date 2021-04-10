@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 540
-  Top = 250
+  Left = 486
+  Top = 191
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -161,7 +161,7 @@ object Form1: TForm1
     object Efic_msg: TEdit
       Left = 8
       Top = 104
-      Width = 377
+      Width = 353
       Height = 21
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -206,7 +206,7 @@ object Form1: TForm1
       OnClick = Enb_membresClick
     end
     object BEditer: TButton
-      Left = 312
+      Left = 304
       Top = 64
       Width = 75
       Height = 25
@@ -234,6 +234,21 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 5
       OnClick = CbpouvoirsClick
+    end
+    object Bselectfic: TButton
+      Left = 365
+      Top = 104
+      Width = 20
+      Height = 17
+      Caption = '...'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -16
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 6
+      OnClick = BselectficClick
     end
   end
   object PAction: TPanel
@@ -1774,6 +1789,12 @@ object Form1: TForm1
       AutoSize = False
       Caption = '0 messages affich'#233's'
     end
+    object Lnb_pouvoirs_confies: TLabel
+      Left = 16
+      Top = 16
+      Width = 3
+      Height = 13
+    end
     object StringGrid1: TStringGrid
       Left = 152
       Top = 112
@@ -2377,6 +2398,12 @@ object Form1: TForm1
       Width = 657
       Height = 41
       BevelOuter = bvNone
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
       TabOrder = 4
       Visible = False
       object Ltous_mess: TLabel
@@ -2407,6 +2434,13 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 0
       end
+    end
+    object StaticText2: TStaticText
+      Left = 16
+      Top = 16
+      Width = 4
+      Height = 4
+      TabOrder = 5
     end
   end
   object Pdebug: TPanel
@@ -2625,5 +2659,9 @@ object Form1: TForm1
       TabOrder = 17
       OnClick = BExport_CSV_lparticpantsClick
     end
+  end
+  object OpenDialog1: TOpenDialog
+    Left = 416
+    Top = 160
   end
 end

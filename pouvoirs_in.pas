@@ -47,7 +47,8 @@ type
     LNom_du_fichier: TLabel;
     Button2: TButton;
     cbaucunpouvoirs: TCheckBox;
-    BImporter: TButton;
+    Pimporter: TPanel;
+    Limporter: TLabel;
     procedure place_ifl_ext;
     procedure recois_http;
     procedure IcroixMouseDown(Sender: TObject; Button: TMouseButton;
@@ -84,7 +85,7 @@ type
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
-    procedure BImporterClick(Sender: TObject);
+    procedure PimporterClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -126,8 +127,8 @@ begin
       en_deplacement := true;
       dx := x  - mx;
       dy := y  - my;
-      Pdebug.Left := Pdebug.Left + dx;
-      pdebug.Top := Pdebug.Top + dy;
+      Pdebug.Left := max(Pdebug.Left + dx, 0);
+      pdebug.Top := max(Pdebug.Top + dy, 0);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -142,8 +143,8 @@ begin
       en_deplacement := true;
       dx := x  - mx;
       dy := y  - my;
-      Pdebug.Left := Pdebug.Left + dx;
-      pdebug.Top := Pdebug.Top + dy;
+      Pdebug.Left := max(Pdebug.Left + dx, 0);
+      pdebug.Top := max(Pdebug.Top + dy, 0);
       Application.ProcessMessages;
       en_deplacement := false;
    end;
@@ -195,6 +196,7 @@ begin
    memo1 := mtest;
    strl := tstringlist.create;
    strm := TMemoryStream.Create;
+   LImporter.Caption := 'Importer le fichier' + #13#10 + '   des pouvoirs';
 end;
 
 procedure TFpouv_in.FormShow(Sender: TObject);
@@ -209,7 +211,7 @@ end;
 procedure TFpouv_in.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    if LConnected.Visible then IdFTP1.Disconnect;
-   if cbaucunpouvoirs.Checked then begin
+   if cbaucunpouvoirs.Checked then begin  // on a décidé qu'il n'y aura pas de pouvoirs transférés
       cb_pouv_val.Checked := true;
       cbpouvoirs_Checked := true;
    end;
@@ -514,7 +516,7 @@ begin
    procedure_test(nil)
 end;
 
-procedure TFpouv_in.BImporterClick(Sender: TObject);
+procedure TFpouv_in.PimporterClick(Sender: TObject);
 var
    fichier : string;
 begin
@@ -536,7 +538,6 @@ begin
       if debug then Mrecu.Lines.Assign(strl);
       p_traite_pouvoirs(strl, ExtractFileName(fichier ));
    end;
-
 end;
 
 end.

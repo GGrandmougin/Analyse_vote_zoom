@@ -1,6 +1,6 @@
 object Fpouv_in: TFpouv_in
-  Left = 484
-  Top = 277
+  Left = 411
+  Top = 287
   Width = 1280
   Height = 768
   Caption = 'Importation des pouvoirs'
@@ -434,12 +434,13 @@ object Fpouv_in: TFpouv_in
     TabOrder = 4
     OnClick = CbftpClick
   end
-  object BImporter: TButton
+  object Pimporter: TPanel
     Left = 608
-    Top = 320
-    Width = 185
-    Height = 41
-    Caption = 'Importer'
+    Top = 312
+    Width = 201
+    Height = 105
+    BevelWidth = 2
+    BorderWidth = 2
     Font.Charset = DEFAULT_CHARSET
     Font.Color = clWindowText
     Font.Height = -21
@@ -447,7 +448,15 @@ object Fpouv_in: TFpouv_in
     Font.Style = [fsBold]
     ParentFont = False
     TabOrder = 5
-    OnClick = BImporterClick
+    OnClick = PimporterClick
+    object Limporter: TLabel
+      Left = 16
+      Top = 24
+      Width = 91
+      Height = 25
+      Caption = 'Limporter'
+      OnClick = PimporterClick
+    end
   end
   object IdFTP1: TIdFTP
     OnStatus = IdFTP1Status
