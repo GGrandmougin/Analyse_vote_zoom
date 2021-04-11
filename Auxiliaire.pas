@@ -64,18 +64,17 @@ uses
    IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun, pouvoirs_in  ;
 
 
-const  // sans accents
-    configuration_votes = 'configuration votes'; // exemple :  "configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv"
-    tableau_regions = 'tableau_regions' ;
-    //fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: configuration votes fichier pouvoirs local import immediat C:\tests\exemple.txt
-    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; // exemple:
-    serveur_FTP = 'serveur FTP';
-    login_FTP = 'login FTP';
-    Mot_passe_FTP = 'mot de passe FTP';
-    import_differe = 'import differe' ; // pour debug ne lance pas l'import dès la lesture de la config
-    heure_duree = 'heure duree' ; // exemple "configuration votes heure duree  16:22:00 00:05:00"   ou  "heure duree  16:22:00 05:00"
-    scrutin_heure_duree = 'scrutin heure duree' ; //exemple  "configuration votes 3 comptes  16:22:00 05:00" (nom du scutin sans espaces)
-    //---> problématique (pour le prchain N° de scrutin non enregistré ni à l'affichage (ne va pas changer le traitement en cours) ?
+const
+    { règles: pas d'accent pour les mots-clés,
+              la casse est indifférente,
+              les différents paramètres sont séparés par 1 (ou plusieurs) espace
+              les paramètres de type 'texte' sont entourés par des " , de ce fait , ils peuvent comporter des espaces }
+    configuration_votes = 'configuration votes'; // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
+    tableau_regions = 'tableau_regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp  
+    fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: <configuration votes fichier pouvoirs local C:\tests\exemple.txt>
+            import_differe = 'import differe' ; // pour debug, ne lance pas l'import dès la lesture de la config , exemple: <configuration votes fichier import differe pouvoirs local C:\tests\exemple.txt>
+    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
+    nom_heure_duree = 'nom heure duree' ; // exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -226,6 +225,8 @@ type
     nb_pouvoirs : integer;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
+    procedure config_nouv_scrutin(l_nouv_scrutin : tstringlist);
+    function decompose(entree : string): tstringlist; // tstringlist.create dans la fonctio,
     procedure set_tb_regions(tabe : array of string );
     procedure traite_lconfig;
     function verif_configurateur(mess : string) : boolean;
@@ -1004,13 +1005,13 @@ begin
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    n := 0;
    lconfig.Clear;
-   for i := lmessages.Count - 1 downto 1  do begin
+   for i := lmessages.Count - 1 downto 0  do begin
       if (length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
          inc(n);
          lmessages.Strings[i - 1] := lmessages.Strings[i - 1] + ' _ ' + lmessages.Strings[i] ;
          lmessages.Delete(i);
       end else if pos('configuration votes', lmessages.Strings[i]) > 0 then begin
-         lconfig.Add(lmessages.Strings[i]) ;
+         lconfig.Insert(0 ,lmessages.Strings[i]) ;  // parce que lmessages est parcurueà l'envers
          lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
       end;
    end;
@@ -1599,24 +1600,30 @@ end;
 procedure taux.traite_lconfig;
 var
    i, j, p : integer;
-   st, tab_reg , ficp_local  : string; //cfg_ftp,
+   st, tab_reg , ficp_local, fic_FTP, nm_h_d  : string; //cfg_ftp,
    bimp_differe, ok : boolean;
-function retrouve_param(st_in, param : string; var ok : boolean; st_sinon : string = '' ): string ;
+   l_nouv_scrutin : tstringlist;
+function retrouve_param(st_in, param : string; st_sinon : string; var ok : boolean  ): string ;
 var
    pst : integer;
 begin
    pst := pos(param, st_in);
-   ok := pst > 0;
    result := st_sinon;
-   if ok then result := trim(RightStr(st, length(st) - pst - length(param)))  ;
-end;   
+   if pst > 0 then begin result := trim(RightStr(st, length(st) - pst - length(param)))  ; ok := true end;
+end;
 begin
+   l_nouv_scrutin := tstringlist.create;
    for i := repere_lcongig to lconfig.Count - 1 do begin
       st := lconfig.Strings[i];
       if verif_configurateur(st) then begin
-         tab_reg := retrouve_param(st, tableau_regions, ok);
-         ficp_local := retrouve_param(st, fichier_pouvoirs_local, ok);
-      end;
+         ok := false;
+         tab_reg := retrouve_param(st, tableau_regions, tab_reg, ok);
+         ficp_local := retrouve_param(st, fichier_pouvoirs_local, ficp_local, ok );
+         nm_h_d := retrouve_param(st, nom_heure_duree, '', ok);
+         fic_FTP := retrouve_param(st, fichier_pouvoirs_FTP, fic_FTP, ok);
+         if not ok then memo_tests.Add('configuration: erreur mots_clés non reconnus: ' + st);
+         if nm_h_d <> '' then l_nouv_scrutin.Add(nm_h_d);
+      end else memo_tests.Add('configuration: erreur configurateur: ' + st);
    end;
    repere_lcongig := lconfig.Count;
    if (tab_reg <> '') and (lparticipants.Count = 0 ) then  begin
@@ -1636,15 +1643,21 @@ begin
          for j := 1 to i + 1  do begin
             tb_regions[j] := trim(copy(tab_reg, tab_idx[j-2] + 1, tab_idx[j-1] - 1 - tab_idx[j-2]));
          end;
+         memo_tests.Add('configuration :nouveau tableau régions, nombre = ' + inttostr(i + 1));
       end;
    end;
    if (ficp_local <> '') and not cbpouvoirs_Checked then begin
-      ficp_local := retrouve_param(ficp_local, import_differe, bimp_differe, ficp_local);
+      bimp_differe := false;
+      ficp_local := retrouve_param(ficp_local, import_differe, ficp_local, bimp_differe);
       Fpouv_in.Ech_local.Text := ficp_local;
       Fpouv_in.CbftpClick(Fpouv_in.Cblocal);
       Fpouv_in.Cb_relatif.Checked := true;
-      if not bimp_differe then Fpouv_in.PImporterClick(nil);
+      if bimp_differe then ficp_local := ficp_local + ' import différé ' else Fpouv_in.PImporterClick(nil);
+      memo_tests.Add('configuration : fichier_pouvoirs_local , fichier = ' + ficp_local);
    end;
+   if (l_nouv_scrutin.Count >= 0 ) then config_nouv_scrutin(l_nouv_scrutin);
+   // if fic_FTP <> '' then à traiter
+   l_nouv_scrutin.free;
 end;
 
 {   configuration_votes = 'configuration votes';
@@ -1671,12 +1684,86 @@ begin
    p := pos('Ã   Tout le monde', mess);
    result := false;
    if p > 0 then begin
-      st := copy(mess, 9 , p - 10);
+      st := copy(mess, 13 , p - 14);
       if configurateur = '' then begin  // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
          configurateur := st;
          result := true;
       end else begin
          result := configurateur = st;
+      end;
+   end;
+   if not result then memo_tests.add('erreur configurateur: ' + mess);
+end;
+
+function taux.decompose(entree: string): tstringlist;
+var
+   i, v : integer;
+   st : string;
+   ds_texte : boolean;
+procedure r_add( str : string);
+begin
+   result.Strings[result.Count - 1] := result.Strings[result.Count - 1] + str;
+end;
+begin
+   result := tstringlist.Create;
+   st := lowercase(trim(entree ));
+   i := 1;
+   result.Add('');
+   ds_texte := false;
+   while i <=  length(st) do begin
+      v := ord(st[i]);
+      if v = 34 then begin // caractère "
+         if (i < length(st)) and (st[i + 1] = '"') then begin  // double " -> caractère " dans le texte
+            r_add( '"');
+            inc(i);
+         end else  ds_texte := not ds_texte ;
+         if ds_texte and (result.Strings[result.Count - 1] <> '') then result.Add('');
+      end else if ds_texte then begin
+         r_add( st[i]);
+      end else if (v = 32) then begin //espace (séparateur des paramètres)
+         if (result.Strings[result.Count - 1] <> '') then result.Add('');
+      end else begin
+         r_add(st[i]);
+      end;
+      inc(i);
+   end;
+   if result.Strings[result.Count - 1] = '' then Result.Delete(result.Count - 1);
+end;
+
+procedure taux.config_nouv_scrutin(l_nouv_scrutin : tstringlist);
+var
+   params: string;
+   heure, duree, nom : string;
+   sl : tstringlist;
+   num_srutin, i, j : integer;
+   ok : boolean;
+   scrutin : tscrutin;
+begin
+   for j := 0 to l_nouv_scrutin.Count - 1 do begin
+      params := l_nouv_scrutin.Strings[j];
+      ok := false;
+      sl := decompose(params);
+      num_srutin := 1;
+      if sl.Count >= 3 then begin
+         nom := sl.Strings[0];
+         heure := sl.Strings[1];
+         duree := sl.Strings[2];
+         repeat
+            inc(num_srutin);
+            i := lscrutin.IndexOf(inttostr(num_srutin)) ;
+         until i < 0;
+         ok := (heure[3] = ':') and (heure[6] = ':') and (duree[3] = ':') and (strtointdef(copy(heure, 1, 2) , 99) in [0.. 59]) and (strtointdef(copy(heure, 4, 2) , 99) in [0.. 59]) and (strtointdef(copy(heure, 7, 2) , 99) in [0.. 59]) and (strtointdef(copy(duree, 1, 2) , 99) in [0.. 59]) and (strtointdef(copy(duree, 4, 2) , 99) in [0.. 59]) ;
+      end;
+      sl.Free;
+      if ok then begin
+         scrutin := tscrutin.create(num_srutin, nom);
+         scrutin.heure_debut     :=  heure ;
+         scrutin.duree           :=  duree ;
+         scrutin.fichier_message :=  scrutin_encours.fichier_message ;
+         scrutin.nombre_membres  :=  scrutin_encours.nombre_membres;
+         memo_tests.Add('configuration : ' + nom_heure_duree + ' ' + inttostr(num_srutin) + ' ' + nom + ' ' + heure + ' ' + duree);
+      end else begin
+         memo_tests.Add('configuration rejetée : ' + params);
       end;
    end;
 end;

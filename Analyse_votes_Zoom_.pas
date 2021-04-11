@@ -403,6 +403,7 @@ begin
       dy := y  - my;
       Pdebug.Width := max(Pdebug.Width + dx, 40);
       pdebug.Height := max(Pdebug.Height + dy, 40);
+      if Pdebug.Width >= 380 then Mtest.Width := Pdebug.Width - Mtest.Left - 3;
       place_ifl_ext;
       //tcontrol(Ifl_ext).SetZOrder(true);
       Application.ProcessMessages;
@@ -665,6 +666,7 @@ begin
          i := aux1.lscrutin.IndexOf(inttostr(num));
          if (i >=0) then begin
             if (Aux1.scrutin_encours <> tscrutin(aux1.lscrutin.Objects[i])) then begin
+               trf_entrees;
                Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
                Enomvote.text := Aux1.scrutin_encours.nom ;
                maj_entrees;
@@ -672,6 +674,7 @@ begin
                if Aux1.scrutin_encours.ttl_exp > 0 then enable_entrees(false, false, false);
             end;
          end else begin
+            trf_entrees;
             Aux1.scrutin_encours := tscrutin.create(num, Enomvote.Text);
             trf_entrees;
             clear_resultats;
@@ -729,7 +732,7 @@ begin
          Efic_msg.Text := aux1.scrutin_encours.fichier_message;
       end;
       aux1.scrutin_encours.nom := Enomvote.Text;;
-      aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 0);
+      aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
       aux1.traitement;
    end else begin
       showmessage( 'N° incorrect pour "Vote N°');
@@ -848,6 +851,8 @@ begin
    if OpenDialog1.Execute then begin
       Efic_msg.Text := OpenDialog1.FileName;
       if debug then begin
+         aux1.scrutin_encours.fichier_message := Efic_msg.Text;;
+         aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
          Aux1.charge_fic_msg(Efic_msg.Text, aux1.scrutin_encours.liste_message);
          Aux1.traite_lconfig;
       end;
