@@ -675,7 +675,8 @@ begin
             end;
          end else begin
             trf_entrees;
-            Aux1.scrutin_encours := tscrutin.create(num, Enomvote.Text);
+            Aux1.scrutin_encours := tscrutin.create(num, '');
+            Enomvote.Text := '';
             trf_entrees;
             clear_resultats;
             enable_entrees(true, false, false);

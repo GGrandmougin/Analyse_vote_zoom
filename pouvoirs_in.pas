@@ -528,15 +528,18 @@ begin
          BgetClick(nil);
       end;
       BdeconnexionClick(nil);
-      fichier := Ech_ftp.Text;
+      fichier := Eget.Text;
+      source_pouvoirs := 'FTP  serveur: ' + Ech_ftp.Text + ' ID login: ' + Eftp_id.Text ;
    end else if Cblocal.Checked then begin
       charge_fichier;
       fichier := Ech_local.Text;
+      source_pouvoirs := 'Fichier local ' ;
    end;
    if strm.Size > 0 then begin
       convertit_UTF8_accents;
       if debug then Mrecu.Lines.Assign(strl);
       p_traite_pouvoirs(strl, ExtractFileName(fichier ));
+      if not debug then Close;
    end;
 end;
 

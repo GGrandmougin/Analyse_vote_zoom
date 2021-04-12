@@ -70,11 +70,25 @@ const
               les différents paramètres sont séparés par 1 (ou plusieurs) espace
               les paramètres de type 'texte' sont entourés par des " , de ce fait , ils peuvent comporter des espaces }
     configuration_votes = 'configuration votes'; // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
-    tableau_regions = 'tableau_regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp  
+    tableau_regions = 'tableau regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp
     fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: <configuration votes fichier pouvoirs local C:\tests\exemple.txt>
             import_differe = 'import differe' ; // pour debug, ne lance pas l'import dès la lesture de la config , exemple: <configuration votes fichier import differe pouvoirs local C:\tests\exemple.txt>
     fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
     nom_heure_duree = 'nom heure duree' ; // exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
+
+    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","rejets pour","rejets contre","rejets abstention","secret"';
+    chVote_No = 0;
+    chnom_vote =1;
+    chNb_votants =2;
+    chNb_pour =3;
+    chNb_contre =4;
+    chNb_abstention =5;
+    chheure_debut =6;
+    chduree =7;
+    chrejetspour = 8;
+    chrejetscontre = 9;
+    chrejetsabs = 10;
+    chvotesecret = 11;
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -223,8 +237,12 @@ type
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
     nb_pouvoirs : integer;
+    fichier_sortie : string;
+    fichier_sortie_ok : boolean;
+    ligne_vide : string;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
+    procedure remplit_fic_sortie(scrutin : tscrutin);
     procedure config_nouv_scrutin(l_nouv_scrutin : tstringlist);
     function decompose(entree : string): tstringlist; // tstringlist.create dans la fonctio,
     procedure set_tb_regions(tabe : array of string );
@@ -472,6 +490,7 @@ begin
          if fic <>'' then result := rep + result + '\' + fic;
       end;
    end;
+   if fic <> '' then fichier_message_defaut := result;
    if debug and (fic <> '') then memo_tests.Add('-> ' + result);
 end;
 
@@ -1114,9 +1133,14 @@ begin
    try
       with scrutin_encours do begin
          if charge_fic_msg(fichier_message, liste_message) then begin
+            if (titre_reunion = '') and (fichier_message = fichier_message_defaut) then begin
+               st := ExtractFilePath(fichier_message);
+               titre_reunion := ExtractFileName(copy(st, 1, length(st) -1));
+            end;
             traite_lconfig;
             liste_votes := select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
             decomptage;
+            remplit_fic_sortie(scrutin_encours);
          end else begin
             st := 'fichier message invalide: ' + fichier_message;
             fichier_message := '';
@@ -1485,6 +1509,7 @@ begin
    l_champs :=  tstringlist.Create ;
    l_ID :=  tstringlist.Create ;
    l_csv := strl;
+   scrutin_encours.fichier_pouvoirs := fichier;
    if l_csv.Count > 0 then begin
       for i := 0 to l_csv.Count - 1 do begin
          try
@@ -1766,6 +1791,84 @@ begin
          memo_tests.Add('configuration rejetée : ' + params);
       end;
    end;
+end;
+
+procedure taux.remplit_fic_sortie(scrutin : tscrutin);
+var
+   sl : tstringlist;
+   deb_ligne, fin_ligne : string;
+   i : integer;
+   tf : textfile;
+   fs : TFormatSettings;
+   scrt : string;
+begin
+   sl := TStringList.Create;
+   if fichier_sortie = '' then begin
+      fichier_sortie_ok := false;
+      ligne_vide := StringReplace( ligne_titre, ',', #13#10, [rfReplaceAll] );
+      sl.Text := ligne_vide;
+      for i := 0 to sl.Count - 1 do sl.Strings[i] := '';
+      ligne_vide := sl.Text;
+      deb_ligne := inttostr(0) + ',"';
+      fin_ligne := '"';
+      for i := 3 to sl.Count do fin_ligne := fin_ligne + ',';
+      sl.clear;
+      sl.Add(ligne_titre);
+      sl.Add(deb_ligne + 'Titre = ' + titre_reunion + fin_ligne);
+      sl.Add(deb_ligne + 'Nombre de membres = '+ inttostr(scrutin.nombre_membres) + fin_ligne);
+      sl.Add(deb_ligne + 'Fichier des messages = ' + scrutin.fichier_message  + fin_ligne);
+      sl.Add(deb_ligne + 'Fichier des pouvoirs = ' + scrutin.fichier_pouvoirs  + fin_ligne);
+      sl.Add(deb_ligne + 'Source du fichier des pouvirs: ' + source_pouvoirs + fin_ligne);
+      sl.Add(deb_ligne + 'nombre de pouvoirs confiés = ' + inttostr(aux1.nb_pouvoirs) + fin_ligne);
+
+      //sl.Add(deb_ligne +  + fin_ligne);
+      //sl.Add(deb_ligne +  + fin_ligne);
+      //sl.Add(deb_ligne +  + fin_ligne);
+      //sl.Add(deb_ligne +  + fin_ligne);
+      sl.Add(ligne_titre);
+      GetLocaleFormatSettings(SysLocale.DefaultLCID, fs);
+      fs.DateSeparator := '_';
+      fs.TimeSeparator := '_';
+      fs.ShortDateFormat := 'dd/mm/yy';
+      fs.ShortTimeFormat := 'hh:mm:ss';
+      fichier_sortie := DateTimeToStr(Now, fs) ;  //'12_04_21 12_15_15'
+      fichier_sortie[9] := '_';
+      fichier_sortie :=  'ana_votes_' + fichier_sortie + '.csv' ;
+      try
+         sl.SaveToFile(dir_trv + fichier_sortie);
+         fichier_sortie_ok := true;
+      except
+         on E : exception do log_infos('Erreur d''enregistrement du fichier de sortie: ' + E.Message);
+      end;
+   end;
+   if fichier_sortie_ok then begin
+      with scrutin do begin
+         if not scr_secret then scrt := 'non' else if secret_only then scrt := 'strict' else scrt := 'tolerant';
+         sl.Text := ligne_vide;
+         sl.Strings[chVote_No] := IntToStr(numero);
+         sl.Strings[chnom_vote] := '"' + nom + '"';
+         sl.Strings[chNb_votants] := IntToStr(ttl_votants);
+         sl.Strings[chNb_pour] := IntToStr(ttl_pour);
+         sl.Strings[chNb_contre] := IntToStr(ttl_contre);
+         sl.Strings[chNb_abstention] := IntToStr(ttl_abs);
+         sl.Strings[chheure_debut] := '"' + heure_debut + '"';
+         sl.Strings[chduree] := '"' + duree + '"';
+         sl.Strings[chrejetspour] :=  IntToStr(ttl_rj_p);
+         sl.Strings[chrejetscontre] :=  IntToStr(ttl_rj_c);
+         sl.Strings[chrejetsabs] :=  IntToStr(ttl_rj_a);
+         sl.Strings[chvotesecret] := scrt;
+
+         try
+            assignfile(tf, dir_trv + fichier_sortie);
+            append(tf);
+            writeln(tf, StringReplace(sl.Text, #13#10, ',', [rfReplaceAll] ));
+            closefile(tf);
+         except
+            on E : exception do log_infos('Erreur d''enregistrement du fichier de sortie: ' + E.Message);
+         end;
+      end;
+   end;
+   sl.Free;
 end;
 
 end.
