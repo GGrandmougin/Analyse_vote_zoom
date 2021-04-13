@@ -4,7 +4,7 @@ uses
   Forms,
   Analyse_votes_Zoom_ in 'Analyse_votes_Zoom_.pas' {Form1},
   Auxiliaire in 'Auxiliaire.pas',
-  informations in 'infos\informations.pas' {Finformation},
+  informations in 'informations.pas' {Finformation},
   pouvoirs_in in 'pouvoirs_in.pas' {Fpouv_in},
   commun in 'commun.pas';
 
