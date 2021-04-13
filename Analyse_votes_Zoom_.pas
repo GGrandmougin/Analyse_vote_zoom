@@ -211,6 +211,7 @@ type
     procedure CbpouvoirsClick(Sender: TObject);
     procedure BExport_CSV_lparticpantsClick(Sender: TObject);
     procedure BselectficClick(Sender: TObject);
+    procedure CbvnreconnusClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -810,6 +811,8 @@ end;
 procedure TForm1.BEditerClick(Sender: TObject);
 begin
    enable_entrees(true, true, true);
+   Aux1.scrutin_encours.init_totaux;
+   aux1.scrutin_encours.maj_resultats;
 end;
 
 procedure TForm1.Enb_membresClick(Sender: TObject);
@@ -858,6 +861,11 @@ begin
          Aux1.traite_lconfig;
       end;
    end;
+end;
+
+procedure TForm1.CbvnreconnusClick(Sender: TObject);
+begin
+   Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.Text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
 end.
