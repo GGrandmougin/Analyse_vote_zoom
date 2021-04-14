@@ -9,7 +9,7 @@ TS = tscrutin
 TE = telement_scrutin
 
    TA.traitement
-      TA.char_fic_msg
+      TA.charge_fic_msg
       .  TA.pretraitement_lmsg   concaténation  remplissage lconfig
       TA.traite_lconfig
       TA.select_lvotes -> liste_votes
@@ -46,7 +46,7 @@ configuration
 sortie sur fichier
 enregistrement -reprise de la configuration sur fichier ?
 entree CSV web
-                   
+
 }
 { à corriger :
 établir règles précises pour les changements possible(entrées) aux différents stades de l'utilsation;
@@ -71,12 +71,12 @@ const
               la casse est indifférente,
               les différents paramètres sont séparés par 1 (ou plusieurs) espace
               les paramètres de type 'texte' sont entourés par des " , de ce fait , ils peuvent comporter des espaces }
-    configuration_votes = 'configuration votes'; // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
+    configuration_votes = 'configuration votes';// 'config_votes' ? // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
     tableau_regions = 'tableau regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp
     fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: <configuration votes fichier pouvoirs local C:\tests\exemple.txt>
             import_differe = 'import differe' ; // pour debug, ne lance pas l'import dès la lesture de la config , exemple: <configuration votes fichier import differe pouvoirs local C:\tests\exemple.txt>
     fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
-    nom_heure_duree = 'nom heure duree' ; // exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
+    nom_heure_duree = 'nom heure duree' ; // '"nom"_heure_duree' ?// exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
 
     ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","rejets pour","rejets contre","rejets abstention","secret"';
     chVote_No = 0;
@@ -184,7 +184,7 @@ type
     est_vote : boolean;
     est_msg_nil : boolean;
     chaine_pv : tmessage;
-    Procedure propagation_errp(reinit, errpv : boolean); 
+    Procedure propagation_errp(reinit, errpv : boolean);
     function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
@@ -379,15 +379,17 @@ end;
 
 destructor taux.destroy;
 begin
-    videlistes;
-    lnmembre2index.Free;
+
+
     //lrejetes.free;
     lvotes_dbg.idx_deb := -1;
     lvotes_dbg.idx_fin := -1;
+    videlistes;     // doit intervenir avant lnmembre2index.Free et lscrutin.Free;;
+    lscrutin.Free;
+    lnmembre2index.Free;
     lmessages_gen.free;
     lparticipants.free;
     lconfig.Free;
-    lscrutin.Free;
     message_nil.Free;
     //lremplacement.Free;
   inherited;
@@ -421,6 +423,10 @@ begin
     lvotes_dbg.idx_fin := -1;
     lconfig.Clear;
     lnmembre2index.Clear;
+    while lscrutin.Count > 0 do begin  // doit internenir avant lmessages_gen.Objects[0].Free;
+       lscrutin.Objects[0].Free;  // destruction des tscrutin
+       lscrutin.Delete(0);
+    end;
     while lmessages_gen.Count > 0 do begin  //les tmessages seront créés lors de l'analyse d'un vote s'il n'existent pas déjà et reste sur cette liste
        lmessages_gen.Objects[0].Free;  // destruction des tmessages
        lmessages_gen.Delete(0);
@@ -428,10 +434,6 @@ begin
     while lparticipants.Count > 0 do begin
        lparticipants.Objects[0].Free;  // destruction des tparticipant
        lparticipants.Delete(0);
-    end;
-    while lscrutin.Count > 0 do begin
-       lscrutin.Objects[0].Free;  // destruction des tscrutin
-       lscrutin.Delete(0);
     end;
 end;
 
@@ -663,7 +665,7 @@ begin
    err_ID := false;
    aux1.lparticipants.AddObject('', self);
    if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
-end; 
+end;
 
 
 
@@ -846,7 +848,7 @@ begin
          if (tab[i] <> regn) then begin
             if (dnom = 1) and (pos(tab[i], texte ) > 0)  then dprenom := 1 ;
             if (dnom = 0) and (pos(tab[i], texte ) > 0)  then dnom := 1 ;
-         end;   
+         end;
       end;
    end;
    {if (regn = region)  then dregion := 1 else dregion := 0 ;// tous les deux peuvent être égal à ''
@@ -961,10 +963,11 @@ begin
    index := idx_msg;
    //if debug then memo_tests.Add(msg);
    est_msg_nil := idx_msg = idx_msg_nil;
-   chaine_pv := nil;
+   chaine_pv := message_nil;
    if est_msg_nil then begin
       nombre := 0;
       participant := nil;
+      chaine_pv := self;
    end else begin
       {stg_clear := TStringList.Create;
       for i := 1 to strgrd_colcount do stg_clear.Add(''); }
@@ -1027,22 +1030,34 @@ procedure taux.pretraitement_lmsg( lmsg : tliste_message );  // concaténation et
 var
    i, n : integer;
    lmessages: tstringlist;
+function entete_message( j : integer) : string;
+var
+   p : integer;
+begin
+   if ((length(lmessages.Strings[j - 1]) < 13 ) or (lmessages.Strings[j - 1][3] <> ':') or (lmessages.Strings[j - 1][6] <> ':')) and (j > 0)  then begin
+      inc(n);
+      result := entete_message( j- 1);
+      lmessages.Strings[j - 1] :=  result + lmessages.Strings[j - 1];
+    end else begin
+       p := pos(': ', lmessages.Strings[j - 1] );
+       if p > 0 then result := copy(lmessages.Strings[j - 1 ] , 1 , p + 1);
+    end;
+end;
 begin
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    n := 0;
    lconfig.Clear;
    for i := lmessages.Count - 1 downto 0  do begin
-      if (length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':') then begin
+      if ((length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':')) and (i > 0 ) then begin
+         lmessages.Strings[i ] := entete_message( i) + lmessages.Strings[i] ;
          inc(n);
-         lmessages.Strings[i - 1] := lmessages.Strings[i - 1] + ' _ ' + lmessages.Strings[i] ;
-         lmessages.Delete(i);
-      end else if pos('configuration votes', lmessages.Strings[i]) > 0 then begin
-         lconfig.Insert(0 ,lmessages.Strings[i]) ;  // parce que lmessages est parcurueà l'envers
+      end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
+         lconfig.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
          lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
       end;
    end;
    if debug then begin
-      memo_tests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes concaténées');
+      memo_tests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes reconstituées');
       memo_tests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
    end;
 end;
@@ -1268,9 +1283,15 @@ end;
 
 procedure tmessage.propagation_errp(reinit, errpv: boolean);
 begin
-   if self <> message_nil then chaine_pv.propagation_errp(reinit, errpv);
-   if reinit then chaine_pv := message_nil;
-   err_pouvoirs := errpv and not reinit; 
+if chaine_pv = nil then
+   showmessage('chaine_pv = nil ' + texte)
+else begin
+   if not est_msg_nil  then begin
+      chaine_pv.propagation_errp(reinit, errpv);
+      if reinit then chaine_pv := message_nil;
+      err_pouvoirs := errpv and not reinit;
+   end;
+end;
 end;
 
 { telement_scrutin }
@@ -1406,37 +1427,40 @@ begin
       lelement_scrutin.Delete(0);
    end;
    for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
-      msge := tmessage(liste_message.Objects[i]);
-      msge.err_pouvoirs := false;
-      if msge.valide(scr_secret, secret_only) then begin
-         part := msge.participant;
-         if part.elem_scrutin = nil then begin
-            lelement_scrutin.AddObject('', telement_scrutin.create(msge));
-         end else begin
-            with part.elem_scrutin do begin
-               if msge.choix = 'pour' then begin
-                  msge.chaine_pv := msg_pour;
-                  msg_pour := msge;
-               end else if msge.choix = 'contre' then begin
-                  msge.chaine_pv := msg_contre;
-                  msg_contre := msge;
-               end else if msge.choix = 'abs' then begin
-                  msge.chaine_pv := msg_abs;
-                  msg_abs := msge;
-               end else begin
-                  log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
+      if liste_message.Objects[i] <> nil then begin
+         msge := tmessage(liste_message.Objects[i]);
+         msge.err_pouvoirs := false;
+         msge.chaine_pv := message_nil;
+         if msge.valide(scr_secret, secret_only) then begin
+            part := msge.participant;
+            if part.elem_scrutin = nil then begin
+               lelement_scrutin.AddObject('', telement_scrutin.create(msge));
+            end else begin
+               with part.elem_scrutin do begin
+                  if msge.choix = 'pour' then begin
+                     msge.chaine_pv := msg_pour;
+                     msg_pour := msge;
+                  end else if msge.choix = 'contre' then begin
+                     msge.chaine_pv := msg_contre;
+                     msg_contre := msge;
+                  end else if msge.choix = 'abs' then begin
+                     msge.chaine_pv := msg_abs;
+                     msg_abs := msge;
+                  end else begin
+                     log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
+                  end;
                end;
-            end;   
-         end; // chacune des trois variables msg_pour, msg_contre et msg_abs est finalement instanciée par le dernier message la concernant
-      end;
+            end; // chacune des trois variables msg_pour, msg_contre et msg_abs est finalement instanciée par le dernier message la concernant
+         end;
+      end else showmessage('liste_message.Objects[' + inttostr(i) + '] = nil ' + liste_message.strings[i]);
    end;
 end;
 
 destructor telement_scrutin.destroy;
 begin
-  msg_pour.propagation_errp(true, false);
+  {msg_pour.propagation_errp(true, false);  rendu inutile par instructions (msge. :=) dans tscrutin.cree_elements
   msg_contre.propagation_errp(true, false);
-  msg_abs.propagation_errp(true, false);
+  msg_abs.propagation_errp(true, false); }
   inherited;
 end;
 
