@@ -183,6 +183,8 @@ type
     err_pouvoirs : boolean;
     est_vote : boolean;
     est_msg_nil : boolean;
+    chaine_pv : tmessage;
+    Procedure propagation_errp(reinit, errpv : boolean); 
     function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
@@ -959,6 +961,7 @@ begin
    index := idx_msg;
    //if debug then memo_tests.Add(msg);
    est_msg_nil := idx_msg = idx_msg_nil;
+   chaine_pv := nil;
    if est_msg_nil then begin
       nombre := 0;
       participant := nil;
@@ -1263,6 +1266,13 @@ begin
    result := result and not rejected;
 end;
 
+procedure tmessage.propagation_errp(reinit, errpv: boolean);
+begin
+   if self <> message_nil then chaine_pv.propagation_errp(reinit, errpv);
+   if reinit then chaine_pv := message_nil;
+   err_pouvoirs := errpv and not reinit; 
+end;
+
 { telement_scrutin }
 
 procedure telement_scrutin.additionne(var pour, contre, abs, non_exp : integer);
@@ -1301,9 +1311,9 @@ begin
          non_exp := non_exp + suff_n_exp ;
       end;
    end;
-   msg_contre.err_pouvoirs := errpv;
-   msg_contre.err_pouvoirs := errpv;
-   msg_abs.err_pouvoirs := errpv;
+   msg_pour.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
+   msg_contre.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
+   msg_abs.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
 
 end;
 
@@ -1340,7 +1350,13 @@ begin
    msg_pour := message_nil;
    msg_contre := message_nil;
    msg_abs := message_nil;
-   if msge.choix = 'pour' then msg_pour := msge else if msge.choix = 'contre' then msg_contre := msge else if msge.choix = 'abs' then msg_abs := msge else begin
+   if msge.choix = 'pour' then begin
+      msg_pour := msge;
+   end else if msge.choix = 'contre' then begin
+      msg_contre := msge;
+   end else if msge.choix = 'abs' then begin
+      msg_abs := msge;
+   end else begin
       log_infos('erreur cas normalement impossible : message valide sans choix correct: choix = ' + msge.choix);
    end;
 end;
@@ -1398,7 +1414,16 @@ begin
             lelement_scrutin.AddObject('', telement_scrutin.create(msge));
          end else begin
             with part.elem_scrutin do begin
-               if msge.choix = 'pour' then msg_pour := msge else if msge.choix = 'contre' then msg_contre := msge else if msge.choix = 'abs' then msg_abs := msge else begin
+               if msge.choix = 'pour' then begin
+                  msge.chaine_pv := msg_pour;
+                  msg_pour := msge;
+               end else if msge.choix = 'contre' then begin
+                  msge.chaine_pv := msg_contre;
+                  msg_contre := msge;
+               end else if msge.choix = 'abs' then begin
+                  msge.chaine_pv := msg_abs;
+                  msg_abs := msge;
+               end else begin
                   log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
                end;
             end;   
@@ -1409,7 +1434,9 @@ end;
 
 destructor telement_scrutin.destroy;
 begin
-  //
+  msg_pour.propagation_errp(true, false);
+  msg_contre.propagation_errp(true, false);
+  msg_abs.propagation_errp(true, false);
   inherited;
 end;
 
