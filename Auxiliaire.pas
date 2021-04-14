@@ -1185,6 +1185,7 @@ var
 begin
    j := 0;
    for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
+   f1stringgrid.row := 0; f1stringgrid.col := 0;
    lmessages := lmsg;
    scrutin_encours.raz_rejetes;
    if scrutin_encours.ttl_exp > 0 then begin
@@ -1477,6 +1478,8 @@ begin
       Ene_ppc_nbmb_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
       Erjpour_.text := '0'; Erjcontre_.text := '0'; Erjabs_.text := '0';
       for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
+      f1stringgrid.row := 0; f1stringgrid.col := 0;
+      LNb_msg_.Caption :=  '0 messages affichés';
    end else begin
       Ep_ppc_exp_.text := inttostr((100 *  ttl_pour) div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr((100 * ttl_pour) div nombre_membres) ;
       Ec_ppc_exp_.text := inttostr((100 * ttl_contre) div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr((100 * ttl_contre) div nombre_membres) ;

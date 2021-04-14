@@ -231,7 +231,7 @@ begin
       Cbweb.Checked := false;
       cbaucunpouvoirs.Checked := false;
       Cblocal.Checked := false;
-      setCbPouvoirschecked;
+     // setCbPouvoirschecked;
       TCheckBox(sender).Checked := true;
       if sender = cbaucunpouvoirs then cbaucunpouvoirs.Color := clYellow else cbaucunpouvoirs.Color := clBtnFace;
       Cbftp.tag := 0;
@@ -540,6 +540,8 @@ begin
       if debug then Mrecu.Lines.Assign(strl);
       p_traite_pouvoirs(strl, ExtractFileName(fichier ));
       if not debug then Close;
+   end else begin
+
    end;
 end;
 
