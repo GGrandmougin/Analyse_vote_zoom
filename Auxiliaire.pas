@@ -234,6 +234,7 @@ type
     liste_votes : tliste_vote;
     scr_secret : boolean;
     secret_only : boolean;
+    processed : boolean;
     liste_message : tliste_message;
     procedure aff_totaux_rejetes;
     function additionne_rejetes(mssge : tmessage ; idx, col, nombre : integer; choix : string; part : tparticipant ): boolean;
@@ -262,6 +263,7 @@ type
     ligne_vide : string;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
+    procedure clear_tmessages; // pour debug
     procedure remplit_fic_sortie(scrutin : tscrutin);
     procedure config_nouv_scrutin(l_nouv_scrutin : tstringlist);
     function decompose(entree : string): tstringlist; // tstringlist.create dans la fonctio,
@@ -599,8 +601,8 @@ begin
    err_region := true;
    err_prenom := false;
    err_nom := false;
-   err_num := false;
-   err_ID := false;
+   err_num := num = 0;
+   err_ID := err_num;
    rejets.msage := message_nil; rejets.er_pv := false;
    numero := 0;
    //nbgrl := 0;
@@ -982,12 +984,15 @@ begin
 end;
 
 constructor tmessage.create(idx_msg : integer; msg  : string; secret : boolean ; lmsg : tliste_message = nil);
+const
+   mx = 3;
 var
-   st, tlm_scrt, nb, cha, chb : string;
+   st, tlm_scrt, nb, choix_alt , chx: string;
    v, i : integer;
    nbgrl, nbgrc : integer;
    dans_grl, dans_grc : boolean;
    lmessages : tstringlist;
+   ch : array[1.. mx] of string;
 begin
    index := idx_msg;
    //if debug then memo_tests.Add(msg);
@@ -1017,14 +1022,15 @@ begin
          if (v > 96) and (v < 123) then begin  // lettre
             if not dans_grl then inc(nbgrl);
             dans_grl := true;
-            if nbgrl = 1 then  cha := cha + st[i] else if nbgrl = 2 then  chb := chb + st[i] ;//choix := choix + st[i];
+            //if nbgrl = 1 then  cha := cha + st[i] else if nbgrl = 2 then  chb := chb + st[i] ;//choix := choix + st[i];
+            if nbgrl <= mx then ch[nbgrl] := ch[nbgrl] + st[i]
          end else begin
             dans_grl := false;
          end;
-         if (cha = 'x') or (chb = 'x') then begin
+         {if (cha = 'x') or (chb = 'x') then begin
             if cha = 'x' then choix := chb else choix := cha;
             dec(nbgrl)
-         end else choix := cha;
+         end else choix := cha; }
          if  (v > 47) and (v < 58) then begin // chiffre
             if not dans_grc then inc(nbgrc);
             dans_grc := true;
@@ -1033,9 +1039,18 @@ begin
             dans_grc := false;
          end;
       end;
+      for i := 1 to min(mx, nbgrl) do begin
+         chx := ch[i];
+         if length(chx) < 3 then dec(nbgrl);
+         if (choix = '') and ((chx = 'pour') or (chx = 'contre') or (chx = 'abs') or (chx = 'abstention') or (chx = 'oui') or (chx = 'non')) then choix := chx
+         else if (choix <> '') and ((chx = 'pour') or (chx = 'contre') or (chx = 'abs') or (chx = 'abstention') or (chx = 'oui') or (chx = 'non')) then choix_alt := chx; // pour éviter double choix , ex: "pour 3 contre" (influence dans comptage des rejetés )}
+         {if (choix = '') and (length(ch[i]) in [3 , 4, 6, 10]) then choix := ch[i]
+         else if (choix <> '') and (length(ch[i]) in [3 , 4, 6, 10]) then choix_alt := ch[i]; // pour éviter double choix , ex: "pour 3 contre" (influence dans comptage des rejetés )}
+      end;
+      if (choix_alt <> '') then choix := '';
       if choix = 'abstention' then choix := 'abs';
       err_choix :=  (choix = 'oui') or (choix = 'non');
-      if not((choix = 'pour') or (choix = 'contre') or (choix = 'abs') or (choix = 'oui') or (choix = 'non')) then choix := '';
+      //if not((choix = 'pour') or (choix = 'contre') or (choix = 'abs') or (choix = 'oui') or (choix = 'non')) then choix := '';
       if nb <> '' then nombre := strtointdef(nb, 0); // caractère "-" non accepté -> nombre forcément positif
       err_choix :=  err_choix or (nbgrl <> 1) or (choix = '');
       if nbgrc = 0 then nombre := -1;
@@ -1459,6 +1474,7 @@ begin
       showmessage(st1  + #13#10 + st2);
    end;
    aux1.aff_messages(true, false, '', liste_message, liste_votes);
+   processed := true;
    maj_resultats;
 end;
 
@@ -1519,7 +1535,7 @@ procedure tscrutin.maj_resultats;
 var
    i : integer;
 begin
-   if (ttl_votants = 0) or (ttl_exp = 0) or (nombre_membres = 0)  then begin
+   if not processed  then begin
       Ep_ppc_exp_.text := '0' ; Ep_ppc_nbmb_.text := '0' ;
       Ec_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
       Ea_ppc_exp_.text := '0' ; Ea_ppc_nbmb_.text := '0' ;
@@ -1551,6 +1567,7 @@ begin
    scr_secret := false;
    secret_only := false;
    liste_message := aux1.lmessages_gen;
+   processed := false;
 end;
 
 destructor tscrutin.destroy;
@@ -1568,6 +1585,7 @@ procedure tscrutin.init_totaux;
 begin
    ttl_pour :=0; ttl_contre :=0; ttl_abs :=0; ttl_exp :=0; ttl_votants :=0;
    raz_rejetes;
+   processed := false;
 end;
 
 
@@ -2108,6 +2126,16 @@ begin
    end;
    Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);
    lpart_rejets.Clear;
+end;
+
+procedure taux.clear_tmessages;
+var
+   i: integer;
+begin
+   for i := 0 to lmessages_gen.Count -1 do begin
+      lmessages_gen.Objects[i].Free;
+      lmessages_gen.Objects[i] := nil;
+   end
 end;
 
 end.

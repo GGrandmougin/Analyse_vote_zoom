@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 1292
-  Top = 151
+  Left = 546
+  Top = 183
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -729,7 +729,7 @@ object Form1: TForm1
       OnClick = LAnalyseClick
     end
     object Image1: TImage
-      Left = 824
+      Left = 828
       Top = 24
       Width = 369
       Height = 81
@@ -1714,7 +1714,7 @@ object Form1: TForm1
         FB00}
     end
     object Label3: TLabel
-      Left = 960
+      Left = 964
       Top = 488
       Width = 233
       Height = 20
@@ -2964,6 +2964,15 @@ object Form1: TForm1
       Caption = 'BExport_CSV_lparticpants'
       TabOrder = 17
       OnClick = BExport_CSV_lparticpantsClick
+    end
+    object Beff_tmessages: TButton
+      Left = -8
+      Top = 112
+      Width = 145
+      Height = 17
+      Caption = 'Beff_tmessages'
+      TabOrder = 18
+      OnClick = Beff_tmessagesClick
     end
   end
   object OpenDialog1: TOpenDialog

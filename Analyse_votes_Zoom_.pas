@@ -157,6 +157,7 @@ type
     inombres : timage;
     Linfo_moins1: TLabel;
     Lfichier_pouvoirs: TLabel;
+    Beff_tmessages: TButton;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -220,6 +221,7 @@ type
     procedure BselectficClick(Sender: TObject);
     procedure CbvnreconnusClick(Sender: TObject);
     procedure Efic_msgChange(Sender: TObject);
+    procedure Beff_tmessagesClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -679,6 +681,7 @@ begin
                Aux1.scrutin_encours := tscrutin(aux1.lscrutin.Objects[i]);
                Enomvote.text := Aux1.scrutin_encours.nom ;
                maj_entrees;
+               Aux1.scrutin_encours.processed := false;
                Aux1.scrutin_encours.maj_resultats;
                if Aux1.scrutin_encours.ttl_exp > 0 then enable_entrees(false, false, false);
             end;
@@ -879,6 +882,11 @@ end;
 procedure TForm1.Efic_msgChange(Sender: TObject);
 begin
    Efic_msg.Hint := Efic_msg.Text;
+end;
+
+procedure TForm1.Beff_tmessagesClick(Sender: TObject);
+begin
+   aux1.clear_tmessages;
 end;
 
 end.
