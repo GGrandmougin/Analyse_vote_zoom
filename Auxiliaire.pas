@@ -1545,9 +1545,9 @@ begin
       f1stringgrid.row := 0; f1stringgrid.col := 0;
       LNb_msg_.Caption :=  '0 messages affichés';
    end else begin
-      Ep_ppc_exp_.text := inttostr((100 *  ttl_pour) div ttl_exp) ; Ep_ppc_nbmb_.text := inttostr((100 * ttl_pour) div nombre_membres) ;
-      Ec_ppc_exp_.text := inttostr((100 * ttl_contre) div ttl_exp) ; Ec_ppc_nbmb_.text := inttostr((100 * ttl_contre) div nombre_membres) ;
-      Ea_ppc_exp_.text := inttostr((100 * ttl_abs) div ttl_exp) ; Ea_ppc_nbmb_.text := inttostr((100 * ttl_abs) div nombre_membres) ;
+      Ep_ppc_exp_.text := inttostr((100 *  ttl_pour) div max(ttl_exp, 1)) ; Ep_ppc_nbmb_.text := inttostr((100 * ttl_pour) div nombre_membres) ;
+      Ec_ppc_exp_.text := inttostr((100 * ttl_contre) div max(ttl_exp,1)) ; Ec_ppc_nbmb_.text := inttostr((100 * ttl_contre) div nombre_membres) ;
+      Ea_ppc_exp_.text := inttostr((100 * ttl_abs) div max(ttl_exp,1)) ; Ea_ppc_nbmb_.text := inttostr((100 * ttl_abs) div nombre_membres) ;
       Ene_ppc_nbmb_.text := inttostr((100 * (ttl_votants - ttl_exp)) div nombre_membres) ; Ev_ppc_nbmb_.text := inttostr((100 * ttl_votants)div nombre_membres) ;
    end ;
    Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
