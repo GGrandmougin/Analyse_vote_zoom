@@ -49,6 +49,9 @@ type
     cbaucunpouvoirs: TCheckBox;
     Pimporter: TPanel;
     Limporter: TLabel;
+    Epv_max: TEdit;
+    Lpv_max1: TLabel;
+    Lpv_max2: TLabel;
     procedure place_ifl_ext;
     procedure recois_http;
     procedure IcroixMouseDown(Sender: TObject; Button: TMouseButton;
@@ -86,6 +89,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure PimporterClick(Sender: TObject);
+    procedure Epv_maxChange(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -543,6 +547,12 @@ begin
    end else begin
 
    end;
+end;
+
+procedure TFpouv_in.Epv_maxChange(Sender: TObject);
+begin
+   if strtointdef(Epv_max.Text, -1) < 1 then  Epv_max.Text := '20';
+   nb_pouvoirs_max := strtoint(Epv_max.Text) + 1; // nb de pouvoirs confiés + la voix du mandataire
 end;
 
 end.

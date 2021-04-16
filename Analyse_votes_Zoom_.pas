@@ -149,7 +149,14 @@ type
     Bselectfic: TButton;
     OpenDialog1: TOpenDialog;
     StaticText2: TStaticText;
-    Lnb_pouvoirs_confies: TLabel;
+    Ppouvoirs : tpanel;
+    pinformations : tpanel;
+    lcompte_partiellement : tlabel;
+    lcompte_rejetes : tlabel;
+    lcompte_resultats : tlabel;
+    inombres : timage;
+    Linfo_moins1: TLabel;
+    Lfichier_pouvoirs: TLabel;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -212,6 +219,7 @@ type
     procedure BExport_CSV_lparticpantsClick(Sender: TObject);
     procedure BselectficClick(Sender: TObject);
     procedure CbvnreconnusClick(Sender: TObject);
+    procedure Efic_msgChange(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -265,7 +273,7 @@ begin
    if debug then colorselect := tcolorselect.Create(self); // sera déruit par form1 à la fin du programme
    color := tcolor(10867674);  //(4227327);
    cb_pouv_val := Cbpouvoirs;
-   LnbPouvoirsConfies := Lnb_pouvoirs_confies;
+   lfic_pouvoirs := Lfichier_pouvoirs;
 end;
 
 
@@ -866,6 +874,11 @@ end;
 procedure TForm1.CbvnreconnusClick(Sender: TObject);
 begin
    Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.Text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+end;
+
+procedure TForm1.Efic_msgChange(Sender: TObject);
+begin
+   Efic_msg.Hint := Efic_msg.Text;
 end;
 
 end.

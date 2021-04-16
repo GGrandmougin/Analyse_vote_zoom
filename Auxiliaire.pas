@@ -137,8 +137,18 @@ type
   end;
   tliste_message = tstringlist;
   tliste_participant = tstringlist;
+  tmessage = class;
   telement_scrutin = class;
   tscrutin = class;
+  trejets = record
+      msage : tmessage;
+      nbrj_pour : integer;
+      nbrj_contre : integer;
+      nbrj_abs  : integer;
+      lgne : integer;
+      clne : integer;
+      er_pv : boolean;
+  end;
   tparticipant = class
     nom, prenom, region : string;
     texte : string;
@@ -155,6 +165,7 @@ type
     //present_ds_elements : boolean; // pour comptage des non-exprimés -> fait avec elem_srutin
     elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
     fichier_CSV : string;
+    rejets : trejets;
     function ecrit_csv(idx : integer; s : char):string;
     function compare(nm, prenm, regn, fic_csv : string; part_initial : tparticipant): tparticipant;  overload;
     function compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant; overload;
@@ -174,6 +185,7 @@ type
     texte : string;
     choix : string ;
     nombre : integer	;
+    compte_ttl, compte_part, compte_rj : boolean;
     nb_final : boolean;  // à true si message unique ou le dernier pour le particpant dans ce choix
     //stg_clear : TStringlist;
     //m_en_erreur : boolean;  rempacé par function rejected
@@ -188,7 +200,7 @@ type
     function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
-    function affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = '') : boolean;
+    function affichage_m(ligne: tstrings; idx : integer; rejets, vnr : boolean; filtre: string = '') : boolean;
     function cherche_participant(msg : string): tparticipant ;
     constructor create(idx_msg : integer; msg  : string; secret : boolean; lmsg : tliste_message = nil);
     destructor destroy;  override;
@@ -199,6 +211,8 @@ type
     msg_abs  : tmessage;
     msg_contre: tmessage;
     suff_n_exp: integer;
+    err_pouv : boolean;
+    pouv_cpt_res, pouv_cpt_part, pouv_cpt_rj : boolean;
     //scrutin : tscrutin;
     procedure additionne(var pour, contre, abs, non_exp : integer );
     constructor create(msge : tmessage);
@@ -216,12 +230,13 @@ type
     ttl_pour, ttl_contre, ttl_abs, ttl_exp, ttl_votants : integer;
     ttl_rj_p, ttl_rj_c, ttl_rj_a : integer;
     lelement_scrutin : tstringlist;
+    lpart_rejets : tstringlist;
     liste_votes : tliste_vote;
     scr_secret : boolean;
     secret_only : boolean;
     liste_message : tliste_message;
     procedure aff_totaux_rejetes;
-    function additionne_rejetes(idx_mess, nombre : integer; choix : string; part : tparticipant ): boolean;
+    function additionne_rejetes(mssge : tmessage ; idx, col, nombre : integer; choix : string; part : tparticipant ): boolean;
     procedure decompte_rejetes; // procedure inutile , il y a additionne_rejetés dans affichage_m
     procedure raz_rejetes;
     procedure decomptage;
@@ -285,7 +300,7 @@ var
    stringgrid1rowscount : integer;
    strgrd_colcount : integer;
    message_nil : tmessage;
-   nb_pouvoirs_max : integer = 20;
+   //nb_pouvoirs_max : integer; = 20;
    l_aff : tstringlist = nil;
    Epour_, Econtre_, Eabs_, Enon_exp_, Evotants_ : tedit;
    Ep_ppc_exp_,Ec_ppc_exp_, Ea_ppc_exp_ : tedit;
@@ -516,6 +531,7 @@ begin
    err_nom := false;
    err_num := false;
    err_ID := false;
+   rejets.msage := message_nil; rejets.er_pv := false;
    numero := 0;
    nbgrl := 0;
    nbgrc := 0;
@@ -585,6 +601,7 @@ begin
    err_nom := false;
    err_num := false;
    err_ID := false;
+   rejets.msage := message_nil; rejets.er_pv := false;
    numero := 0;
    //nbgrl := 0;
    //nbgrc := 0;
@@ -663,6 +680,7 @@ begin
    err_region := false;
    err_num := false;
    err_ID := false;
+   rejets.msage := message_nil; rejets.er_pv := false;
    aux1.lparticipants.AddObject('', self);
    if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
 end;
@@ -741,12 +759,17 @@ end;
 
 function tparticipant.affichage_p(ligne: tstrings; filtre: string): boolean;
 var
-   flt : string;
+   flt, symb : string;
 begin
    flt := lowercase(trim(filtre));
    result := ((filtre = '') or (flt = copy(texte, 1, length(flt)))); // texte uniquement lowercase
+   if elem_scrutin <> nil then begin
+      with elem_scrutin do begin
+         if pouv_cpt_res then symb := '"' else if pouv_cpt_part then symb := '''' else if pouv_cpt_rj then symb := ',' else symb := '' ;
+      end;  //pouv_cpt_rj jamais activé (difficulté à le faire)
+   end;   
    if result then begin
-      ligne[col_pouvoirs] := inttostr(pouvoirs);
+      ligne[col_pouvoirs] := symb + inttostr(pouvoirs) + symb;
       if err_nom then ligne[col_nom] := 'X';
       if err_prenom then ligne[col_prenom] := 'X';
       if err_region then ligne[col_region] := 'X';
@@ -893,9 +916,11 @@ end;
 
 { tmessage }
 
-function tmessage.affichage_m(ligne: tstrings; rejets, vnr : boolean; filtre: string = ''): boolean;
+function tmessage.affichage_m(ligne: tstrings; idx : integer; rejets, vnr : boolean; filtre: string = ''): boolean;
 var
    str_nb : string;
+   add_rj : boolean;
+   col_sgd : integer;
 begin
    result := false;
    try
@@ -903,19 +928,23 @@ begin
       result := (vnr or est_vote) and result ;
       result := result and  participant.affichage_p(ligne,  filtre) ;// il faut que affichage_p  soit appellé dans tous les cas
       if result then begin
+         if (choix = 'pour') or (choix = 'oui') then col_sgd := col_pour  else
+         if (choix = 'contre') or (choix = 'non') then col_sgd := col_contre else
+         if (choix = 'abs') then col_sgd := col_abs else col_sgd := 0;
          ligne[0] := texte;
          if err_choix then ligne[col_choix] := 'X';
          if err_nombre then ligne[col_nombre] := 'X';
          if err_pouvoirs then ligne[col_err_pouvoirs] := 'X';
          if err_choix or err_nombre or err_pouvoirs then ligne[col_suffrage] := 'X';  // sera peut-être rempli aussi par le controle des pouvoirs
          str_nb := inttostr(nombre);
-         //ligne[col_] := ;
          if rejets then begin
-            if not Aux1.scrutin_encours.additionne_rejetes(index, nombre, choix, participant) then str_nb := '(' + str_nb + ')';
+            add_rj := Aux1.scrutin_encours.additionne_rejetes(self, idx, col_sgd, nombre, choix, participant) ;
+            if add_rj  then compte_rj := true else str_nb := '(' + str_nb + ')';
          end;
-         if (choix = 'pour') or (choix = 'oui') then ligne[col_pour] := str_nb else
-         if (choix = 'contre') or (choix = 'non') then ligne[col_contre] := str_nb else
-         if choix = 'abs' then ligne[col_abs] := str_nb ;
+         if compte_ttl then str_nb := '"' + str_nb  + '"'
+         else if compte_part then str_nb := '''' + str_nb  + '''' ;
+         if compte_rj then str_nb := ',' + str_nb  + ',' ;
+         if col_sgd > 0 then ligne[col_sgd] := str_nb;
       end;
    except
       on E: exception do
@@ -964,6 +993,7 @@ begin
    //if debug then memo_tests.Add(msg);
    est_msg_nil := idx_msg = idx_msg_nil;
    chaine_pv := message_nil;
+   compte_ttl := false; compte_part := false; compte_rj := false;
    if est_msg_nil then begin
       nombre := 0;
       participant := nil;
@@ -1192,7 +1222,7 @@ begin
       i := lvotes.idx_deb;
       while (i >= 0) and ((i <= lvotes.idx_fin) and (j < f1stringgrid.RowCount)) do begin
          try
-            if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], rejetes, vnr, filtre) then inc(j);
+            if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], j, rejetes, vnr, filtre) then inc(j);
          except
             on E: exception do begin
                log_infos('Erreur dans aff_messages (index:' + inttostr(i) + ') ' + E.Message);
@@ -1302,12 +1332,19 @@ var
    errpv : boolean;
    nb_pour, nb_contre, nb_abs : integer;
    nb_flottants : integer;
+procedure affecte_temoins( total , partiel, rejetes : boolean);
+begin
+   if msg_pour.nombre > 0 then begin if total then msg_pour.compte_ttl := true else if partiel then msg_pour.compte_part := true else if rejetes then msg_pour.compte_rj := true   end;
+   if msg_contre.nombre > 0 then begin if total then msg_contre.compte_ttl := true else if partiel then msg_contre.compte_part := true else if rejetes then msg_contre.compte_rj := true  end;
+   if msg_abs.nombre > 0 then begin if total then msg_abs.compte_ttl := true else if partiel then msg_abs.compte_part := true else if rejetes then msg_abs.compte_rj := true   end;
+end;
 begin
    // err_pouvoirs de tous les message remis à false dans cree_elements;
    // msg_pour etc ... valent messsage_nil si non affectés, message_nil.nombre = 0
    if participant.pouvoirs = 0 then begin
       errpv := true;
       suff_n_exp := 0;
+      //affecte_temoins(false, false, true);
    end else begin
       nb_flottants := 0;
       if msg_pour.nombre = -1 then begin  nb_pour := 1; inc(nb_flottants) end else nb_pour := msg_pour.nombre;
@@ -1316,23 +1353,29 @@ begin
       suff_n_exp := participant.pouvoirs  - nb_pour - nb_contre - nb_abs;
       errpv := (suff_n_exp < 0) or (nb_flottants > 1) ;
       if errpv then begin
-         if (msg_pour.nombre= 0) and (msg_contre.nombre = 0) then begin errpv := false ; abs := abs + participant.pouvoirs end;
-         if (msg_contre.nombre= 0) and ( msg_abs.nombre = 0)  then begin errpv := false ; pour := pour + participant.pouvoirs end;
-         if (msg_abs.nombre= 0) and ( msg_pour.nombre = 0)    then begin errpv := false ; contre := contre + participant.pouvoirs end;
-         if errpv then suff_n_exp := participant.pouvoirs else suff_n_exp := 0;
+         if (msg_pour.nombre= 0) and (msg_contre.nombre = 0) then begin errpv := false ; abs := abs + participant.pouvoirs; msg_abs.compte_part := true end;
+         if (msg_contre.nombre= 0) and ( msg_abs.nombre = 0)  then begin errpv := false ; pour := pour + participant.pouvoirs; msg_pour.compte_part := true end;
+         if (msg_abs.nombre= 0) and ( msg_pour.nombre = 0)    then begin errpv := false ; contre := contre + participant.pouvoirs; msg_contre.compte_part := true end;
+         if errpv then begin suff_n_exp := participant.pouvoirs;{ affecte_temoins(false, false, true)} end else begin suff_n_exp := 0; pouv_cpt_res := true end;
          non_exp := non_exp + suff_n_exp;
       end else if nb_flottants = 1 then begin
-         if msg_pour.nombre = -1 then pour := pour + participant.pouvoirs - nb_contre - nb_abs;
-         if msg_contre.nombre = -1 then contre := contre + participant.pouvoirs - nb_pour - nb_abs;
-         if msg_abs.nombre = -1 then abs := abs + participant.pouvoirs - nb_pour - nb_contre;
-         suff_n_exp := 0;      
+         if msg_pour.nombre = -1 then begin  pour := pour + participant.pouvoirs - nb_contre - nb_abs; msg_pour.compte_ttl := true ;end;
+         if msg_contre.nombre = -1 then begin contre := contre + participant.pouvoirs - nb_pour - nb_abs; msg_contre.compte_ttl := true ;end;
+         if msg_abs.nombre = -1 then begin abs := abs + participant.pouvoirs - nb_pour - nb_contre; msg_abs.compte_ttl := true ;end;
+         suff_n_exp := 0;
+         pouv_cpt_res := true;
       end else begin
          pour := pour + nb_pour;
          contre := contre + nb_contre;
          abs := abs + nb_abs;
          non_exp := non_exp + suff_n_exp ;
+         if suff_n_exp < participant.pouvoirs  then begin
+            if suff_n_exp = 0 then pouv_cpt_res := true else pouv_cpt_part := true;
+            affecte_temoins( true , false, false);
+         end ;
       end;
    end;
+   err_pouv := errpv;
    msg_pour.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
    msg_contre.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
    msg_abs.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
@@ -1367,11 +1410,13 @@ end;  }
 
 constructor telement_scrutin.create(msge : tmessage);
 begin
+   pouv_cpt_res := false; pouv_cpt_part := false; pouv_cpt_rj := false;
    participant := msge.participant;
    participant.elem_scrutin := self;
    msg_pour := message_nil;
    msg_contre := message_nil;
    msg_abs := message_nil;
+   err_pouv := false;
    if msge.choix = 'pour' then begin
       msg_pour := msge;
    end else if msge.choix = 'contre' then begin
@@ -1430,7 +1475,10 @@ begin
    for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
       if liste_message.Objects[i] <> nil then begin
          msge := tmessage(liste_message.Objects[i]);
-         msge.err_pouvoirs := false;
+         with msge do begin
+            err_pouvoirs := false;
+            compte_ttl := false; compte_part := false; compte_rj := false;
+         end;
          msge.chaine_pv := message_nil;
          if msge.valide(scr_secret, secret_only) then begin
             part := msge.participant;
@@ -1494,6 +1542,7 @@ begin
    numero := num;
    nom := nm;
    lelement_scrutin := tstringlist.Create;
+   lpart_rejets := tstringlist.Create;
    //liste_votes := tstringlist.Create;
    liste_votes.idx_deb := -1;
    liste_votes.idx_fin := -1;
@@ -1511,6 +1560,7 @@ begin
     lelement_scrutin.Delete(0);
    end;
    lelement_scrutin.Free;
+   lpart_rejets.Free;
    inherited;
 end;
 
@@ -1545,7 +1595,7 @@ begin
    ttl_rj_a :=0;
 end;
 
-function tscrutin.additionne_rejetes(idx_mess, nombre: integer; choix: string ; part : tparticipant): boolean;
+{function tscrutin.additionne_rejetes(mssge : tmessage ; nombre: integer; choix: string ; part : tparticipant): boolean;
 var
    mess : tmessage;
    bpour, bcontre, babs : boolean;
@@ -1561,9 +1611,9 @@ begin
          elem_scr := part.elem_scrutin;
          if bpour or bcontre or babs then begin
             if elem_scr <> nil then begin
-               if bpour then mess := elem_scr.msg_pour else if bcontre then mess := elem_scr.msg_abs else mess := elem_scr.msg_abs;
-               if idx_mess > mess.index then begin  // message plus récent dans le choix
-                  if mess.est_msg_nil then nb := min(nombre, elem_scr.suff_n_exp) else nb := min(nombre, part.pouvoirs);
+               if bpour then mess := elem_scr.msg_pour else if bcontre then mess := elem_scr.msg_contre else mess := elem_scr.msg_abs;
+               if mssge.index > mess.index then begin  // message plus récent dans le choix
+                  if mess.est_msg_nil then nb := min(nombre, elem_scr.suff_n_exp) else begin nb := min(nombre, part.pouvoirs); mess.compte_rj := true; end;
                end else begin
                   nb := 0;
                end;
@@ -1571,15 +1621,65 @@ begin
                nb := min(nombre, part.pouvoirs);
             end;
          end;
+         if nb = -1 then nb := part.pouvoirs;
       end else begin // pb identification du participant
-         nb := min(nombre, nb_pouvoirs_max);
+         nb := min(abs(nombre), nb_pouvoirs_max);
       end;
+
       if bpour then inc(ttl_rj_p , nb) else if bcontre then inc(ttl_rj_c , nb) else if babs then inc(ttl_rj_a , nb);
       //Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);    dans aff_totaux_rejetes
    except
       on E : exception do log_infos('Erreur dans additionne_rejetes: ' + E.message);
    end;
    result := nb > 0;
+end;  }
+
+function tscrutin.additionne_rejetes(mssge : tmessage ; idx, col,  nombre: integer; choix: string ; part : tparticipant): boolean;
+var
+   bpour, bcontre, babs : boolean;
+   elem_scr : telement_scrutin;
+   resultats_non_valides : boolean;
+procedure affecte;
+begin
+   if bpour then        part.rejets.nbrj_pour := min(mssge.nombre, part.pouvoirs)
+   else if bcontre then part.rejets.nbrj_contre := min(mssge.nombre, part.pouvoirs)
+   else if babs then    part.rejets.nbrj_abs := min(mssge.nombre, part.pouvoirs);
+   result := true;
+end;
+begin
+   // savoir si
+   resultats_non_valides := true;
+   result := false;
+   try
+      if part <> nil then begin
+         elem_scr := part.elem_scrutin;
+         if elem_scr <> nil then resultats_non_valides := elem_scr.suff_n_exp = part.pouvoirs;
+         if resultats_non_valides then begin
+            if (elem_scr <> nil) and elem_scr.err_pouv then begin  // en cas depassement du nb de pouvoirs on prend en compte les voix pour chacun des choix pour le participant concerné
+                  bpour :=  mssge = elem_scr.msg_pour;
+                  bcontre := mssge = elem_scr.msg_contre;
+                  babs := mssge = elem_scr.msg_abs;
+                  if bpour or bcontre or babs then affecte;
+            end else begin  // on prend seulement en compte le dernier message du participant, donc on n'additionnera que pour le choix du dernier message du participant
+               bpour := (choix = 'pour') or (choix = 'oui');
+               bcontre :=  (choix = 'contre') or (choix = 'non');
+               babs := choix = 'abs' ;
+               part.rejets.msage.compte_rj := false;
+               if (part.rejets.msage <> message_nil) and (part.rejets.clne > 0) then 
+                  f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ] := StringReplace(f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ], ',', '', [rfreplaceall] );
+               part.rejets.msage := mssge; // donc le dernier
+               part.rejets.clne := col;
+               part.rejets.lgne := idx;
+               //mssge.compte_rj := true;   fait dans affichage_m
+               part.rejets.nbrj_pour := 0; part.rejets.nbrj_contre := 0; part.rejets.nbrj_abs := 0;
+               affecte;
+            end;
+            if lpart_rejets.IndexOfObject(part) < 0 then lpart_rejets.AddObject('', part );
+         end;
+      end;
+   except
+      on E : exception do log_infos('Erreur dans additionne_rejetes: ' + E.message);
+   end;
 end;
 
 procedure taux.ptest(Sender: tobject);
@@ -1656,10 +1756,12 @@ begin
          end;
       end;
    end;
-   cb_pouv_val.Checked := cbpouvoirs_Checked;
    l_champs.Free;
    l_ID.Free;
-   LnbPouvoirsConfies.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
+   if cb_pouv_val.Checked then begin
+      cb_pouv_val.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
+      lfic_pouvoirs.Caption := 'Fichier: ' + fichier;
+   end;
 end;
 
 function taux.cherche_participant(nm, prenm, regn, ID, fic_csv: string): tparticipant;
@@ -1981,9 +2083,31 @@ begin
    sl.Free;
 end;
 
-procedure tscrutin.aff_totaux_rejetes;
+{procedure tscrutin.aff_totaux_rejetes;
 begin
    Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);
+end;}
+
+procedure tscrutin.aff_totaux_rejetes;
+var
+   i : integer;
+   part : tparticipant;
+function incremente(ttl, nombre, nb_pv : integer): integer;
+begin
+   if nombre < 0 then result := ttl + nb_pv else result := ttl + nombre;
+end;
+begin
+   ttl_rj_p := 0; ttl_rj_c := 0; ttl_rj_a := 0;
+   for i := 0 to lpart_rejets.Count -1 do begin
+      part := tparticipant(lpart_rejets.Objects[i]);
+      ttl_rj_p := incremente(ttl_rj_p, part.rejets.nbrj_pour, part.pouvoirs) ;
+      ttl_rj_c := incremente(ttl_rj_c, part.rejets.nbrj_contre, part.pouvoirs) ;
+      ttl_rj_a := incremente(ttl_rj_a, part.rejets.nbrj_abs, part.pouvoirs) ;
+      part.rejets.er_pv := false;
+      part.rejets.msage := message_nil;
+   end;
+   Erjpour_.text := inttostr(ttl_rj_p); Erjcontre_.text := inttostr(ttl_rj_c); Erjabs_.text := inttostr(ttl_rj_a);
+   lpart_rejets.Clear;
 end;
 
 end.

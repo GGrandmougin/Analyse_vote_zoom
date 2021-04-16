@@ -18,6 +18,32 @@ object Fpouv_in: TFpouv_in
   OnShow = FormShow
   PixelsPerInch = 96
   TextHeight = 13
+  object Lpv_max1: TLabel
+    Left = 576
+    Top = 640
+    Width = 260
+    Height = 20
+    Caption = 'Nombre max de pouvoirs confi'#233's'
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
+  object Lpv_max2: TLabel
+    Left = 576
+    Top = 664
+    Width = 179
+    Height = 20
+    Caption = ' '#224' un seul participant: '
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+  end
   object Pdebug: TPanel
     Left = 880
     Top = 72
@@ -458,6 +484,21 @@ object Fpouv_in: TFpouv_in
       OnClick = PimporterClick
     end
   end
+  object Epv_max: TEdit
+    Left = 760
+    Top = 660
+    Width = 41
+    Height = 28
+    Font.Charset = DEFAULT_CHARSET
+    Font.Color = clWindowText
+    Font.Height = -16
+    Font.Name = 'MS Sans Serif'
+    Font.Style = [fsBold]
+    ParentFont = False
+    TabOrder = 6
+    Text = '20'
+    OnChange = Epv_maxChange
+  end
   object IdFTP1: TIdFTP
     OnStatus = IdFTP1Status
     MaxLineAction = maException
@@ -468,8 +509,8 @@ object Fpouv_in: TFpouv_in
     ProxySettings.ProxyType = fpcmNone
     ProxySettings.Port = 0
     OnAfterGet = IdFTP1AfterGet
-    Left = 840
-    Top = 672
+    Left = 832
+    Top = 592
   end
   object IdHTTP1: TIdHTTP
     OnStatus = IdHTTP1Status
@@ -486,7 +527,7 @@ object Fpouv_in: TFpouv_in
     Request.BasicAuthentication = False
     Request.UserAgent = 'Firefox/86.0.1'
     HTTPOptions = [hoForceEncodeParams]
-    Left = 808
-    Top = 672
+    Left = 800
+    Top = 600
   end
 end

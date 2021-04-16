@@ -42,10 +42,12 @@ var
    p_traite_pouvoirs : timport;
    cb_pouv_val : TCheckBox;
    cbpouvoirs_Checked : boolean = false;
-   LnbPouvoirsConfies : tlabel;
+   //nbPouvoirsConfies : TCheckBox;
+   lfic_pouvoirs : tlabel;
    titre_reunion : string;
    fichier_message_defaut : string;
    source_pouvoirs : string;
+   nb_pouvoirs_max : integer;
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;
