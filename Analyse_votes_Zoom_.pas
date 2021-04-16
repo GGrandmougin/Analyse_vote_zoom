@@ -817,11 +817,12 @@ begin
    ME_duree.Enabled := horaire;
    Efic_msg.Enabled := fic_mess;
    Enb_membres.Enabled := fic_mess;
+   Bselectfic.Enabled := fic_mess;
 end;
 
 procedure TForm1.BEditerClick(Sender: TObject);
 begin
-   enable_entrees(true, true, true);
+   enable_entrees(true, enable_efic_msg, true);
    Aux1.scrutin_encours.init_totaux;
    aux1.scrutin_encours.maj_resultats;
 end;

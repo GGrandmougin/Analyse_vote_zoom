@@ -337,6 +337,7 @@ begin
    end;
    if result then begin
       if lmfic.count > 0 then begin
+         enable_efic_msg := false;
          pretraitement_lmsg(lmfic);
          if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
       end else begin
@@ -1112,6 +1113,7 @@ var
    hfin : string;
    i : integer;
    lmessages : tstringlist;
+   hors_plage : boolean;
 begin
    i := -1;
    result.idx_deb := -1;
@@ -1127,13 +1129,20 @@ begin
       inc(i)
    until (i >= lmessages.Count) or (heure < lmessages.Strings[i]);
    if i < lmessages.Count then result.idx_deb := i;
+   hors_plage :=  i >= lmessages.Count;
+   if hors_plage then showmessage('Plage horaire après la fin des messages');
    while (i < lmessages.Count) and (lmessages.Strings[i] < hfin) do begin
       result.idx_fin := i;
       inc(i);
    end;
+   if i = 0 then begin
+      showmessage('Plage horaire avant le début des messages');
+      hors_plage := true;
+   end;
    if (result.idx_deb = -1) and (result.idx_fin >= 0) then result.idx_deb := 0;
    if debug then memo_tests.add( inttostr(result.idx_fin - result.idx_deb + 1) + ' messages sélectionnés');
-   traitement_lvotes(result, lmsg); // filtrage "tout le monde" , "secret" , 'secret uniquement"
+   if hors_plage then begin result.idx_deb := -1; result.idx_fin := -1;
+   end else traitement_lvotes(result, lmsg) // filtrage "tout le monde" , "secret" , 'secret uniquement"
 end;
 
 procedure taux.traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message   );
@@ -1206,8 +1215,10 @@ begin
             end;
             traite_lconfig;
             liste_votes := select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
-            decomptage;
-            remplit_fic_sortie(scrutin_encours);
+            if liste_votes.idx_deb >= 0 then begin  //sinon plage horaire selectionnée hors plage horaire des messages
+               decomptage;
+               remplit_fic_sortie(scrutin_encours);
+            end;
          end else begin
             st := 'fichier message invalide: ' + fichier_message;
             fichier_message := '';
@@ -1488,36 +1499,40 @@ begin
       lelement_scrutin.Objects[0].Free;
       lelement_scrutin.Delete(0);
    end;
-   for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
-      if liste_message.Objects[i] <> nil then begin
-         msge := tmessage(liste_message.Objects[i]);
-         with msge do begin
-            err_pouvoirs := false;
-            compte_ttl := false; compte_part := false; compte_rj := false;
-         end;
-         msge.chaine_pv := message_nil;
-         if msge.valide(scr_secret, secret_only) then begin
-            part := msge.participant;
-            if part.elem_scrutin = nil then begin
-               lelement_scrutin.AddObject('', telement_scrutin.create(msge));
-            end else begin
-               with part.elem_scrutin do begin
-                  if msge.choix = 'pour' then begin
-                     msge.chaine_pv := msg_pour;
-                     msg_pour := msge;
-                  end else if msge.choix = 'contre' then begin
-                     msge.chaine_pv := msg_contre;
-                     msg_contre := msge;
-                  end else if msge.choix = 'abs' then begin
-                     msge.chaine_pv := msg_abs;
-                     msg_abs := msge;
-                  end else begin
-                     log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
+   if (liste_votes.idx_deb >=0) and (liste_votes.idx_fin < liste_message.count) then begin
+      for i := liste_votes.idx_deb to liste_votes.idx_fin do begin
+         if liste_message.Objects[i] <> nil then begin
+            msge := tmessage(liste_message.Objects[i]);
+            with msge do begin
+               err_pouvoirs := false;
+               compte_ttl := false; compte_part := false; compte_rj := false;
+            end;
+            msge.chaine_pv := message_nil;
+            if msge.valide(scr_secret, secret_only) then begin
+               part := msge.participant;
+               if part.elem_scrutin = nil then begin
+                  lelement_scrutin.AddObject('', telement_scrutin.create(msge));
+               end else begin
+                  with part.elem_scrutin do begin
+                     if msge.choix = 'pour' then begin
+                        msge.chaine_pv := msg_pour;
+                        msg_pour := msge;
+                     end else if msge.choix = 'contre' then begin
+                        msge.chaine_pv := msg_contre;
+                        msg_contre := msge;
+                     end else if msge.choix = 'abs' then begin
+                        msge.chaine_pv := msg_abs;
+                        msg_abs := msge;
+                     end else begin
+                        log_infos('erreur cas normalement impossible : message valide sans choix correct: chois = ' + msge.choix);
+                     end;
                   end;
-               end;
-            end; // chacune des trois variables msg_pour, msg_contre et msg_abs est finalement instanciée par le dernier message la concernant
-         end;
-      end else showmessage('liste_message.Objects[' + inttostr(i) + '] = nil ' + liste_message.strings[i]);
+               end; // chacune des trois variables msg_pour, msg_contre et msg_abs est finalement instanciée par le dernier message la concernant
+            end;
+         end else showmessage('liste_message.Objects[' + inttostr(i) + '] = nil ' + liste_message.strings[i]);
+      end;
+   end else begin
+       log_infos('plage incorrecte dans tscrutin.cree_elements');
    end;
 end;
 

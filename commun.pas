@@ -48,6 +48,7 @@ var
    fichier_message_defaut : string;
    source_pouvoirs : string;
    nb_pouvoirs_max : integer;
+   enable_efic_msg : boolean = true;
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;
