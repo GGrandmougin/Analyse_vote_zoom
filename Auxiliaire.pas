@@ -1385,9 +1385,9 @@ begin
          if errpv then begin suff_n_exp := participant.pouvoirs;{ affecte_temoins(false, false, true)} end else begin suff_n_exp := 0; pouv_cpt_res := true end;
          non_exp := non_exp + suff_n_exp;
       end else if nb_flottants = 1 then begin
-         if msg_pour.nombre = -1 then begin  pour := pour + participant.pouvoirs - nb_contre - nb_abs; msg_pour.compte_ttl := true ;end;
-         if msg_contre.nombre = -1 then begin contre := contre + participant.pouvoirs - nb_pour - nb_abs; msg_contre.compte_ttl := true ;end;
-         if msg_abs.nombre = -1 then begin abs := abs + participant.pouvoirs - nb_pour - nb_contre; msg_abs.compte_ttl := true ;end;
+         if msg_pour.nombre = -1 then begin  pour := pour + participant.pouvoirs - nb_contre - nb_abs; msg_pour.compte_ttl := true ;end else if msg_pour.nombre > 0 then begin  msg_pour.compte_ttl := true; pour := pour +  nb_pour end;
+         if msg_contre.nombre = -1 then begin contre := contre + participant.pouvoirs - nb_pour - nb_abs; msg_contre.compte_ttl := true ;end else if msg_contre.nombre > 0 then begin msg_contre.compte_ttl := true; contre := contre + nb_contre end;
+         if msg_abs.nombre = -1 then begin abs := abs + participant.pouvoirs - nb_pour - nb_contre; msg_abs.compte_ttl := true ;end else if msg_abs.nombre > 0 then begin msg_abs.compte_ttl := true; abs := abs + nb_abs   end;
          suff_n_exp := 0;
          pouv_cpt_res := true;
       end else begin
@@ -1779,7 +1779,7 @@ begin
                   if donneur <> nil then begin
                      setCbPouvoirschecked ;  // au moins un pouvoir a été donné
                      donneur.pouvoirs := 0;
-                     receveur.pouvoirs := receveur.pouvoirs + 1;
+                     receveur.pouvoirs := receveur.pouvoirs + 1;  // les pouvoirs confiés s'ajoute à la voix déjà détenue en propre par le participant
                      inc(nb_pouvoirs);
                   end;
                end;

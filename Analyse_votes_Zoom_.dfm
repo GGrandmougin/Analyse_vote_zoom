@@ -2034,6 +2034,15 @@ object Form1: TForm1
         'Lorsque le nombre de voix n'#39'est pas indiqu'#233' dans le message,  il' +
         ' est affich'#233' "-1"'
     end
+    object Linfo_pv: TLabel
+      Left = 328
+      Top = 504
+      Width = 512
+      Height = 13
+      Caption = 
+        'Le nombre indiqu'#233' dans la colonne "pouvoirs" indique le nombre p' +
+        'ouvoirs confi'#233's plus la voix de la personne'
+    end
     object StringGrid1: TStringGrid
       Left = 152
       Top = 112

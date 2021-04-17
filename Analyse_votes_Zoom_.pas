@@ -158,6 +158,7 @@ type
     Linfo_moins1: TLabel;
     Lfichier_pouvoirs: TLabel;
     Beff_tmessages: TButton;
+    Linfo_pv: TLabel;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
