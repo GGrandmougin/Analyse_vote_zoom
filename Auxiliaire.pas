@@ -170,7 +170,7 @@ type
     function compare(nm, prenm, regn, fic_csv : string; part_initial : tparticipant): tparticipant;  overload;
     function compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant; overload;
     function rejected : boolean;
-    function affichage_p(ligne : tstrings; filtre : string) : boolean;
+    function affichage_p(ligne : tstrings; filtre : string; lgn : integer) : boolean;
     procedure additionne(var votants, non_exp : integer);
     constructor create(msg  : string);overload;
     constructor create(msg, regn  : string; num : integer; const tab : ttbnoms);overload;
@@ -263,6 +263,7 @@ type
     ligne_vide : string;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
+    procedure clear_l_votes;
     procedure clear_tmessages; // pour debug
     procedure remplit_fic_sortie(scrutin : tscrutin);
     procedure config_nouv_scrutin(l_nouv_scrutin : tstringlist);
@@ -760,7 +761,7 @@ begin
   inherited;
 end;
 
-function tparticipant.affichage_p(ligne: tstrings; filtre: string): boolean;
+function tparticipant.affichage_p(ligne: tstrings; filtre: string; lgn : integer): boolean;
 var
    flt, symb : string;
 begin
@@ -770,9 +771,11 @@ begin
       with elem_scrutin do begin
          if pouv_cpt_res then symb := '"' else if pouv_cpt_part then symb := '''' else if pouv_cpt_rj then symb := ',' else symb := '' ;
       end;  //pouv_cpt_rj jamais activé (difficulté à le faire)
-   end;   
+   end;
    if result then begin
-      ligne[col_pouvoirs] := symb + inttostr(pouvoirs) + symb;
+      //ligne[col_pouvoirs] := symb + inttostr(pouvoirs) + symb;
+      tsl_v[1, col_pouvoirs].Strings[lgn] := symb + inttostr(pouvoirs) + symb;
+      if elem_scrutin <> nil then ligne[col_nonexpr] := inttostr(elem_scrutin.suff_n_exp);
       if err_nom then ligne[col_nom] := 'X';
       if err_prenom then ligne[col_prenom] := 'X';
       if err_region then ligne[col_region] := 'X';
@@ -924,12 +927,13 @@ var
    str_nb : string;
    add_rj : boolean;
    col_sgd : integer;
+
 begin
    result := false;
    try
       result := ((not rejets) or rejected ); // rejected prend aussi en compte participant.rejected
       result := (vnr or est_vote) and result ;
-      result := result and  participant.affichage_p(ligne,  filtre) ;// il faut que affichage_p  soit appellé dans tous les cas
+      result := result and  participant.affichage_p(ligne,  filtre, idx) ;// il faut que affichage_p  soit appellé dans tous les cas
       if result then begin
          if (choix = 'pour') or (choix = 'oui') then col_sgd := col_pour  else
          if (choix = 'contre') or (choix = 'non') then col_sgd := col_contre else
@@ -944,10 +948,12 @@ begin
             add_rj := Aux1.scrutin_encours.additionne_rejetes(self, idx, col_sgd, nombre, choix, participant) ;
             if add_rj  then compte_rj := true else str_nb := '(' + str_nb + ')';
          end;
+         
          if compte_ttl then str_nb := '"' + str_nb  + '"'
          else if compte_part then str_nb := '''' + str_nb  + '''' ;
          if compte_rj then str_nb := ',' + str_nb  + ',' ;
-         if col_sgd > 0 then ligne[col_sgd] := str_nb;
+         tsl_v[ 1, col_sgd].Strings[idx] := str_nb;
+         //if col_sgd > 0 then ligne[col_sgd] := str_nb;
       end;
    except
       on E: exception do
@@ -1053,7 +1059,7 @@ begin
       err_choix :=  (choix = 'oui') or (choix = 'non');
       //if not((choix = 'pour') or (choix = 'contre') or (choix = 'abs') or (choix = 'oui') or (choix = 'non')) then choix := '';
       if nb <> '' then nombre := strtointdef(nb, 0); // caractère "-" non accepté -> nombre forcément positif
-      err_choix :=  err_choix or (nbgrl <> 1) or (choix = '');
+      err_choix :=  err_choix or (nbgrl <= mx) or (choix = '');
       if nbgrc = 0 then nombre := -1;
       err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
       est_vote := participant.electeur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
@@ -1238,17 +1244,31 @@ function taux.aff_messages( rejetes, vnr : boolean ;filtre: string; lmsg : tlist
 var
    i, j : integer;
    lmessages: tstringlist;
+   dp_ut : integer;
+procedure sl_v_add;
+var
+   m, n : integer;
 begin
+   for m := 1 to 2 do begin
+      for n := 1 to 4 do begin
+         tsl_v[m, n].Add('');
+      end;
+   end;
+end;
+begin
+   if rv_disp.Checked then dp_ut := 1 else dp_ut := 2;
    j := 0;
    for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
    f1stringgrid.row := 0; f1stringgrid.col := 0;
    lmessages := lmsg;
    scrutin_encours.raz_rejetes;
-   if scrutin_encours.ttl_exp > 0 then begin
+   if scrutin_encours.processed then begin
+      clear_l_votes;
+      sl_v_add;
       i := lvotes.idx_deb;
       while (i >= 0) and ((i <= lvotes.idx_fin) and (j < f1stringgrid.RowCount)) do begin
          try
-            if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], j, rejetes, vnr, filtre) then inc(j);
+            if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], j, rejetes, vnr, filtre) then begin inc(j); sl_v_add   end;
          except
             on E: exception do begin
                log_infos('Erreur dans aff_messages (index:' + inttostr(i) + ') ' + E.Message);
@@ -1258,6 +1278,9 @@ begin
       end;
    end;
    //scrutin_encours.decompte_rejetes ; // procedure decompte_rejetes inutile , il y a additionne_rejetés dans affichage_m
+   for i := 1 to 4 do begin
+      f1stringgrid.Cols[i].Text := tsl_v[dp_ut, i].text;
+   end;
    scrutin_encours.aff_totaux_rejetes;
    LNb_msg_.Caption := inttostr(j) + ' messages affichés';
    result := j;
@@ -1484,8 +1507,8 @@ begin
       log_infos(st1 + st2);
       showmessage(st1  + #13#10 + st2);
    end;
-   aux1.aff_messages(true, false, '', liste_message, liste_votes);
    processed := true;
+   aux1.aff_messages(true, false, '', liste_message, liste_votes);
    maj_resultats;
 end;
 
@@ -1698,8 +1721,9 @@ begin
                bcontre :=  (choix = 'contre') or (choix = 'non');
                babs := choix = 'abs' ;
                part.rejets.msage.compte_rj := false;
-               if (part.rejets.msage <> message_nil) and (part.rejets.clne > 0) then 
-                  f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ] := StringReplace(f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ], ',', '', [rfreplaceall] );
+               if (part.rejets.msage <> message_nil) and (part.rejets.clne > 0) then
+                  tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne] := StringReplace(tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne], ',', '', [rfreplaceall] );
+                  //f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ] := StringReplace(f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ], ',', '', [rfreplaceall] );
                part.rejets.msage := mssge; // donc le dernier
                part.rejets.clne := col;
                part.rejets.lgne := idx;
@@ -2151,6 +2175,18 @@ begin
       lmessages_gen.Objects[i].Free;
       lmessages_gen.Objects[i] := nil;
    end
+end;
+
+procedure taux.clear_l_votes;
+begin
+   sl_pv_disp.Clear ;
+   sl_v_p_disp.Clear ;
+   sl_v_c_disp.Clear ;
+   sl_v_a_disp.Clear ;
+   sl_pv_util.Clear ;
+   sl_v_p_util.Clear ;
+   sl_v_c_util.Clear ;
+   sl_v_a_util.Clear ;
 end;
 
 end.

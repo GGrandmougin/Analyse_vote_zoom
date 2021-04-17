@@ -49,6 +49,16 @@ var
    source_pouvoirs : string;
    nb_pouvoirs_max : integer;
    enable_efic_msg : boolean = true;
+   sl_pv_disp  : TStringList ;
+   sl_v_p_disp : TStringList ;
+   sl_v_c_disp : TStringList ;
+   sl_v_a_disp : TStringList ;
+   sl_pv_util  : TStringList ;
+   sl_v_p_util : TStringList ;
+   sl_v_c_util : TStringList ;
+   sl_v_a_util : TStringList ;
+   tsl_v : array[1.. 2, 1.. 4] of tstringlist;
+   rv_disp : TRadioButton;
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;

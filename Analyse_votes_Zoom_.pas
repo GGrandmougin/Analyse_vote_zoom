@@ -159,12 +159,15 @@ type
     Lfichier_pouvoirs: TLabel;
     Beff_tmessages: TButton;
     Linfo_pv: TLabel;
+    RVoix_dispo: TRadioButton;
+    RVoix_utilisees: TRadioButton;
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
     procedure traite_params;
     procedure eff_stringgrid1;
     procedure test_presentation(n : integer);
+    procedure init_tsl_votes;
     procedure FormCreate(Sender: TObject);
     procedure LAnalyseClick(Sender: TObject);
     procedure ButtonAClick(Sender: TObject);
@@ -223,6 +226,7 @@ type
     procedure CbvnreconnusClick(Sender: TObject);
     procedure Efic_msgChange(Sender: TObject);
     procedure Beff_tmessagesClick(Sender: TObject);
+    procedure RVoix_dispoClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -277,8 +281,29 @@ begin
    color := tcolor(10867674);  //(4227327);
    cb_pouv_val := Cbpouvoirs;
    lfic_pouvoirs := Lfichier_pouvoirs;
+   init_tsl_votes;
+   rv_disp := RVoix_dispo;
 end;
 
+procedure TForm1.init_tsl_votes;
+begin
+   sl_pv_disp  := TStringList.Create ;
+   sl_v_p_disp := TStringList.Create ;
+   sl_v_c_disp := TStringList.Create  ;
+   sl_v_a_disp := TStringList.Create  ;
+   sl_pv_util  := TStringList.Create  ;
+   sl_v_p_util := TStringList.Create  ;
+   sl_v_c_util := TStringList.Create  ;
+   sl_v_a_util := TStringList.Create  ;
+   tsl_v[1 ,1 ] :=  sl_pv_disp  ;
+   tsl_v[1 ,2 ] :=  sl_v_p_disp ;
+   tsl_v[1 ,3 ] :=  sl_v_c_disp  ;
+   tsl_v[1 ,4 ] :=  sl_v_a_disp  ;
+   tsl_v[2 ,1 ] :=  sl_pv_util   ;
+   tsl_v[2 ,2 ] :=  sl_v_p_util  ;
+   tsl_v[2 ,3 ] :=  sl_v_c_util  ;
+   tsl_v[2 ,4 ] :=  sl_v_a_util  ;
+end;
 
 
 procedure TForm1.test_presentation(n : integer);
@@ -351,6 +376,14 @@ end;
 procedure TForm1.FormClose(Sender: TObject; var Action: TCloseAction);
 begin
    Aux1.Free;
+   sl_pv_disp.Free ;
+   sl_v_p_disp.Free ;
+   sl_v_c_disp.Free ;
+   sl_v_a_disp.Free ;
+   sl_pv_util.Free ; 
+   sl_v_p_util.Free ;
+   sl_v_c_util.Free ;
+   sl_v_a_util.Free ;
 end;
 
 procedure TForm1.place_ifl_ext;
@@ -889,6 +922,11 @@ end;
 procedure TForm1.Beff_tmessagesClick(Sender: TObject);
 begin
    aux1.clear_tmessages;
+end;
+
+procedure TForm1.RVoix_dispoClick(Sender: TObject);
+begin
+   Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
 end.

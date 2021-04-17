@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 880
-  Top = 213
+  Left = 616
+  Top = 184
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2642,9 +2642,9 @@ object Form1: TForm1
     end
     object Ptous_msg: TPanel
       Left = 16
-      Top = 64
+      Top = 16
       Width = 657
-      Height = 41
+      Height = 89
       BevelOuter = bvNone
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
@@ -2656,7 +2656,7 @@ object Form1: TForm1
       Visible = False
       object Ltous_mess: TLabel
         Left = 416
-        Top = 8
+        Top = 56
         Width = 200
         Height = 25
         AutoSize = False
@@ -2670,7 +2670,7 @@ object Form1: TForm1
       end
       object Cbvnreconnus: TCheckBox
         Left = 136
-        Top = 13
+        Top = 60
         Width = 169
         Height = 17
         Caption = 'Votes non reconnus'
@@ -2682,6 +2682,38 @@ object Form1: TForm1
         ParentFont = False
         TabOrder = 0
         OnClick = CbvnreconnusClick
+      end
+      object RVoix_dispo: TRadioButton
+        Left = 536
+        Top = 16
+        Width = 121
+        Height = 17
+        Caption = 'Voix disponibles'
+        Checked = True
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 1
+        TabStop = True
+        OnClick = RVoix_dispoClick
+      end
+      object RVoix_utilisees: TRadioButton
+        Left = 536
+        Top = 36
+        Width = 113
+        Height = 17
+        Caption = 'Voix_utilis'#233'es'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -11
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 2
+        OnClick = RVoix_dispoClick
       end
     end
     object StaticText2: TStaticText
