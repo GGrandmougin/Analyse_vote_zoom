@@ -126,7 +126,7 @@ begin
             Istructure.Picture.LoadFromFile(fic);
          end;
       except
-         showmessage('problème d''accès au fichier: ' + fic);
+         showmessage('problème d''accès au fichier: ' + fic );
       end;
       Istructure.Visible := true;
    end;

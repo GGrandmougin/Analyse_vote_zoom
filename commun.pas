@@ -31,6 +31,7 @@ type
 
 procedure log_infos(mess : string; typ : integer = 0; memo : tmemo = nil);
 procedure setCbPouvoirschecked(ok : boolean = true) ;
+procedure show_message( texte : string; mtype :TMsgDlgType);
 var
    debug : boolean;
    ficlog : string;
@@ -59,6 +60,7 @@ var
    sl_v_a_util : TStringList ;
    tsl_v : array[1.. 2, 1.. 4] of tstringlist;
    rv_disp : TRadioButton;
+   erj_pour, erj_contre, erj_abs : tedit;
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;
@@ -89,6 +91,17 @@ begin
    except
       //pour ne pas ajouter l'erreur à l'erreur
    end;
+end;
+
+procedure show_message( texte : string; mtype :TMsgDlgType );
+begin
+   MessageDlg(texte , mtError, [mbOK], 0);
+{mtWarning	      Une boîte de message contenant un signe point d'exclamation jaune.
+ mtError	         Une boîte de message contenant un signe de stop rouge.
+ mtInformation	   Une boîte de message contenant un "i" bleu.
+ mtConfirmation	Une boîte de message contenant un point d'interrogation vert.
+ mtCustom	      Une boîte de message ne contenant pas d'image. Le titre de la boîte de dialogue est le nom du fichier exécutable de l'application.}
+
 end;
 
 end.

@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 616
-  Top = 184
+  Left = 804
+  Top = 190
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2089,7 +2089,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
         Transparent = False
-        OnClick = RrejetesClick
+        OnClick = LRejetesClick
         OnMouseUp = LRejetesMouseUp
       end
       object LTous_msg: TLabel
@@ -2104,8 +2104,7 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
-        OnClick = RtousmsgClick
-        OnMouseUp = LTous_msgMouseUp
+        OnClick = LTous_msgClick
       end
       object ButtonA: TButton
         Left = 8

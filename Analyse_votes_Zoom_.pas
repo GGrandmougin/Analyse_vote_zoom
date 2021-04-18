@@ -161,6 +161,7 @@ type
     Linfo_pv: TLabel;
     RVoix_dispo: TRadioButton;
     RVoix_utilisees: TRadioButton;
+    procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
     procedure clear_aff_messages;
@@ -204,8 +205,6 @@ type
     procedure Bsel_strggdClick(Sender: TObject);
     procedure LRejetesMouseUp(Sender: TObject; Button: TMouseButton;
       Shift: TShiftState; X, Y: Integer);
-    procedure LTous_msgMouseUp(Sender: TObject; Button: TMouseButton;
-      Shift: TShiftState; X, Y: Integer);
     procedure EfiltreChange(Sender: TObject);
     procedure set_Efiltre_sans_aff( texte : string);
     procedure EnomvoteChange(Sender: TObject);
@@ -227,6 +226,9 @@ type
     procedure Efic_msgChange(Sender: TObject);
     procedure Beff_tmessagesClick(Sender: TObject);
     procedure RVoix_dispoClick(Sender: TObject);
+    procedure LTous_msgClick(Sender: TObject);
+    procedure LRejetesClick(Sender: TObject);
+    procedure Pmasque_totaux_Visible( ok, hint_ : boolean);
   private
     { Déclarations privées }
   public
@@ -238,7 +240,7 @@ type
 
 var
   Form1: TForm1;
-  
+
 
 implementation
 
@@ -258,7 +260,7 @@ begin
    i := strtointdef(ENoVote.Text, 0) ;
    if i > 0 then aux1.scrutin_encours := tscrutin.create(i, enomvote.text);
    //aux1.initialise;
-   
+
    l := 25;
 
    // ligne pouvoirs, pour, contre , abs, non exprimé, ID incorrecte ,  incorrect : nom, prenom, n°, région, suffrage, > pouvoirs , 2 nb, 2 choix
@@ -283,6 +285,7 @@ begin
    lfic_pouvoirs := Lfichier_pouvoirs;
    init_tsl_votes;
    rv_disp := RVoix_dispo;
+   erj_pour := Erjpour; erj_contre := Erjcontre; erj_abs := Erjabs ;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -360,7 +363,8 @@ var
 
 begin
    lettre := tbutton(sender).Caption;
-   RtousmsgClick(nil); // nil -> aff_messages non lancé
+   //RtousmsgClick(nil); // nil -> aff_messages non lancé
+   setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
    Ltous_mess.caption := 'Messages "' + lettre + '"';
    set_Efiltre_sans_aff(lettre);
    Aux1.aff_messages(false, Cbvnreconnus.Checked, lettre, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
@@ -380,7 +384,7 @@ begin
    sl_v_p_disp.Free ;
    sl_v_c_disp.Free ;
    sl_v_a_disp.Free ;
-   sl_pv_util.Free ; 
+   sl_pv_util.Free ;
    sl_v_p_util.Free ;
    sl_v_c_util.Free ;
    sl_v_a_util.Free ;
@@ -615,14 +619,16 @@ end;
 
 procedure TForm1.RtousmsgClick(Sender: TObject);
 begin
-   Rtousmsg.Checked := true;
-   Pmasque_totaux.Visible := false;
+   //Rtousmsg.Checked := true;
+   Pmasque_totaux_Visible(RVoix_utilisees.Checked, false);
    Ptous_msg.Visible := true;
    LTous_mess.Caption := 'Messages';
-   if sender <> nil then begin
-      Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+   if tag = tag_stop then begin
+      tag := 0;
+   end else if Rtousmsg.Checked then begin
       set_Efiltre_sans_aff('');
-   end;   
+      Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+   end;
 end;
 
 procedure TForm1.set_Efiltre_sans_aff( texte : string);
@@ -634,11 +640,16 @@ end;
 
 procedure TForm1.RrejetesClick(Sender: TObject);
 begin
-   Rrejetes.Checked := true;
-   Pmasque_totaux.Visible := true;
+   //Rrejetes.Checked := true;
+   Pmasque_totaux_Visible(true, true);
    Ptous_msg.Visible := false;
-   //Lmessages. := 'Messages rejetés';
-   if sender <> nil then Aux1.aff_messages(true, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   if (tag = tag_stop)  then begin
+      tag := 0;
+   end else if Rrejetes.Checked then begin
+      //Lmessages. := 'Messages rejetés';
+      //if sender <> nil then
+      Aux1.aff_messages(true, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   end;
 end;
 
 procedure TForm1.BvidelistesClick(Sender: TObject);
@@ -675,16 +686,11 @@ begin
 //
 end;
 
-procedure TForm1.LTous_msgMouseUp(Sender: TObject; Button: TMouseButton;
-  Shift: TShiftState; X, Y: Integer);
-begin
-//
-end;
-
 procedure TForm1.EfiltreChange(Sender: TObject);
 begin
    if efiltre.Tag <> tag_stop then begin   // sender <> Efiltre then begin (n'est pas bon : c'est le message de efiiltre qui a été changé)
-      RtousmsgClick(nil); // nil -> aff_messages non lancé
+      //RtousmsgClick(nil); // nil -> aff_messages non lancé
+      setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
       Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
       Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
       //casse sans importance pour filtre
@@ -731,7 +737,7 @@ begin
       except
          On E: exception do begin
             log_infos('Erreur dans ENoVoteChange : ' + e.message);
-            showmessage('Erreur changement de numéro de vote');
+            show_message('Erreur changement de numéro de vote', mtError);
          end;
       end
    end;
@@ -756,7 +762,8 @@ end;
 procedure TForm1.clear_aff_messages;
 begin
    eff_stringgrid1;
-   RrejetesClick(nil);  // nil -> change le positionnement sans lancer un nouvel affichage
+   //RrejetesClick(nil);  // nil -> change le positionnement sans lancer un nouvel affichage
+   setchecked(Rrejetes); //change le positionnement sans lancer un nouvel affichage
 end;
 
 
@@ -764,7 +771,8 @@ procedure TForm1.BTraitementClick(Sender: TObject);
 var
    num : integer;
 begin
-   RrejetesClick(nil); // nil -> change le positionnement sans lancer un nouvel affichage
+   setchecked(Rrejetes); //change le positionnement sans lancer un nouvel affichage
+   //RrejetesClick(nil); // nil -> change le positionnement sans lancer un nouvel affichage
    num := strtointdef( ENoVote.Text, 0);
    if num > 0 then begin
       enable_entrees(false, false, false);
@@ -782,7 +790,7 @@ begin
       aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
       aux1.traitement;
    end else begin
-      showmessage( 'N° incorrect pour "Vote N°');
+      show_message( 'N° incorrect pour "Vote N°', mtError);
    end;
    
 end;
@@ -926,7 +934,36 @@ end;
 
 procedure TForm1.RVoix_dispoClick(Sender: TObject);
 begin
+   Pmasque_totaux_Visible(RVoix_utilisees.Checked, false);
    Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+end;
+
+procedure TForm1.LTous_msgClick(Sender: TObject);
+
+begin
+   efiltre.text := '' ; // lancera aff_message si changement
+   setchecked(Rtousmsg);
+end;
+
+procedure TForm1.LRejetesClick(Sender: TObject);
+begin
+   setchecked(Rrejetes);
+end;
+
+procedure TForm1.setchecked(rb: TRadioButton);
+begin
+   rb.Tag := tag_stop;
+   rb.Checked := true;
+end;
+
+procedure TForm1.Pmasque_totaux_Visible(ok, hint_: boolean);
+var
+   i : integer;
+begin
+   Pmasque_totaux.Visible := ok;
+   for i := 0 to ControlCount -1 do begin
+      Controls[i].ShowHint := hint_;
+   end;
 end;
 
 end.
