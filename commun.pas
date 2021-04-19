@@ -9,6 +9,8 @@ Uses
    Windows, graphics, strutils, Forms, SysUtils;
 
 const
+    //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
+    //function Utf8ToAnsi(const S: UTF8String): string;
     remplAcc  : array[0..63 ] of byte = (
                            97,97,97,97,97,97,198,99,101,101,101,101,105,105,105,105,
                            208,110,111,111,111,111,111,215,216,117,117,117,117,221,222,223,
@@ -26,6 +28,8 @@ const
     RegionMandant = 9;
     DateEnvoisPouvoir = 10;
     DateReceptionPouvoir = 11;
+
+    max_interval = 500  ; // milllisecondes
 type
     timport = procedure(strl: Tstringlist; fichier : string) of object;
 

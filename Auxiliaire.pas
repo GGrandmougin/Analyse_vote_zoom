@@ -267,6 +267,8 @@ type
     fichier_sortie : string;
     fichier_sortie_ok : boolean;
     ligne_vide : string;
+    tickcountpre : cardinal;
+    efiltrepre : string;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
     procedure clear_l_votes;
@@ -291,7 +293,7 @@ type
     function get_fichier_msg(rep : string) : string;
     function charge_fic_msg(fic: string; lmsg : tliste_message ): boolean;
     procedure traitement;
-    function remplace_caracteres_UTF8( texte : string) : string ;
+    function remplace_caracteres_UTF8( texte : string) : string ;  //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8. //function Utf8ToAnsi(const S: UTF8String): string;
     constructor create;
     destructor destroy;  override;
   private
@@ -426,6 +428,8 @@ var
   st : string;
   p : integer;
 begin
+    //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
+    //function Utf8ToAnsi(const S: UTF8String): string;
    st := texte ;
    st := stringreplace(st, #$C2 , '', [rfReplaceAll]);
    p := pos(#$C3, st) ;
@@ -1295,6 +1299,7 @@ begin
    if rejetes then scrutin_encours.aff_totaux_rejetes;
    LNb_msg_.Caption := inttostr(j) + ' messages affichés';
    result := j;
+
 end;
 
 function taux.aff_messages(rejetes, vnr: boolean; filtre: string; lmsg: tliste_message; lvotes: tliste_vote): integer;
@@ -1304,6 +1309,7 @@ var
    i, j, ttl : integer;
    sl : tstringlist;
    st : string;
+   tc : cardinal;
 begin
    if rv_disp.Checked or rejetes then dp_ut := 1 else dp_ut := 2;
    params_lmsg.rejetes := rejetes;
@@ -1344,6 +1350,15 @@ begin
                       + #13#10 + 'et les résultats', mtError);
          log_infos('incohérence des résultats entre les totaux des colonnes "pour", "contre" ou "abs" et les résultats, pour: ' + erj_pour.Text + '<>' + Epour_.Text + ' contre: ' + erj_contre.Text + '<>' + Econtre_.Text + ' abs: ' + erj_abs.Text + '<>' + Eabs_.Text);
       end;
+   end;
+   if debug then begin
+      tc := GetTickCount; //If the function succeeds, the return value is the number of milliseconds that have elapsed since Windows was started.
+      if (tc - tickcountpre) < max_interval then begin
+         if length(filtre) <= length(efiltrepre) then
+            log_infos('interval entre 2 appels à affmessage = ' + inttostr(tc - tickcountpre) +' < ' + inttostr(max_interval) + ' ms' );
+      end;
+      tickcountpre := tc ;
+      efiltrepre := filtre;
    end;
 end;
 
@@ -1505,9 +1520,6 @@ begin
          suff_n_exp := 0;
          pouv_cpt_res := true;
       end else begin
-         pour := pour + nb_pour;
-         contre := contre + nb_contre;
-         abs := abs + nb_abs;
          non_exp := non_exp + suff_n_exp ;
          if suff_n_exp < participant.pouvoirs  then begin
             if suff_n_exp = 0 then pouv_cpt_res := true else pouv_cpt_part := true;
