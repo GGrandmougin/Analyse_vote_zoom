@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 804
-  Top = 190
+  Left = 454
+  Top = 185
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -74,7 +74,7 @@ object Form1: TForm1
       ParentFont = False
     end
     object Lduree: TLabel
-      Left = 216
+      Left = 224
       Top = 32
       Width = 37
       Height = 16
@@ -179,7 +179,7 @@ object Form1: TForm1
       OnClick = Enb_membresClick
     end
     object BEditer: TButton
-      Left = 304
+      Left = 310
       Top = 64
       Width = 75
       Height = 25
@@ -207,6 +207,26 @@ object Form1: TForm1
       ParentFont = False
       TabOrder = 5
       OnClick = BselectficClick
+    end
+    object ListBox1: TListBox
+      Left = 168
+      Top = 64
+      Width = 137
+      Height = 21
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ItemHeight = 16
+      Items.Strings = (
+        'Vote non secret'
+        'Vote secret strict'
+        'vote secret tol'#233'rant')
+      ParentFont = False
+      TabOrder = 6
+      OnClick = ListBox1Click
+      OnKeyUp = ListBox1KeyUp
     end
   end
   object PAction: TPanel
@@ -3013,6 +3033,15 @@ object Form1: TForm1
       Caption = 'Beff_tmessages'
       TabOrder = 18
       OnClick = Beff_tmessagesClick
+    end
+    object Etests: TEdit
+      Left = 8
+      Top = 176
+      Width = 105
+      Height = 21
+      TabOrder = 19
+      Text = 'Etests'
+      OnChange = EtestsChange
     end
   end
   object OpenDialog1: TOpenDialog

@@ -161,6 +161,8 @@ type
     Linfo_pv: TLabel;
     RVoix_dispo: TRadioButton;
     RVoix_utilisees: TRadioButton;
+    ListBox1: TListBox;
+    Etests: TEdit;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -229,6 +231,12 @@ type
     procedure LTous_msgClick(Sender: TObject);
     procedure LRejetesClick(Sender: TObject);
     procedure Pmasque_totaux_Visible( ok, hint_ : boolean);
+    procedure ComboBox1Change(Sender: TObject);
+    procedure ListBox1KeyUp(Sender: TObject; var Key: Word;
+      Shift: TShiftState);
+    procedure ListBox1Click(Sender: TObject);
+    procedure Button1Click(Sender: TObject);
+    procedure EtestsChange(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -749,6 +757,9 @@ begin
    ME_duree.Text := Aux1.scrutin_encours.duree;
    Efic_msg.Text := Aux1.scrutin_encours.fichier_message;
    Enb_membres.Text := inttostr(Aux1.scrutin_encours.nombre_membres);
+   if Aux1.scrutin_encours.scr_secret then begin
+      if Aux1.scrutin_encours.secret_only then ListBox1.TopIndex := lb_secret_s else ListBox1.TopIndex := lb_secret_t  ;
+   end else ListBox1.TopIndex := lb_n_secret;
 end;
 
 procedure TForm1.trf_entrees;
@@ -788,6 +799,7 @@ begin
       end;
       aux1.scrutin_encours.nom := Enomvote.Text;;
       aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
+      aux1.scrutin_encours.set_secret( ListBox1.TopIndex);
       aux1.traitement;
    end else begin
       show_message( 'N° incorrect pour "Vote N°', mtError);
@@ -857,6 +869,7 @@ procedure TForm1.enable_entrees(horaire, fic_mess, fic_csv: boolean);
 begin
    ME_heure.Enabled := horaire;
    ME_duree.Enabled := horaire;
+   ListBox1.Enabled := horaire;
    Efic_msg.Enabled := fic_mess;
    Enb_membres.Enabled := fic_mess;
    Bselectfic.Enabled := fic_mess;
@@ -963,6 +976,42 @@ begin
    Pmasque_totaux.Visible := ok;
    for i := 0 to ControlCount -1 do begin
       Controls[i].ShowHint := hint_;
+   end;
+end;
+
+procedure TForm1.ComboBox1Change(Sender: TObject);
+begin
+//
+end;
+
+procedure TForm1.ListBox1KeyUp(Sender: TObject; var Key: Word;
+  Shift: TShiftState);
+begin
+  //Mtest.Lines.Add(inttostr(ListBox1.TopIndex));
+end;
+
+procedure TForm1.ListBox1Click(Sender: TObject);
+begin
+   Mtest.Lines.Add(inttostr(ListBox1.TopIndex));
+end;
+
+procedure TForm1.Button1Click(Sender: TObject);
+var
+   i : integer;
+begin
+   if Mtest.Lines.Count > 0 then begin
+      i := strtointdef(Mtest.Lines[Mtest.Lines.Count -1], -1);
+      if i in [0, 1, 2] then ListBox1.TopIndex := i;
+   end;
+end;
+
+procedure TForm1.EtestsChange(Sender: TObject);
+var
+   i : integer;
+begin
+   if ListBox1.Enabled then begin
+      i := strtointdef(etests.Text, -1);
+      if i in [0, 1, 2] then ListBox1.TopIndex := i;
    end;
 end;
 

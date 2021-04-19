@@ -232,6 +232,7 @@ type
     fichier_message: string;
     fichier_pouvoirs : string;
     nombre_membres : integer;
+    //lb_secret : integer;
     //nombre_votants : integer;
     ttl_pour, ttl_contre, ttl_abs, ttl_exp, ttl_votants : integer;
     ttl_rj_p, ttl_rj_c, ttl_rj_a : integer;
@@ -250,6 +251,7 @@ type
     procedure cree_elements;
     procedure maj_resultats;
     procedure init_totaux;
+    procedure set_secret(lb_secret : integer);
     constructor create(num : integer; nm : string);
     destructor destroy;  override;
   end;
@@ -950,6 +952,7 @@ begin
    try
       result := ((not rejets) or rejected ); // rejected prend aussi en compte participant.rejected
       result := (vnr or est_vote) and result ;
+      result := result and ((Aux1.scrutin_encours.scr_secret = m_secret) or ((not m_secret) and (not Aux1.scrutin_encours.secret_only)));
       result := result and  participant.affichage_p(ligne,  filtre, idx) ;// il faut que affichage_p  soit appellé dans tous les cas
       if result then begin
          if (choix = 'pour') or (choix = 'oui') then col_sgd := col_pour  else
@@ -1187,7 +1190,7 @@ begin
                   p := pos('(Message direct)', st);
                   if p > 0   then begin
                      secret := true;
-                     nv := copy(st, 1, pos(char(195) + char(160), st) -1) + 'SECRET' + rightstr(st, length(st) - p - 16);
+                     nv := copy(st, 1, pos(char(195) + char(160), st) -1) + 'SECRET :' + rightstr(st, length(st) - p - 17);
                   end;
                end;
                if secret or tlm then begin
@@ -1478,30 +1481,7 @@ begin
       if msg_abs.nombre = -1 then begin nb_abs := 1; inc(nb_flottants) end else nb_abs := msg_abs.nombre;
       suff_n_exp := participant.pouvoirs  - nb_pour - nb_contre - nb_abs;
       errpv := (suff_n_exp < 0) or (nb_flottants > 1) ;
-      {if errpv then begin
-         if (msg_pour.nombre= 0) and (msg_contre.nombre = 0) then begin errpv := false ; abs := abs + participant.pouvoirs; msg_abs.compte_part := true end;
-         if (msg_contre.nombre= 0) and ( msg_abs.nombre = 0)  then begin errpv := false ; pour := pour + participant.pouvoirs; msg_pour.compte_part := true end;
-         if (msg_abs.nombre= 0) and ( msg_pour.nombre = 0)    then begin errpv := false ; contre := contre + participant.pouvoirs; msg_contre.compte_part := true end;
-         if errpv then begin suff_n_exp := participant.pouvoirs;(* affecte_temoins(false, false, true)*) end else begin suff_n_exp := 0; pouv_cpt_res := true end;
-         non_exp := non_exp + suff_n_exp;
-      end else if nb_flottants = 1 then begin
-         if msg_pour.nombre = -1 then begin  pour := pour + participant.pouvoirs - nb_contre - nb_abs; msg_pour.compte_ttl := true ;end else if msg_pour.nombre > 0 then begin  msg_pour.compte_ttl := true; pour := pour +  nb_pour end;
-         if msg_contre.nombre = -1 then begin contre := contre + participant.pouvoirs - nb_pour - nb_abs; msg_contre.compte_ttl := true ;end else if msg_contre.nombre > 0 then begin msg_contre.compte_ttl := true; contre := contre + nb_contre end;
-         if msg_abs.nombre = -1 then begin abs := abs + participant.pouvoirs - nb_pour - nb_contre; msg_abs.compte_ttl := true ;end else if msg_abs.nombre > 0 then begin msg_abs.compte_ttl := true; abs := abs + nb_abs   end;
-         suff_n_exp := 0;
-         pouv_cpt_res := true;
-      end else begin
-         pour := pour + nb_pour;
-         contre := contre + nb_contre;
-         abs := abs + nb_abs;
-         non_exp := non_exp + suff_n_exp ;
-         if suff_n_exp < participant.pouvoirs  then begin
-            if suff_n_exp = 0 then pouv_cpt_res := true else pouv_cpt_part := true;
-            affecte_temoins( true , false, false);
-         end ;
-      end;
-   end; }
-     if errpv then begin
+      if errpv then begin
          if (msg_pour.nombre= 0) and (msg_contre.nombre = 0) then begin errpv := false ; nb_abs := participant.pouvoirs; msg_abs.compte_part := true end;
          if (msg_contre.nombre= 0) and ( msg_abs.nombre = 0)  then begin errpv := false ; nb_pour := participant.pouvoirs; msg_pour.compte_part := true end;
          if (msg_abs.nombre= 0) and ( msg_pour.nombre = 0)    then begin errpv := false ; nb_contre := participant.pouvoirs; msg_contre.compte_part := true end;
@@ -1536,32 +1516,6 @@ begin
    msg_abs.propagation_errp(false, errpv);  //err_pouvoirs := errpv;
 
 end;
-
-{procedure telement_scrutin.additionne(var pour, contre, abs, non_exp : integer);   // ancien
-var
-   errpv : boolean;
-begin
-   // err_pouvoirs de tous les message remis à false dans cree_elements;
-   // msg_pour etc ... valent messsage_nil si non affectés, message_nil.nombre = 0
-   suff_n_exp := participant.pouvoirs  - msg_pour.nombre - msg_contre.nombre - msg_abs.nombre;
-   errpv := suff_n_exp < 0;
-   if errpv then begin
-      if msg_pour.nombre + msg_contre.nombre = 0 then begin errpv := false ; abs := abs + participant.pouvoirs end;
-      if msg_contre.nombre + msg_abs.nombre = 0  then begin errpv := false ; pour := pour + participant.pouvoirs end;
-      if msg_abs.nombre + msg_pour.nombre = 0    then begin errpv := false ; contre := contre + participant.pouvoirs end;
-      msg_contre.err_pouvoirs := errpv;
-      msg_contre.err_pouvoirs := errpv;
-      msg_abs.err_pouvoirs := errpv;
-      if errpv then suff_n_exp := participant.pouvoirs else suff_n_exp := 0;
-      non_exp := non_exp + suff_n_exp;
-   end else begin;
-      pour := pour + msg_pour.nombre;
-      contre := contre + msg_contre.nombre;
-      abs := abs + msg_abs.nombre;
-      non_exp := non_exp + suff_n_exp ;
-   end;
-end;  }
-
 
 procedure telement_scrutin.affiche_e(mg: tmessage; idx: integer);
 begin  //tsl_v[ 2, col_sgd].Strings[idx] :=
@@ -2302,5 +2256,11 @@ begin
    sl_v_a_util.Clear ;
 end;
 
+
+procedure tscrutin.set_secret(lb_secret: integer);
+begin
+   scr_secret := not(lb_secret = lb_n_secret);
+   secret_only := lb_secret = lb_secret_s;
+end;
 
 end.

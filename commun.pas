@@ -29,6 +29,10 @@ const
     DateEnvoisPouvoir = 10;
     DateReceptionPouvoir = 11;
 
+    lb_n_secret = 0;
+    lb_secret_s = 1;
+    lb_secret_t = 2;
+
     max_interval = 500  ; // milllisecondes
 type
     timport = procedure(strl: Tstringlist; fichier : string) of object;
