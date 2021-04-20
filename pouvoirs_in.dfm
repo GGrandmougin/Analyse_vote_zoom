@@ -3,7 +3,7 @@ object Fpouv_in: TFpouv_in
   Top = 287
   Width = 1280
   Height = 768
-  Caption = 'Importation des pouvoirs'
+  Caption = 'Analyse des votes par Zoom: Importation des pouvoirs'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

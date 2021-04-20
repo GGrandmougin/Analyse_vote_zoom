@@ -36,6 +36,7 @@ const
     max_interval = 500  ; // milllisecondes
 type
     timport = procedure(strl: Tstringlist; fichier : string) of object;
+    tmerge_fic = function(l_mess : TStringList) : tstringlist;
 
 procedure log_infos(mess : string; typ : integer = 0; memo : tmemo = nil);
 procedure setCbPouvoirschecked(ok : boolean = true) ;
@@ -49,6 +50,7 @@ var
    memo_tests : tstrings;
    //p_traite_pouvoirs : TNotifyEvent;
    p_traite_pouvoirs : timport;
+   a_merge_fichier : tmerge_fic;
    cb_pouv_val : TCheckBox;
    cbpouvoirs_Checked : boolean = false;
    //nbPouvoirsConfies : TCheckBox;
@@ -69,6 +71,10 @@ var
    tsl_v : array[1.. 2, 1.. 4] of tstringlist;
    rv_disp : TRadioButton;
    erj_pour, erj_contre, erj_abs : tedit;
+   lnb_msg_ph : tlabel;
+   fichier_msg_scnd_PC : string;
+   bmerge : boolean = false;
+
 implementation
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;

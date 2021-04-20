@@ -13,7 +13,7 @@ interface
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
   Dialogs, ExtCtrls, StdCtrls, Mask, Grids, Auxiliaire, math, ComCtrls,
-  informations, StdActns, pouvoirs_in, commun;
+  informations, StdActns, pouvoirs_in, commun, merge;
 
 const
     hint_image1 = 'pouvoirs = erreur en relation avec le nombre de pouvoirs' + #13#10 +
@@ -163,6 +163,8 @@ type
     RVoix_utilisees: TRadioButton;
     ListBox1: TListBox;
     Etests: TEdit;
+    BMerge: TButton;
+    Lnb_mess_ph: TLabel;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -237,6 +239,7 @@ type
     procedure ListBox1Click(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure EtestsChange(Sender: TObject);
+    procedure BMergeClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -264,6 +267,7 @@ procedure TForm1.FormCreate(Sender: TObject);
 var
    i, l : integer;
 begin
+   lnb_msg_ph := lnb_mess_ph;
    aux1 := taux.create;
    i := strtointdef(ENoVote.Text, 0) ;
    if i > 0 then aux1.scrutin_encours := tscrutin.create(i, enomvote.text);
@@ -294,6 +298,8 @@ begin
    init_tsl_votes;
    rv_disp := RVoix_dispo;
    erj_pour := Erjpour; erj_contre := Erjcontre; erj_abs := Erjabs ;
+   Bmerge.Caption := 'Merge des' + #13#10 + 'entrées';
+
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -873,6 +879,7 @@ begin
    Efic_msg.Enabled := fic_mess;
    Enb_membres.Enabled := fic_mess;
    Bselectfic.Enabled := fic_mess;
+   BMerge.Enabled := fic_mess;
 end;
 
 procedure TForm1.BEditerClick(Sender: TObject);
@@ -1013,6 +1020,12 @@ begin
       i := strtointdef(etests.Text, -1);
       if i in [0, 1, 2] then ListBox1.TopIndex := i;
    end;
+end;
+
+procedure TForm1.BMergeClick(Sender: TObject);
+begin
+   fmerge.edit_fic := Efic_msg;
+   Fmerge.ShowModal;
 end;
 
 end.

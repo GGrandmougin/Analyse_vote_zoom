@@ -6,7 +6,8 @@ uses
   Auxiliaire in 'Auxiliaire.pas',
   informations in 'informations.pas' {Finformation},
   pouvoirs_in in 'pouvoirs_in.pas' {Fpouv_in},
-  commun in 'commun.pas';
+  commun in 'commun.pas',
+  merge in 'merge.pas' {Fmerge};
 
 {$R *.res}
 
@@ -15,6 +16,7 @@ begin
   Application.CreateForm(TForm1, Form1);
   Application.CreateForm(TFinformation, Finformation);
   Application.CreateForm(TFpouv_in, Fpouv_in);
+  Application.CreateForm(TFmerge, Fmerge);
   Application.Run;
 end.
 

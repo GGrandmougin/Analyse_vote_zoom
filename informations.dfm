@@ -3,7 +3,7 @@ object Finformation: TFinformation
   Top = 194
   Width = 1279
   Height = 767
-  Caption = 'Vote par Zoom   Information'
+  Caption = 'Analyse des votes par Zoom   Information'
   Color = clBtnFace
   Font.Charset = DEFAULT_CHARSET
   Font.Color = clWindowText

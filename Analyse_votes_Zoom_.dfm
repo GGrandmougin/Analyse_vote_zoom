@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 454
-  Top = 185
+  Left = 691
+  Top = 149
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -48,16 +48,16 @@ object Form1: TForm1
       ParentFont = False
     end
     object Ldebut: TLabel
-      Left = 8
-      Top = 32
-      Width = 92
+      Left = 48
+      Top = 36
+      Width = 107
       Height = 16
       Caption = 'Heure du d'#233'but'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'MS Sans Serif'
-      Font.Style = []
+      Font.Style = [fsBold]
       ParentFont = False
     end
     object Label2: TLabel
@@ -74,21 +74,21 @@ object Form1: TForm1
       ParentFont = False
     end
     object Lduree: TLabel
-      Left = 224
-      Top = 32
-      Width = 37
+      Left = 256
+      Top = 36
+      Width = 43
       Height = 16
       Caption = 'Dur'#233'e'
       Font.Charset = DEFAULT_CHARSET
       Font.Color = clWindowText
       Font.Height = -13
       Font.Name = 'MS Sans Serif'
-      Font.Style = []
+      Font.Style = [fsBold]
       ParentFont = False
     end
     object Label21: TLabel
       Left = 8
-      Top = 64
+      Top = 68
       Width = 97
       Height = 16
       Caption = 'Nb de membres'
@@ -100,8 +100,8 @@ object Form1: TForm1
       ParentFont = False
     end
     object Label5: TLabel
-      Left = 330
-      Top = 27
+      Left = 362
+      Top = 31
       Width = 21
       Height = 16
       Caption = 'm,s'
@@ -113,8 +113,8 @@ object Form1: TForm1
       ParentFont = False
     end
     object ME_heure: TMaskEdit
-      Left = 112
-      Top = 24
+      Left = 160
+      Top = 28
       Width = 81
       Height = 28
       Hint = 'heure du d'#233'but du vote'
@@ -146,8 +146,8 @@ object Form1: TForm1
       OnChange = Efic_msgChange
     end
     object ME_duree: TMaskEdit
-      Left = 272
-      Top = 24
+      Left = 304
+      Top = 28
       Width = 53
       Height = 28
       Hint = 'dur'#233'e du vote'
@@ -165,7 +165,7 @@ object Form1: TForm1
     end
     object Enb_membres: TEdit
       Left = 112
-      Top = 64
+      Top = 68
       Width = 49
       Height = 24
       Font.Charset = DEFAULT_CHARSET
@@ -179,8 +179,8 @@ object Form1: TForm1
       OnClick = Enb_membresClick
     end
     object BEditer: TButton
-      Left = 310
-      Top = 64
+      Left = 6
+      Top = 8
       Width = 75
       Height = 25
       Caption = 'Editer'
@@ -210,7 +210,7 @@ object Form1: TForm1
     end
     object ListBox1: TListBox
       Left = 168
-      Top = 64
+      Top = 68
       Width = 137
       Height = 21
       Font.Charset = DEFAULT_CHARSET
@@ -227,6 +227,22 @@ object Form1: TForm1
       TabOrder = 6
       OnClick = ListBox1Click
       OnKeyUp = ListBox1KeyUp
+    end
+    object BMerge: TButton
+      Left = 311
+      Top = 64
+      Width = 75
+      Height = 33
+      Caption = 'Merge'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -13
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      TabOrder = 7
+      WordWrap = True
+      OnClick = BMergeClick
     end
   end
   object PAction: TPanel
@@ -2062,6 +2078,14 @@ object Form1: TForm1
       Caption = 
         'Le nombre indiqu'#233' dans la colonne "pouvoirs" indique le nombre p' +
         'ouvoirs confi'#233's plus la voix de la personne'
+    end
+    object Lnb_mess_ph: TLabel
+      Left = 16
+      Top = 520
+      Width = 66
+      Height = 13
+      Caption = 'Lnb_mess_ph'
+      Visible = False
     end
     object StringGrid1: TStringGrid
       Left = 152

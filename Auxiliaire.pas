@@ -78,7 +78,7 @@ const
     fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
     nom_heure_duree = 'nom heure duree' ; // '"nom"_heure_duree' ?// exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
 
-    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","rejets pour","rejets contre","rejets abstention","secret"';
+    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret"';
     chVote_No = 0;
     chnom_vote =1;
     chNb_votants =2;
@@ -87,10 +87,11 @@ const
     chNb_abstention =5;
     chheure_debut =6;
     chduree =7;
-    chrejetspour = 8;
-    chrejetscontre = 9;
-    chrejetsabs = 10;
-    chvotesecret = 11;
+    chnb_msg       = 8;
+    chrejetspour   = 9;
+    chrejetscontre = 10;
+    chrejetsabs    = 11;
+    chvotesecret   = 12;
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -127,9 +128,11 @@ const
     col_choix = 14;
     tb_regions_m : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
     idx_msg_nil = -2;
-
+    max_tch = 5;
+    choix_nil = '--';
 
 type
+  ttab_ch_al = array[0.. max_tch] of string;
   ttbnoms = array[0..9] of string;
   tliste_vote = record//tstringlist;
      idx_deb : integer;
@@ -159,6 +162,7 @@ type
     tbnom : ttbnoms;
     numero : integer;
     pouvoirs : integer	;
+    tab_ch_pour, tab_ch_contre, tab_ch_abs : ttab_ch_al ;
     chaine_meme_id : tparticipant; // reférence un autre tparticipant ayant de meme no de membre chaucun des particpant ayant un numéro identique référence un tparticpant différent(si en prend un, on peut acceder à tous les autres - jusqu'à ce qu'on trouveun participant référençant celui du départ)
     partage_nomembre : boolean;
     electeur_legitime : boolean; // non retrouvé dans liste pouvoirs ou autre
@@ -170,6 +174,7 @@ type
     elem_scrutin : telement_scrutin; // reinitialisé à chaque decomptage
     fichier_CSV : string;
     rejets : trejets;
+    function recherche_choix( mot : string): string;
     function ecrit_csv(idx : integer; s : char):string;
     function compare(nm, prenm, regn, fic_csv : string; part_initial : tparticipant): tparticipant;  overload;
     function compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant; overload;
@@ -200,6 +205,7 @@ type
     est_vote : boolean;
     est_msg_nil : boolean;
     chaine_pv : tmessage;
+    
     Procedure propagation_errp(reinit, errpv : boolean);
     function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
@@ -230,6 +236,7 @@ type
     heure_debut : string;
     duree : string;
     fichier_message: string;
+    //fichier_mess_scnd_PC : string;
     fichier_pouvoirs : string;
     nombre_membres : integer;
     //lb_secret : integer;
@@ -271,11 +278,12 @@ type
     ligne_vide : string;
     tickcountpre : cardinal;
     efiltrepre : string;
+    nb_mess_ph : integer;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
     procedure clear_l_votes;
     procedure clear_tmessages; // pour debug
-    procedure remplit_fic_sortie(scrutin : tscrutin);
+    procedure remplit_fic_sortie(scrutin : tscrutin; nb_m_ph : integer);
     procedure config_nouv_scrutin(l_nouv_scrutin : tstringlist);
     function decompose(entree : string): tstringlist; // tstringlist.create dans la fonctio,
     procedure set_tb_regions(tabe : array of string );
@@ -290,7 +298,7 @@ type
     function select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message ;lvotes: tliste_vote ): tliste_vote;
     procedure traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message  );
     function aff_messages( rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
-    procedure pretraitement_lmsg( lmsg : tliste_message); // concaténation et recherche configuration
+    procedure pretraitement_lmsg( lmsg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
     function charge_fic_msg(fic: string; lmsg : tliste_message ): boolean;
@@ -337,20 +345,24 @@ begin
    result := false;
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    if lmessages.Count = 0 then lmfic := lmessages else lmfic := TStringList.Create;
-   if fileexists(fic) then begin
-      try
-         lmfic.loadfromfile(fic);
-         result := lmfic.Count > 0;
-      except
-         on E: Exception do log_infos('ERREUR: ' + E.Message + ' pour le fichier: ' + fic); // log_infos dupplique l message dans memo_tests
-      end;
+   if bmerge then begin
+
    end else begin
-      log_infos('fichier des messages: ' + fic + ' non trouvé' );
+      if fileexists(fic) then begin
+         try
+            lmfic.loadfromfile(fic);
+            result := lmfic.Count > 0;
+         except
+            on E: Exception do log_infos('ERREUR: ' + E.Message + ' pour le fichier: ' + fic); // log_infos dupplique l message dans memo_tests
+         end;
+      end else begin
+         log_infos('fichier des messages: ' + fic + ' non trouvé' );
+      end;
    end;
    if result then begin
       if lmfic.count > 0 then begin
          enable_efic_msg := false;
-         pretraitement_lmsg(lmfic);
+         pretraitement_lmsg(lmfic, memo_tests);
          if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
       end else begin
          if debug then memo_tests.Add('erreur chargement fichier');
@@ -677,6 +689,8 @@ end;
 
 
 constructor tparticipant.create(nm, prenm, regn, fic_csv: string; id: integer);
+var
+   i : integer;
 begin
    nom := nm;
    prenom := prenm;
@@ -697,6 +711,11 @@ begin
    err_region := false;
    err_num := false;
    err_ID := false;
+   for i := 0 to max_tch do begin
+      tab_ch_pour[i] := choix_nil;
+      tab_ch_contre[i] := choix_nil;
+      tab_ch_abs[i] := choix_nil;
+   end;
    rejets.msage := message_nil; rejets.er_pv := false;
    aux1.lparticipants.AddObject('', self);
    if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
@@ -1065,7 +1084,9 @@ begin
          end;
       end;
       for i := 1 to min(mx, nbgrl) do begin
-         chx := ch[i];
+         //chx := ch[i];
+         chx := participant.recherche_choix(ch[i]);
+         if chx = choix_nil then chx := ch[i];
          if length(chx) < 3 then dec(nbgrl);
          if (chx[1] = 'a') and ((chx = 'abstention') or (chx = 'absention') or (chx = 'abstentions')) then chx := 'abs';
          if (choix = '') and ((chx = 'pour') or (chx = 'contre') or (chx = 'abs') or (chx = 'oui') or (chx = 'non')) then choix := chx
@@ -1094,7 +1115,7 @@ begin
   inherited;
 end;
 
-procedure taux.pretraitement_lmsg( lmsg : tliste_message );  // concaténation et recherche configuration
+procedure taux.pretraitement_lmsg( lmsg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
 var
    i, n : integer;
    lmessages: tstringlist;
@@ -1125,8 +1146,8 @@ begin
       end;
    end;
    if debug then begin
-      memo_tests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes reconstituées');
-      memo_tests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
+      mtests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes reconstituées');
+      mtests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
    end;
 end;
 
@@ -1176,6 +1197,7 @@ var
    //msg  : tmessage;
 begin
    nb_msg := 0;
+   nb_mess_ph := 0;
    lmessages := lmsg;
    if lvotes.idx_deb >= 0 then begin
       for idx_msg := lvotes.idx_deb to lvotes.idx_fin do begin
@@ -1193,6 +1215,7 @@ begin
                      nv := copy(st, 1, pos(char(195) + char(160), st) -1) + 'SECRET :' + rightstr(st, length(st) - p - 17);
                   end;
                end;
+               if tlm then inc(nb_mess_ph);
                if secret or tlm then begin
                   nv := remplace_caracteres_UTF8(nv);
                   tmessage.create(idx_msg, nv, secret); // dans create : lmessages.Objects[idx_msg] := msg;
@@ -1203,7 +1226,9 @@ begin
                end;
             {end else begin
                lvotes.strings[i] := tmessage(lmessages.Objects[idx_msg]).texte; }
-            end;
+            end else if not tmessage(lmessages.Objects[idx_msg]).m_secret then begin
+               inc(nb_mess_ph);
+            end
          except
             on E : exception do log_infos( 'erreur dans taux.traitement_lvotes: ' + e.message );
          end;
@@ -1239,7 +1264,9 @@ begin
             liste_votes := select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
             if liste_votes.idx_deb >= 0 then begin  //sinon plage horaire selectionnée hors plage horaire des messages
                decomptage;
-               remplit_fic_sortie(scrutin_encours);
+               remplit_fic_sortie(scrutin_encours, nb_mess_ph);
+               lnb_msg_ph.Caption := inttostr(nb_mess_ph) + ' messages "à tout le monde" dans la plage horaire';
+               lnb_msg_ph.Visible := true;
             end;
          end else begin
             st := 'fichier message invalide: ' + fichier_message;
@@ -1451,6 +1478,26 @@ else begin
       err_pouvoirs := errpv and not reinit;
    end;
 end;
+end;
+
+function tparticipant.recherche_choix(mot: string): string;
+const
+   faux = 'faux' ;
+var
+   i : integer;
+begin
+   result := faux;
+   if tab_ch_pour[0] = choix_nil then begin // méthode non utilisée
+      result := choix_nil ;
+   end else begin
+      i := 0;
+      while (i <= max_tch) and (result = faux ) and (tab_ch_pour[i] <> choix_nil) do begin  // les valeurs jusqu'à max_ch peuvent ne pas exister
+         if mot = tab_ch_pour[i] then result := 'pour';
+         if mot = tab_ch_contre[i] then result := 'contre';
+         if mot = tab_ch_abs[i] then result := 'abs';
+         inc(i);
+      end;
+   end;
 end;
 
 { telement_scrutin }
@@ -1691,6 +1738,7 @@ begin
    ttl_pour :=0; ttl_contre :=0; ttl_abs :=0; ttl_exp :=0; ttl_votants :=0;
    raz_rejetes;
    processed := false;
+   lnb_msg_ph.Visible := false;
 end;
 
 
@@ -2129,10 +2177,11 @@ begin
    end;
 end;
 
-procedure taux.remplit_fic_sortie(scrutin : tscrutin);
+procedure taux.remplit_fic_sortie(scrutin : tscrutin; nb_m_ph : integer);
 var
    sl : tstringlist;
-   deb_ligne, fin_ligne : string;
+   deb_ligne, fin_ligne, st : string;
+   fspea,fspeb : string;
    i : integer;
    tf : textfile;
    fs : TFormatSettings;
@@ -2148,13 +2197,19 @@ begin
       deb_ligne := inttostr(0) + ',"';
       fin_ligne := '"';
       for i := 3 to sl.Count do fin_ligne := fin_ligne + ',';
+      fspea := '"';
+      for i := 2 to chnb_msg do fspea := fspea + ',';
+      fspeb := '"';
+      for i := chnb_msg to sl.Count - 2 do fspeb := fspeb + ',';
       sl.clear;
       sl.Add(ligne_titre);
-      sl.Add(deb_ligne + 'Titre = ' + titre_reunion + fin_ligne);
+      st := deb_ligne + 'Titre = ' + titre_reunion + fspea;
+      sl.Add(st + '"ds la plage horaire' + fspeb);
       sl.Add(deb_ligne + 'Nombre de membres = '+ inttostr(scrutin.nombre_membres) + fin_ligne);
       sl.Add(deb_ligne + 'Fichier des messages = ' + scrutin.fichier_message  + fin_ligne);
+      sl.Add(deb_ligne + 'Fichier des messages second PC = ' + fichier_msg_scnd_PC  + fin_ligne);
       sl.Add(deb_ligne + 'Fichier des pouvoirs = ' + scrutin.fichier_pouvoirs  + fin_ligne);
-      sl.Add(deb_ligne + 'Source du fichier des pouvirs: ' + source_pouvoirs + fin_ligne);
+      sl.Add(deb_ligne + 'Source du fichier des pouvoirs: ' + source_pouvoirs + fin_ligne);
       sl.Add(deb_ligne + 'nombre de pouvoirs confiés = ' + inttostr(aux1.nb_pouvoirs) + fin_ligne);
 
       //sl.Add(deb_ligne +  + fin_ligne);
@@ -2189,6 +2244,7 @@ begin
          sl.Strings[chNb_abstention] := IntToStr(ttl_abs);
          sl.Strings[chheure_debut] := '"' + heure_debut + '"';
          sl.Strings[chduree] := '"' + duree + '"';
+         sl.Strings[chnb_msg] := '"' + inttostr(nb_m_ph) + '"';
          sl.Strings[chrejetspour] :=  IntToStr(ttl_rj_p);
          sl.Strings[chrejetscontre] :=  IntToStr(ttl_rj_c);
          sl.Strings[chrejetsabs] :=  IntToStr(ttl_rj_a);
