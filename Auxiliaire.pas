@@ -63,7 +63,7 @@ interface
 uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
    Windows, graphics, strutils, Forms, IdBaseComponent, IdComponent, IdTCPConnection, IdTCPClient,
-   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun, pouvoirs_in  ;
+   IdFTP, IdHTTP, OleCtrls, SHDocVw, SysUtils, Grids, commun, pouvoirs_in, merge  ;
 
 
 const
@@ -71,12 +71,6 @@ const
               la casse est indifférente,
               les différents paramètres sont séparés par 1 (ou plusieurs) espace
               les paramètres de type 'texte' sont entourés par des " , de ce fait , ils peuvent comporter des espaces }
-    configuration_votes = 'configuration votes';// 'config_votes' ? // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
-    tableau_regions = 'tableau regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp
-    fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: <configuration votes fichier pouvoirs local C:\tests\exemple.txt>
-            import_differe = 'import differe' ; // pour debug, ne lance pas l'import dès la lesture de la config , exemple: <configuration votes fichier import differe pouvoirs local C:\tests\exemple.txt>
-    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
-    nom_heure_duree = 'nom heure duree' ; // '"nom"_heure_duree' ?// exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
 
     ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret","duree_trmt"';
     chVote_No = 0;
@@ -139,7 +133,7 @@ type
      idx_deb : integer;
      idx_fin : integer;
   end;
-  tliste_message = tstringlist;
+  
   tliste_participant = tstringlist;
   tmessage = class;
   telement_scrutin = class;
@@ -268,7 +262,7 @@ type
     lvotes_dbg : tliste_vote;
     lparticipants: tliste_participant;
     //lrejetes: tstringlist;   inutile ?
-    lconfig: tstringlist;
+    
     repere_lcongig : integer; // = lconfig.count lors du drenier traitement de lconfig
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
     lscrutin : tstringlist;
@@ -299,7 +293,7 @@ type
     function select_lvotes(heure, duree : string; secret, secret_exclusif : boolean; lmsg : tliste_message ;lvotes: tliste_vote ): tliste_vote;
     procedure traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message  );
     function aff_messages( rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
-    procedure pretraitement_lmsg( lmsg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
+    //procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
     function charge_fic_msg(fic: string; lmsg : tliste_message ): boolean;
@@ -344,12 +338,14 @@ function taux.charge_fic_msg(fic: string; lmsg : tliste_message): boolean;
 var
    lmessages, lmfic : tstringlist;
    i : integer;
+   hfin : TDateTime; 
 begin
    result := false;
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    if lmessages.Count = 0 then lmfic := lmessages else lmfic := TStringList.Create;
    if bmerge then begin
-
+      hfin := strtotime(scrutin_encours.heure_debut ) + strtotime( '00:' + scrutin_encours.duree );
+      result := Fmerge.merge_fichiers(lmfic, lconfig, memo_tests, hfin);
    end else begin
       if fileexists(fic) then begin
          try
@@ -361,16 +357,18 @@ begin
       end else begin
          log_infos('fichier des messages: ' + fic + ' non trouvé' );
       end;
-   end;
-   if result then begin
-      if lmfic.count > 0 then begin
-         enable_efic_msg := false;
-         pretraitement_lmsg(lmfic, memo_tests);
-         if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
-      end else begin
-         if debug then memo_tests.Add('erreur chargement fichier');
-         log_infos('problème au fichier des messages: ' + fic );
+      if result then begin
+         if lmfic.count > 0 then begin
+            enable_efic_msg := false;
+            pretraitement_lmsg(lmfic, lconfig, memo_tests);
+            if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
+         end else begin
+            if debug then memo_tests.Add('erreur chargement fichier');
+            log_infos('problème au fichier des messages: ' + fic );
+         end;
       end;
+   end;   
+   if result then begin
       if (lmfic <> lmessages) and (lmfic.Count > lmessages.Count)  then begin
          for i := lmessages.Count to lmfic.Count - 1 do begin
             lmessages.Add(lmfic[i]);
@@ -1129,7 +1127,7 @@ begin
   inherited;
 end;
 
-procedure taux.pretraitement_lmsg( lmsg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
+{procedure taux.pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
 var
    i, n : integer;
    lmessages: tstringlist;
@@ -1149,21 +1147,21 @@ end;
 begin
    if lmsg = nil then lmessages := lmessages_gen else lmessages := lmsg;
    n := 0;
-   lconfig.Clear;
+   l_cfg.Clear;
    for i := lmessages.Count - 1 downto 0  do begin
       if ((length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':')) and (i > 0 ) then begin
          lmessages.Strings[i ] := entete_message( i) + lmessages.Strings[i] ;
          inc(n);
       end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
-         lconfig.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
+         l_cfg.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
          lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
       end;
    end;
    if debug then begin
       mtests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes reconstituées');
-      mtests.Add('pretraitement_lmsg: ' + inttostr(lconfig.Count) + ' msg config');
+      mtests.Add('pretraitement_lmsg: ' + inttostr(l_cfg.Count) + ' msg config');
    end;
-end;
+end;}
 
 function taux.select_lvotes(heure, duree: string ; secret, secret_exclusif : boolean; lmsg : tliste_message ; lvotes: tliste_vote ): tliste_vote;
 var

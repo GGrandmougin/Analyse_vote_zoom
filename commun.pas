@@ -11,6 +11,15 @@ Uses
 const
     //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
     //function Utf8ToAnsi(const S: UTF8String): string;
+    configuration_votes = 'configuration votes';// 'config_votes' ? // exemple :  <configuration votes  fichier pouvoirs local cas_tests\1\ExempleExport.csv>
+    tableau_regions = 'tableau regions' ;  // séparation par des virgules, casse et espaces infifférents, format fixe : 3 aractères, exemple :  <configuration votes tableau_regions xyz, ert, ghg ,ilj,   rts, mpp
+    fichier_pouvoirs_local = 'fichier pouvoirs local';  // exemple: <configuration votes fichier pouvoirs local C:\tests\exemple.txt>
+            import_differe = 'import differe' ; // pour debug, ne lance pas l'import dès la lesture de la config , exemple: <configuration votes fichier import differe pouvoirs local C:\tests\exemple.txt>
+    fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
+    nom_heure_duree = 'nom heure duree' ; // '"nom"_heure_duree' ?// exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
+
+
+
     remplAcc  : array[0..63 ] of byte = (
                            97,97,97,97,97,97,198,99,101,101,101,101,105,105,105,105,
                            208,110,111,111,111,111,111,215,216,117,117,117,117,221,222,223,
@@ -37,10 +46,13 @@ const
 type
     timport = procedure(strl: Tstringlist; fichier : string) of object;
     tmerge_fic = function(l_mess : TStringList) : tstringlist;
+    tliste_message = tstringlist;
 
 procedure log_infos(mess : string; typ : integer = 0; memo : tmemo = nil);
 procedure setCbPouvoirschecked(ok : boolean = true) ;
 procedure show_message( texte : string; mtype :TMsgDlgType);
+procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
+
 var
    debug : boolean;
    ficlog : string;
@@ -74,8 +86,49 @@ var
    lnb_msg_ph : tlabel;
    fichier_msg_scnd_PC : string;
    bmerge : boolean = false;
-
+   lconfig: tstringlist;
 implementation
+
+procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
+var
+   i, n : integer;
+   lmessages: tstringlist;
+function entete_message( j : integer) : string;
+var
+   p : integer;
+begin
+   if ((length(lmessages.Strings[j - 1]) < 13 ) or (lmessages.Strings[j - 1][3] <> ':') or (lmessages.Strings[j - 1][6] <> ':')) and (j > 0)  then begin
+      inc(n);
+      result := entete_message( j- 1);
+      lmessages.Strings[j - 1] :=  result + lmessages.Strings[j - 1];
+    end else begin
+       p := pos(': ', lmessages.Strings[j - 1] );
+       if p > 0 then result := copy(lmessages.Strings[j - 1 ] , 1 , p + 1);
+    end;
+end;
+begin
+   if lmsg = nil then begin
+      //lmessages := lmessages_gen else lmessages := lmsg;
+      log_infos('lmsg = nil dans procedure pretraitement_lmsg');
+   end else begin
+      lmessages := lmsg;
+      n := 0;
+      l_cfg.Clear;
+      for i := lmessages.Count - 1 downto 0  do begin
+         if ((length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':')) and (i > 0 ) then begin
+            lmessages.Strings[i ] := entete_message( i) + lmessages.Strings[i] ;
+            inc(n);
+         end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
+            l_cfg.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
+            lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
+         end;
+      end;
+      if debug then begin
+         mtests.Add('pretraitement_lmsg: ' + inttostr(n) + ' lignes reconstituées');
+         mtests.Add('pretraitement_lmsg: ' + inttostr(l_cfg.Count) + ' msg config');
+      end;
+   end;
+end;
 
 procedure setCbPouvoirschecked(ok : boolean = true) ;
 begin
@@ -109,7 +162,7 @@ end;
 
 procedure show_message( texte : string; mtype :TMsgDlgType );
 begin
-   MessageDlg(texte , mtError, [mbOK], 0);
+   MessageDlg(texte , mtype, [mbOK], 0);
 {mtWarning	      Une boîte de message contenant un signe point d'exclamation jaune.
  mtError	         Une boîte de message contenant un signe de stop rouge.
  mtInformation	   Une boîte de message contenant un "i" bleu.
