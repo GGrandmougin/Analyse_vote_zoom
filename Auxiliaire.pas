@@ -78,7 +78,7 @@ const
     fichier_pouvoirs_FTP = 'fichier pouvoirs FTP'; //  paramètres texte (entre ") dans l'odre serveur_FTP, login_FTP, Mot_passe_FTP, exemple:  <configuration votes fichier pouvoirs FTP "ExempleExport.csv" "machin@truc.org" "fh4v55FGJbd"
     nom_heure_duree = 'nom heure duree' ; // '"nom"_heure_duree' ?// exemple <configuration votes nom heure duree "1er vote" 16:22:00 05:00> , exemple minimal <configuration votes nom heure duree "" 16:22:00 05:00>
 
-    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret"';
+    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret","duree_trmt"';
     chVote_No = 0;
     chnom_vote =1;
     chNb_votants =2;
@@ -92,6 +92,7 @@ const
     chrejetscontre = 10;
     chrejetsabs    = 11;
     chvotesecret   = 12;
+    chdureetrtmt   = 13;
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -330,6 +331,8 @@ var
    Erjpour_, Erjcontre_, Erjabs_ : tedit;
    LNb_msg_ : tlabel;
    tab_idx : array[0.. 99] of integer;
+   depart_trtmnt : int64;
+   duree_trtmnt : int64;
 implementation
 
 
@@ -560,6 +563,11 @@ begin
    err_nom := false;
    err_num := false;
    err_ID := false;
+   for i := 0 to max_tch do begin
+      tab_ch_pour[i] := choix_nil;
+      tab_ch_contre[i] := choix_nil;
+      tab_ch_abs[i] := choix_nil;
+   end;
    rejets.msage := message_nil; rejets.er_pv := false;
    numero := 0;
    nbgrl := 0;
@@ -620,7 +628,8 @@ begin
 end;
 
 constructor tparticipant.create(msg, regn: string; num: integer;const tab: ttbnoms);
-//var
+var
+  i : integer;
    //nbgrl, nbgrc, i, v, j : integer;
    //dans_grl, dans_grc : boolean;
    //nb : string;
@@ -630,6 +639,11 @@ begin
    err_nom := false;
    err_num := num = 0;
    err_ID := err_num;
+   for i := 0 to max_tch do begin
+      tab_ch_pour[i] := choix_nil;
+      tab_ch_contre[i] := choix_nil;
+      tab_ch_abs[i] := choix_nil;
+   end;
    rejets.msage := message_nil; rejets.er_pv := false;
    numero := 0;
    //nbgrl := 0;
@@ -1255,6 +1269,7 @@ var
 begin
    try
       with scrutin_encours do begin
+         depart_trtmnt := GetTickCount;
          if charge_fic_msg(fichier_message, liste_message) then begin
             if (titre_reunion = '') and (fichier_message = fichier_message_defaut) then begin
                st := ExtractFilePath(fichier_message);
@@ -1623,6 +1638,7 @@ begin
    end;
    processed := true;
    aux1.aff_messages(true, false, '', liste_message, liste_votes);
+   duree_trtmnt := GetTickCount - depart_trtmnt ;
    maj_resultats;
 end;
 
@@ -2211,7 +2227,7 @@ begin
       sl.Add(deb_ligne + 'Fichier des pouvoirs = ' + scrutin.fichier_pouvoirs  + fin_ligne);
       sl.Add(deb_ligne + 'Source du fichier des pouvoirs: ' + source_pouvoirs + fin_ligne);
       sl.Add(deb_ligne + 'nombre de pouvoirs confiés = ' + inttostr(aux1.nb_pouvoirs) + fin_ligne);
-
+      sl.Add(deb_ligne + 'programme = ' + tform(f1stringgrid.Owner).Caption + fin_ligne);
       //sl.Add(deb_ligne +  + fin_ligne);
       //sl.Add(deb_ligne +  + fin_ligne);
       //sl.Add(deb_ligne +  + fin_ligne);
@@ -2249,7 +2265,7 @@ begin
          sl.Strings[chrejetscontre] :=  IntToStr(ttl_rj_c);
          sl.Strings[chrejetsabs] :=  IntToStr(ttl_rj_a);
          sl.Strings[chvotesecret] := scrt;
-
+         sl.Strings[chdureetrtmt] := inttostr(duree_trtmnt);
          try
             assignfile(tf, dir_trv + fichier_sortie);
             append(tf);
