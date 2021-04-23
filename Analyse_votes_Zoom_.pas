@@ -165,6 +165,7 @@ type
     Etests: TEdit;
     BMerge: TButton;
     Lnb_mess_ph: TLabel;
+    cb_votes_lim: TCheckBox;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -240,6 +241,7 @@ type
     procedure Button1Click(Sender: TObject);
     procedure EtestsChange(Sender: TObject);
     procedure BMergeClick(Sender: TObject);
+    procedure cb_votes_limClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -299,7 +301,7 @@ begin
    rv_disp := RVoix_dispo;
    erj_pour := Erjpour; erj_contre := Erjcontre; erj_abs := Erjabs ;
    Bmerge.Caption := 'Merge des' + #13#10 + 'entrées';
-
+   cb_votants_lim := cb_votes_lim ;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -1026,6 +1028,13 @@ procedure TForm1.BMergeClick(Sender: TObject);
 begin
    fmerge.edit_fic := Efic_msg;
    Fmerge.ShowModal;
+end;
+
+procedure TForm1.cb_votes_limClick(Sender: TObject);
+begin
+   votants_limites := cb_votes_lim.Checked;
+   if cb_votes_lim.Tag = 0 then cb_votes_lim.Tag := integer(cb_votes_lim.Color);
+   if cb_votes_lim.Checked then cb_votes_lim.Color := clred else cb_votes_lim.Color := tcolor(cb_votes_lim.Tag);
 end;
 
 end.

@@ -231,6 +231,7 @@ begin
       on E: Exception do log_infos('ERREUR: ' + E.Message + ' pour le fichier: ' + Efic_scnd_pc.Text); // log_infos dupplique l message dans memo_tests
    end;
    if result then begin
+      depart_trtmnt := GetTickCount;
       pretraitement_lmsg(sl_local, slcfg_l, memotst);
       pretraitement_lmsg(sl_2pc, slcfg_2,  memotst);
       merge_details(sl_local, sl_2pc, l_mess ) ;
@@ -247,6 +248,7 @@ var
 begin
    i := 0;
    j := 0;
+   result := true;
    while (i < sl1.Count) and (j < sl2.Count) do begin
        if sl1.Strings[i] = '' then begin
           inc(i);

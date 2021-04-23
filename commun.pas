@@ -87,6 +87,10 @@ var
    fichier_msg_scnd_PC : string;
    bmerge : boolean = false;
    lconfig: tstringlist;
+   depart_trtmnt : int64;
+   duree_trtmnt : int64;
+   votants_limites : boolean = false;
+   cb_votants_lim : TCheckBox;
 implementation
 
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration

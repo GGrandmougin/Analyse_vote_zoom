@@ -177,7 +177,7 @@ object Fmerge: TFmerge
       Left = 72
       Top = 24
       Width = 57
-      Height = 17
+      Height = 21
       TabOrder = 3
       Text = '12:00:00'
     end

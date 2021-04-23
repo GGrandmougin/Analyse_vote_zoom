@@ -176,7 +176,7 @@ type
     function rejected : boolean;
     function affichage_p(ligne : tstrings; filtre : string; lgn : integer) : boolean;
     procedure additionne(var votants, non_exp : integer);
-    constructor create(msg  : string);overload;
+    //constructor create(msg  : string);overload;
     constructor create(msg, regn  : string; num : integer; const tab : ttbnoms);overload;
     constructor create(nm, prenm, regn, fic_csv: string; id: integer);overload;
 
@@ -325,8 +325,6 @@ var
    Erjpour_, Erjcontre_, Erjabs_ : tedit;
    LNb_msg_ : tlabel;
    tab_idx : array[0.. 99] of integer;
-   depart_trtmnt : int64;
-   duree_trtmnt : int64;
 implementation
 
 
@@ -359,6 +357,7 @@ begin
       end;
       if result then begin
          if lmfic.count > 0 then begin
+            depart_trtmnt := GetTickCount;
             enable_efic_msg := false;
             pretraitement_lmsg(lmfic, lconfig, memo_tests);
             if debug then memo_tests.Add('fichier messages chargé, nb lignes: ' + inttostr(lmessages.Count));
@@ -550,7 +549,7 @@ end;
 { tparticipant }
 
 
-constructor tparticipant.create(msg  : string);  // msg mis à lowercase dans fonction appelante cherche_participant
+{constructor tparticipant.create(msg  : string);  // msg mis à lowercase dans fonction appelante cherche_participant
 var
    nbgrl, nbgrc, i, v, j : integer;
    dans_grl, dans_grc : boolean;
@@ -623,7 +622,7 @@ begin
    if (aux1.lnmembre2index.IndexOfName(inttostr(numero)) < 0) then aux1.lnmembre2index.AddObject(inttostr(numero) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
    texte := msg;
    aux1.lparticipants.AddObject(msg, self);
-end;
+end;}
 
 constructor tparticipant.create(msg, regn: string; num: integer;const tab: ttbnoms);
 var
@@ -650,7 +649,7 @@ begin
    //dans_grc := false;
    partage_nomembre := false;
    num_legitime := true;
-   pouvoirs := 1;
+   if votants_limites then pouvoirs := 0 else pouvoirs := 1; 
    chaine_meme_id := nil;
    {if msg <> '' then begin
       for i := 1 to length(msg) do begin
@@ -1267,12 +1266,14 @@ var
 begin
    try
       with scrutin_encours do begin
-         depart_trtmnt := GetTickCount;
+         //depart_trtmnt := GetTickCount; transféré dans charge_fic_msg  et TFmerge.merge_fichiers  avant pretraitement mais après le chargement des fichiers
          if charge_fic_msg(fichier_message, liste_message) then begin
             if (titre_reunion = '') and (fichier_message = fichier_message_defaut) then begin
                st := ExtractFilePath(fichier_message);
                titre_reunion := ExtractFileName(copy(st, 1, length(st) -1));
             end;
+            cb_votants_lim.Enabled := false;
+            if cb_votants_lim.Checked then cb_votants_lim.color := clblack else cb_votants_lim.color := clWhite;
             traite_lconfig;
             liste_votes := select_lvotes(heure_debut, duree, scr_secret, secret_only, liste_message, liste_votes);
             if liste_votes.idx_deb >= 0 then begin  //sinon plage horaire selectionnée hors plage horaire des messages
@@ -2220,6 +2221,8 @@ begin
       st := deb_ligne + 'Titre = ' + titre_reunion + fspea;
       sl.Add(st + '"ds la plage horaire' + fspeb);
       sl.Add(deb_ligne + 'Nombre de membres = '+ inttostr(scrutin.nombre_membres) + fin_ligne);
+      if votants_limites then sl.Add(deb_ligne + 'Votes RESERVE aux inscrits' + fin_ligne)
+      else sl.Add(deb_ligne + 'Votes NON limité aux inscrits' + fin_ligne);
       sl.Add(deb_ligne + 'Fichier des messages = ' + scrutin.fichier_message  + fin_ligne);
       sl.Add(deb_ligne + 'Fichier des messages second PC = ' + fichier_msg_scnd_PC  + fin_ligne);
       sl.Add(deb_ligne + 'Fichier des pouvoirs = ' + scrutin.fichier_pouvoirs  + fin_ligne);
