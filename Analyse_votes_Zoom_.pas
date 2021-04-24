@@ -166,6 +166,8 @@ type
     BMerge: TButton;
     Lnb_mess_ph: TLabel;
     cb_votes_lim: TCheckBox;
+    Benregistremt_stringgrid: TButton;
+    Cb_enr_aff: TCheckBox;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -242,6 +244,8 @@ type
     procedure EtestsChange(Sender: TObject);
     procedure BMergeClick(Sender: TObject);
     procedure cb_votes_limClick(Sender: TObject);
+    procedure Benregistremt_stringgridClick(Sender: TObject);
+    procedure Cb_enr_affClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -303,6 +307,7 @@ begin
    Bmerge.Caption := 'Merge des' + #13#10 + 'entrées';
    cb_votants_lim := cb_votes_lim ;
    ENoVote_ := ENoVote ;
+   Cbenraff  := Cb_enr_aff;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -363,6 +368,7 @@ begin
    rect.Right := 1;
    rect.Bottom := 1;
    StringGrid1.Selection := rect; }
+   nb_msg_affiches := 0;
 end;
 
 procedure TForm1.LAnalyseClick(Sender: TObject);
@@ -711,7 +717,7 @@ begin
       Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
       Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
       //casse sans importance pour filtre
-   end;   
+   end;
 end;
 
 procedure TForm1.EnomvoteChange(Sender: TObject);
@@ -813,7 +819,7 @@ begin
    end else begin
       show_message( 'N° incorrect pour "Vote N°', mtError);
    end;
-   
+
 end;
 
 procedure TForm1.clear_resultats;
@@ -957,6 +963,7 @@ end;
 
 procedure TForm1.RVoix_dispoClick(Sender: TObject);
 begin
+   setCb_enr_affchecked(false);
    Pmasque_totaux_Visible(RVoix_utilisees.Checked, false);
    Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
@@ -1037,5 +1044,66 @@ begin
    if cb_votes_lim.Tag = 0 then cb_votes_lim.Tag := integer(cb_votes_lim.Color);
    if cb_votes_lim.Checked then cb_votes_lim.Color := clred else cb_votes_lim.Color := tcolor(cb_votes_lim.Tag);
 end;
+
+procedure TForm1.Benregistremt_stringgridClick(Sender: TObject);
+const
+   s = ';';
+var
+   i, j : integer;
+   sl : TStringList;
+   st : string;
+   fs : TFormatSettings;
+begin
+   sl := TStringList.Create;
+   st := 'message|pouvoirs|pour|contre|abs|non expr|ID|nom|prénom|N°|région|suffrage|pouvoirs|nombre|choix';
+   st := StringReplace(st, '|', s, [rfReplaceAll]);
+   sl.Add(st);
+   for i := 0 to nb_msg_affiches -  1 do begin
+      st := '';
+      for j := 0 to StringGrid1.ColCount - 2 do begin
+         st := st + StringGrid1.Cells[j, i] + s;
+      end;
+      st := st + StringGrid1.Cells[StringGrid1.ColCount - 1, i];
+      sl.Add(StringReplace(st, '"', '°', [rfReplaceAll]));
+   end;
+   st := 'rejetés: ' + booltostr(Rrejetes.Checked , true) + '| non reconnus: ' + booltostr(Cbvnreconnus.Checked , true) + '| voix utilisées : ' + booltostr(RVoix_utilisees.Checked , true) + '| filtre = ' + Efiltre.Text;
+   sl.Add(st);
+   for j := 0 to StringGrid1.ColCount - 2 do begin
+      st := st + s;
+   end;
+   st := format( '%s rejetés pour | %s rejetés contre | %s rejetés abs', [erjpour.Text, Erjcontre.Text, Erjabs.Text]);
+   sl.Add(st);
+
+   GetLocaleFormatSettings(SysLocale.DefaultLCID, fs);
+   fs.DateSeparator := '_';
+   fs.TimeSeparator := '_';
+   fs.ShortDateFormat := 'dd/mm/yy';
+   fs.ShortTimeFormat := 'hh:mm:ss';
+   st := DateTimeToStr(Now, fs) ;  //'12_04_21 12_15_15'
+   st[9] := '_';
+   st :=  'stringgrid_ana_votes_' + st + '.csv' ;
+   try
+      sl.SaveToFile(dir_trv + st);
+   except
+      on E : exception do memo_tests.add('Erreur d''enregistrement de lparticipants: ' + E.message);
+   end;
+   sl.Free;
+end;
+
+procedure TForm1.Cb_enr_affClick(Sender: TObject);
+begin
+   if Cb_enr_aff.tag =0  then begin
+      Cb_enr_aff.tag :=1;
+      if  Cb_enr_aff.Checked then begin
+          if (nb_msg_affiches > 0) then begin
+              Benregistremt_stringgridClick(sender) ;
+          end else begin
+              Cb_enr_aff.Checked := false;
+          end;    
+      end else Cb_enr_aff.Checked := nb_msg_affiches > 0;
+      Cb_enr_aff.tag :=0;
+   end;
+end;
+
 
 end.

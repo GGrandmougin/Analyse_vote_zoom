@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 463
-  Top = 319
+  Left = 408
+  Top = 174
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2698,7 +2698,7 @@ object Form1: TForm1
       TabOrder = 4
       Visible = False
       object Ltous_mess: TLabel
-        Left = 416
+        Left = 384
         Top = 56
         Width = 200
         Height = 25
@@ -2849,6 +2849,15 @@ object Form1: TForm1
         WordWrap = True
         OnClick = cb_votes_limClick
       end
+    end
+    object Cb_enr_aff: TCheckBox
+      Left = 1056
+      Top = 516
+      Width = 169
+      Height = 17
+      Caption = 'Enregistrement de l'#39'afffichage'
+      TabOrder = 8
+      OnClick = Cb_enr_affClick
     end
   end
   object Pdebug: TPanel
@@ -3084,6 +3093,15 @@ object Form1: TForm1
       TabOrder = 19
       Text = 'Etests'
       OnChange = EtestsChange
+    end
+    object Benregistremt_stringgrid: TButton
+      Left = 0
+      Top = 128
+      Width = 137
+      Height = 17
+      Caption = 'Benregistremt_stringgrid'
+      TabOrder = 20
+      OnClick = Benregistremt_stringgridClick
     end
   end
   object OpenDialog1: TOpenDialog

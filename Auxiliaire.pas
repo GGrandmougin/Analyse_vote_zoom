@@ -1344,6 +1344,8 @@ begin
    //if rv_disp.Checked then dp_ut := 1 else dp_ut := 2;
    j := 0;
    for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
+   nb_msg_affiches := 0;
+   Cbenraff.Checked := false;
    f1stringgrid.row := 0; f1stringgrid.col := 0;
    lmessages := lmsg;
    scrutin_encours.raz_rejetes;
@@ -1430,6 +1432,7 @@ begin
       tickcountpre := tc ;
       efiltrepre := filtre;
    end;
+   nb_msg_affiches := result;
 end;
 
 (*procedure taux.charge_fic_msg(fic: string);
@@ -1735,6 +1738,7 @@ begin
       Ene_ppc_nbmb_.text := '0' ; Ev_ppc_nbmb_.text := '0' ;
       Erjpour_.text := '0'; Erjcontre_.text := '0'; Erjabs_.text := '0';
       for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
+      nb_msg_affiches := 0;
       f1stringgrid.row := 0; f1stringgrid.col := 0;
       LNb_msg_.Caption :=  '0 messages affichés';
    end else begin
@@ -2035,7 +2039,7 @@ begin
    st := 'index|no_membre|region|pouvoirs|prenom|nom|texte|fichier CSV|tableau_noms|idx_chaine' ;
    st := st + '|err_ID|err_prenom|err_nom|err_num|electeur_legitime|num_legitime|partage_nomembre|elem_scrutin';
    st := StringReplace(st, '|', s, [rfReplaceAll]);
-   sl.Add(st); 
+   sl.Add(st);
    for i := 0 to lparticipants.Count -  1 do begin
       sl.Add(tparticipant(lparticipants.Objects[i]).ecrit_csv(i, s));
    end;

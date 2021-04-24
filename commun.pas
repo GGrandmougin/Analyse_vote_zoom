@@ -50,6 +50,7 @@ type
 
 procedure log_infos(mess : string; typ : integer = 0; memo : tmemo = nil);
 procedure setCbPouvoirschecked(ok : boolean = true) ;
+procedure setCb_enr_affchecked(ok : boolean = true) ;
 procedure show_message( texte : string; mtype :TMsgDlgType);
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
 
@@ -93,6 +94,8 @@ var
    cb_votants_lim : TCheckBox;
    config_nv_scrutin : integer = 0;
    ENoVote_ : tedit;
+   nb_msg_affiches : integer = 0;
+   Cbenraff  : TCheckBox ;
 implementation
 
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
@@ -143,6 +146,15 @@ begin
       cbpouvoirs_Checked := ok;
       cb_pouv_val.Checked := ok;
       cb_pouv_val.Tag := 0;
+   end;
+end;
+
+procedure setCb_enr_affchecked(ok : boolean = true) ;
+begin
+   if Cbenraff.Checked <> ok then begin
+      Cbenraff.Tag := 1;
+      Cbenraff.Checked := ok;
+      Cbenraff.Tag := 0;
    end;
 end;
 
