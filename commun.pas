@@ -91,6 +91,8 @@ var
    duree_trtmnt : int64;
    votants_limites : boolean = false;
    cb_votants_lim : TCheckBox;
+   config_nv_scrutin : integer = 0;
+   ENoVote_ : tedit;
 implementation
 
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration

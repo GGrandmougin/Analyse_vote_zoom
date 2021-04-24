@@ -265,6 +265,7 @@ type
     
     repere_lcongig : integer; // = lconfig.count lors du drenier traitement de lconfig
     lnmembre2index : tstringlist; // couple names=values   no_de_membre=index_dans_lparticipants   tparticipant dans objet
+    lidxparticipant : tstringlist;
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
     nb_pouvoirs : integer;
@@ -390,11 +391,16 @@ end
 end;
 
 constructor taux.create;
+var
+   i : integer;
 begin
     lnmembre2index := tstringlist.create;
     lnmembre2index.Sorted := true;
     lnmembre2index.Duplicates := dupAccept;
     lmessages_gen := tstringlist.Create;
+    lidxparticipant := tstringlist.Create;
+    lidxparticipant.Capacity := 20000;
+    for i := 1 to 20000 do lidxparticipant.Add('');
     //lvotes_dbg := tstringlist.Create; // est devenu un record , n'est plus une tstringlist
     lvotes_dbg.idx_deb := -1;
     lvotes_dbg.idx_fin := -1;
@@ -427,6 +433,7 @@ begin
     lvotes_dbg.idx_deb := -1;
     lvotes_dbg.idx_fin := -1;
     videlistes;     // doit intervenir avant lnmembre2index.Free et lscrutin.Free;;
+    lidxparticipant.Free;
     lscrutin.Free;
     lnmembre2index.Free;
     lmessages_gen.free;
@@ -467,6 +474,7 @@ begin
     lvotes_dbg.idx_fin := -1;
     lconfig.Clear;
     lnmembre2index.Clear;
+    lidxparticipant.Clear;
     while lscrutin.Count > 0 do begin  // doit internenir avant lmessages_gen.Objects[0].Free;
        lscrutin.Objects[0].Free;  // destruction des tscrutin
        lscrutin.Delete(0);
@@ -692,7 +700,11 @@ begin
    region := regn;
    err_region:= region = '';
    numero := num;
-   if aux1.lnmembre2index.IndexOfName(inttostr(numero)) < 0 then aux1.lnmembre2index.AddObject(inttostr(numero) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
+   if numero < 20000 then begin
+      if aux1.lidxparticipant.Objects[numero] = nil then aux1.lidxparticipant.Objects[numero] := self;
+   end else begin
+      if aux1.lnmembre2index.IndexOfName(inttostr(numero)) < 0 then aux1.lnmembre2index.AddObject(inttostr(numero) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
+   end;
    electeur_legitime := true; // non retrouvé en tant qu'ayant donné son pouvoir dans liste pouvoirs ou autre
    texte := msg;
    aux1.lparticipants.AddObject(msg, self);
@@ -729,7 +741,11 @@ begin
    end;
    rejets.msage := message_nil; rejets.er_pv := false;
    aux1.lparticipants.AddObject('', self);
-   if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
+   if id < 20000 then begin
+      if aux1.lidxparticipant.Objects[id] = nil then aux1.lidxparticipant.Objects[id] := self;
+   end else begin
+      if aux1.lnmembre2index.IndexOfName(inttostr(id)) < 0 then aux1.lnmembre2index.AddObject(inttostr(id) + '=' + inttostr(aux1.lparticipants.Count - 1), self);
+   end;
 end;
 
 
@@ -1026,18 +1042,26 @@ begin
    p := pos('TLM :' , msg);
    if p = 0 then p := pos('SECRET :' , msg);
    st := lowercase(copy(msg, 14 , p - 15));
-
-
-   i := Aux1.lparticipants.IndexOf(st);
-   if i >= 0 then begin
-      result := tparticipant(Aux1.lparticipants.objects[i]);
+   tab := analyse_nom_zoom(st, regn, num );
+   if (num<1) or (num >= 20000) then begin
+      i := Aux1.lparticipants.IndexOf(st);
+      if i >= 0 then begin
+         result := tparticipant(Aux1.lparticipants.objects[i]);
+      end else begin
+         //tab := analyse_nom_zoom(st, regn, num );
+         i := aux1.lnmembre2index.IndexOfName(inttostr(num));
+         if i < 0 then begin
+            result := tparticipant.create(st, regn, num , tab );
+         end else begin
+            part := tparticipant(aux1.lnmembre2index.objects[i]);
+            result := part.compare(st, regn, tab, part);
+         end;
+      end;
    end else begin
-      tab := analyse_nom_zoom(st, regn, num );
-      i := aux1.lnmembre2index.IndexOfName(inttostr(num));
-      if i < 0 then begin
+      part := tparticipant(aux1.lidxparticipant.objects[num]);
+      if part = nil then begin
          result := tparticipant.create(st, regn, num , tab );
       end else begin
-         part := tparticipant(aux1.lnmembre2index.objects[i]);
          result := part.compare(st, regn, tab, part);
       end;
    end;
@@ -1067,7 +1091,7 @@ begin
       {stg_clear := TStringList.Create;
       for i := 1 to strgrd_colcount do stg_clear.Add(''); }
       if lmsg = nil then lmessages := aux1.lmessages_gen else lmessages := lmsg;
-      participant := cherche_participant(msg);  //tparticipant.create(msg );
+      //participant := cherche_participant(msg);  //tparticipant.create(msg );
       m_secret := secret;
       texte := msg;
       nbgrl := 0;
@@ -1094,6 +1118,10 @@ begin
             dans_grc := false;
          end;
       end;
+      if nb <> '' then nombre := strtointdef(nb, 0); // caractère "-" non accepté -> nombre forcément positif
+      if nbgrc = 0 then nombre := -1;
+      err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
+      participant := cherche_participant(msg);  //tparticipant.create(msg );
       for i := 1 to min(mx, nbgrl) do begin
          //chx := ch[i];
          chx := participant.recherche_choix(ch[i]);
@@ -1106,10 +1134,7 @@ begin
       end;
       if (choix_alt <> '') then choix := '';
       err_choix :=  (choix = 'oui') or (choix = 'non');
-      if nb <> '' then nombre := strtointdef(nb, 0); // caractère "-" non accepté -> nombre forcément positif
       err_choix :=  err_choix or (nbgrl > mx) or (choix = '');
-      if nbgrc = 0 then nombre := -1;
-      err_nombre := (nbgrc > 1) ; //(nombre <>1) and ((nbgrc <> 1) or (nombre = 0));
       est_vote := participant.electeur_legitime and (nbgrl < 6 ) and ( nbgrc < 4);
       lmessages.Objects[idx_msg] := self;
    end;
@@ -1266,6 +1291,7 @@ var
 begin
    try
       with scrutin_encours do begin
+         config_nv_scrutin := scrutin_encours.numero;
          //depart_trtmnt := GetTickCount; transféré dans charge_fic_msg  et TFmerge.merge_fichiers  avant pretraitement mais après le chargement des fichiers
          if charge_fic_msg(fichier_message, liste_message) then begin
             if (titre_reunion = '') and (fichier_message = fichier_message_defaut) then begin
@@ -1907,6 +1933,11 @@ begin
    l_ID :=  tstringlist.Create ;
    l_csv := strl;
    scrutin_encours.fichier_pouvoirs := fichier;
+   lfic_pouvoirs.Caption := '    PATIENTEZ...    ';
+   lfic_pouvoirs.Color := clyellow;
+   tpanel(lfic_pouvoirs.Parent).Color := clyellow;
+   lfic_pouvoirs.Parent.Refresh;
+   //lfic_pouvoirs.Refresh;
    if l_csv.Count > 0 then begin
       for i := 0 to l_csv.Count - 1 do begin
          try
@@ -1945,15 +1976,17 @@ begin
    end;
    l_champs.Free;
    l_ID.Free;
+   lfic_pouvoirs.Color := clBtnFace;
+   tpanel(lfic_pouvoirs.Parent).Color := clBtnFace;
    if cb_pouv_val.Checked then begin
       cb_pouv_val.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
       lfic_pouvoirs.Caption := 'Fichier: ' + fichier;
-   end;
+   end else lfic_pouvoirs.Caption := '';
 end;
 
 function taux.cherche_participant(nm, prenm, regn, ID, fic_csv: string): tparticipant;
 var
-   i, j : integer;
+   i, j, idx : integer;
    err_regn : boolean ;
    reg : string;
 begin
@@ -1964,16 +1997,30 @@ begin
       inc(j);
    end;
    if err_regn then reg := '' else reg := regn;
-   i := lnmembre2index.IndexOfName(ID);
-   if i < 0 then begin
-      result := tparticipant.create(nm, prenm, regn, fic_csv, strtointdef(ID, 0));
-      //result.renseigne(nm, prenm, regn, strtointdef(ID, 0));
-      result.err_region := err_regn;
+   idx := strtointdef(ID, 0);
+   if (idx> 0) and (idx< 20000) then begin
+      result := tparticipant(lidxparticipant.objects[idx]);
+      if result = nil then begin
+         result := tparticipant.create(nm, prenm, regn, fic_csv, strtointdef(ID, 0));
+         //result.renseigne(nm, prenm, regn, strtointdef(ID, 0));
+         result.err_region := err_regn;
+      end else begin
+         result := result.compare(nm, prenm, reg, fic_csv, result);
+      end;
    end else begin
-      result := tparticipant(lnmembre2index.objects[i]);
-      result := result.compare(nm, prenm, reg, fic_csv, result);
+      i := lnmembre2index.IndexOfName(ID);
+      if i < 0 then begin
+         result := tparticipant.create(nm, prenm, regn, fic_csv, strtointdef(ID, 0));
+         //result.renseigne(nm, prenm, regn, strtointdef(ID, 0));
+         result.err_region := err_regn;
+      end else begin
+         result := tparticipant(lnmembre2index.objects[i]);
+         result := result.compare(nm, prenm, reg, fic_csv, result);
+      end;
    end;
 end;
+
+
 
 procedure taux.Export_CSV_lparticpants;
 const
@@ -2004,7 +2051,7 @@ function tparticipant.ecrit_csv(idx : integer; s : char):string; // %d %s boolto
 var
    st, tab_nm, txt : string;
    i, ich  : integer;
-begin
+begin // s = separateur "," par exemple
    //      i  n  r  p  p  n  t  f  t  i   
    st := '%dx%dx%sx%dx%sx%sx%sx%sx%sx%dx'; //ok ich dernier inclus
    //st := st + '%sx%sx%sx%sx%sx%sx%sx%d';
@@ -2185,6 +2232,10 @@ begin
          scrutin.duree           :=  duree ;
          scrutin.fichier_message :=  scrutin_encours.fichier_message ;
          scrutin.nombre_membres  :=  scrutin_encours.nombre_membres;
+         if config_nv_scrutin = 0 then begin
+            config_nv_scrutin := num_srutin;
+            ENoVote_.Text := inttostr(num_srutin);
+         end;
          memo_tests.Add('configuration : ' + nom_heure_duree + ' ' + inttostr(num_srutin) + ' ' + nom + ' ' + heure + ' ' + duree);
       end else begin
          memo_tests.Add('configuration rejetée : ' + params);

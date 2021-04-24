@@ -302,6 +302,7 @@ begin
    erj_pour := Erjpour; erj_contre := Erjcontre; erj_abs := Erjabs ;
    Bmerge.Caption := 'Merge des' + #13#10 + 'entrées';
    cb_votants_lim := cb_votes_lim ;
+   ENoVote_ := ENoVote ;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -930,12 +931,12 @@ begin
    OpenDialog1.Title := ' Fichier des messages Zoom';
    if OpenDialog1.Execute then begin
       Efic_msg.Text := OpenDialog1.FileName;
-      if debug then begin
+      //if debug then begin
          aux1.scrutin_encours.fichier_message := Efic_msg.Text;;
          aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
          Aux1.charge_fic_msg(Efic_msg.Text, aux1.scrutin_encours.liste_message);
          Aux1.traite_lconfig;
-      end;
+      //end;
    end;
 end;
 
