@@ -114,7 +114,7 @@ IncludeVerInfo=1
 AutoIncBuild=1
 MajorVer=1
 MinorVer=1
-Release=13
+Release=14
 Build=0
 Debug=0
 PreRelease=0
@@ -126,7 +126,7 @@ CodePage=1252
 [Version Info Keys]
 CompanyName=
 FileDescription=Analyse des votes par messages Zoom
-FileVersion=1.1.13.0
+FileVersion=1.1.14.0
 InternalName=
 LegalCopyright=Gérard Grandmougin
 LegalTrademarks=

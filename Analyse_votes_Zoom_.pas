@@ -798,7 +798,8 @@ var
    num : integer;
 begin
    setchecked(Rrejetes); //change le positionnement sans lancer un nouvel affichage
-   //RrejetesClick(nil); // nil -> change le positionnement sans lancer un nouvel affichage
+   set_Efiltre_sans_aff('');
+
    num := strtointdef( ENoVote.Text, 0);
    if num > 0 then begin
       enable_entrees(false, false, false);
@@ -1093,15 +1094,13 @@ end;
 procedure TForm1.Cb_enr_affClick(Sender: TObject);
 begin
    if Cb_enr_aff.tag =0  then begin
-      Cb_enr_aff.tag :=1;
       if  Cb_enr_aff.Checked then begin
           if (nb_msg_affiches > 0) then begin
               Benregistremt_stringgridClick(sender) ;
           end else begin
-              Cb_enr_aff.Checked := false;
-          end;    
-      end else Cb_enr_aff.Checked := nb_msg_affiches > 0;
-      Cb_enr_aff.tag :=0;
+              setCb_enr_affchecked(false);
+          end;
+      end else setCb_enr_affchecked( nb_msg_affiches > 0);
    end;
 end;
 

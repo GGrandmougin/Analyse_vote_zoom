@@ -72,7 +72,7 @@ const
               les différents paramètres sont séparés par 1 (ou plusieurs) espace
               les paramètres de type 'texte' sont entourés par des " , de ce fait , ils peuvent comporter des espaces }
 
-    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret","duree_trmt"';
+    ligne_titre = '"Vote N°","nom du vote","Nb votants","Nb pour","Nb contre","Nb abstention","heure debut","duree","nb messages","rejets pour","rejets contre","rejets abstention","secret","duree_trmt","heure_trmt"';
     chVote_No = 0;
     chnom_vote =1;
     chNb_votants =2;
@@ -87,6 +87,7 @@ const
     chrejetsabs    = 11;
     chvotesecret   = 12;
     chdureetrtmt   = 13;
+    chheuretrtmt   = 14;
 
     rempl_acc : array[0..7 ,0.. 1] of string = (('a', char(195) + char(160)),   // à  160
                                                  ('i', char(195) + char(175)),  // ï  175
@@ -229,6 +230,7 @@ type
     numero : integer;
     nom : string;
     heure_debut : string;
+    heure_traitement : string;
     duree : string;
     fichier_message: string;
     //fichier_mess_scnd_PC : string;
@@ -1668,6 +1670,7 @@ begin
    aux1.aff_messages(true, false, '', liste_message, liste_votes);
    duree_trtmnt := GetTickCount - depart_trtmnt ;
    maj_resultats;
+   heure_traitement := TimeToStr(Now) ;
 end;
 
 procedure tscrutin.cree_elements;
@@ -2322,6 +2325,7 @@ begin
          sl.Strings[chrejetsabs] :=  IntToStr(ttl_rj_a);
          sl.Strings[chvotesecret] := scrt;
          sl.Strings[chdureetrtmt] := inttostr(duree_trtmnt);
+         sl.Strings[chheuretrtmt] := heure_traitement;
          try
             assignfile(tf, dir_trv + fichier_sortie);
             append(tf);

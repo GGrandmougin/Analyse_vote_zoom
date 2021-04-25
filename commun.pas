@@ -170,8 +170,6 @@ begin
       else
          rewrite(tf);
       writeln(tf,datetostr(date)+' '+timetostr(time)+' '+ mess);
-      { Insérer ici un code nécessitant un Flush avant de fermer le fichier }
-      //Flush(tf);
       closefile(tf);
    except
       //pour ne pas ajouter l'erreur à l'erreur
