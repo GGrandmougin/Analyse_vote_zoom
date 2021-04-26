@@ -268,11 +268,11 @@ begin
    end;
    if i < sl1.Count then begin
       a := i;
-      for i := a to sl1.Count do slrslt.Add(sl1.Strings[i]);
+      for i := a to sl1.Count - 1 do slrslt.Add(sl1.Strings[i]);
    end;
    if j < sl2.Count  then begin
       b := j;
-      for j := b to sl2.Count do slrslt.Add(sl2.Strings[j]);
+      for j := b to sl2.Count - 1 do slrslt.Add(sl2.Strings[j]);
    end;
 end;
 {      if fileexists(fic) then begin

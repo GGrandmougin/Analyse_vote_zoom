@@ -111,7 +111,7 @@ begin
       result := entete_message( j- 1);
       lmessages.Strings[j - 1] :=  result + lmessages.Strings[j - 1];
     end else begin
-       p := pos(': ', lmessages.Strings[j - 1] );
+       p := posex(': ', lmessages.Strings[j - 1], 9 );
        if p > 0 then result := copy(lmessages.Strings[j - 1 ] , 1 , p + 1);
     end;
 end;
@@ -186,5 +186,13 @@ begin
  mtCustom	      Une boîte de message ne contenant pas d'image. Le titre de la boîte de dialogue est le nom du fichier exécutable de l'application.}
 
 end;
+{17:52:15 De  Gérard Grandmougin  à  Tout le monde:
+	re-bonjour
+18:15:24 De  VOTE SECRET  à  Tout le monde:
+	pour
+18:17:14 De  gg xxxx als 5668  à  Tout le monde:
+	contre
+18:17:36 De  machin prénom IDF 2858  à  Tout le monde:
+	abs} // tabulations
 
 end.

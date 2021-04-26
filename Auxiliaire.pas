@@ -1357,7 +1357,9 @@ begin
       i := lvotes.idx_deb;
       while (i >= 0) and ((i <= lvotes.idx_fin) and (j < f1stringgrid.RowCount)) do begin
          try
-            if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], j, rejetes, vnr, filtre) then begin inc(j); sl_v_add   end;
+            if lmessages.Objects[i] = nil then begin
+               //log_infos('Erreur dans aff_messages (index:' + inttostr(i) + ' lmessages.Objects[i] = nil');
+            end else if tmessage(lmessages.Objects[i]).affichage_m(f1stringgrid.Rows[j], j, rejetes, vnr, filtre) then begin inc(j); sl_v_add   end;
          except
             on E: exception do begin
                log_infos('Erreur dans aff_messages (index:' + inttostr(i) + ') ' + E.Message);
