@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 408
-  Top = 174
+  Left = 520
+  Top = 319
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -2837,6 +2837,7 @@ object Form1: TForm1
         Width = 105
         Height = 41
         Caption = 'Vote limit'#233' aux participants inscrits'
+        Checked = True
         Color = clBtnShadow
         Font.Charset = DEFAULT_CHARSET
         Font.Color = clWindowText
@@ -2845,6 +2846,7 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentColor = False
         ParentFont = False
+        State = cbChecked
         TabOrder = 1
         WordWrap = True
         OnClick = cb_votes_limClick

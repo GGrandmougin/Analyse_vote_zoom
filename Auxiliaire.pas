@@ -450,10 +450,11 @@ function Taux.remplace_caracteres_UTF8( texte : string) : string ; // https://ww
 var
   st : string;
   p : integer;
-begin
+begin   //#$EF#$BB#$BF = caractères début de fichier UTF-8
     //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
     //function Utf8ToAnsi(const S: UTF8String): string;
    st := texte ;
+   //st := stringreplace(st, #9 , '  ' , []); // remplace tabulation  (fait dans pretraitement_lmsg)
    st := stringreplace(st, #$C2 , '', [rfReplaceAll]);
    p := pos(#$C3, st) ;
    while p > 0 do begin
@@ -1244,15 +1245,20 @@ begin
                tlm := true;
                secret := false;
                st := lmessages.Strings[idx_msg] ;
-               nv := stringreplace(st , 'Ã   Tout le monde'   , 'TLM', []);  // char(195) + char(160) = à  // char(195) + char(160) + ' Tout le monde'
-               if length(nv) = length(st) then begin
+              // nv := stringreplace(st , 'Ã   Tout le monde'   , 'TLM', []);  // char(195) + char(160) = à  // char(195) + char(160) + ' Tout le monde'
+               p := pos('Ã   Tout le monde', st);
+               if p > 0 then begin
+                  nv := copy(st, 1, p -1) + 'TLM :' + rightstr(st, length(st) - p - 18);
+               end else begin
+               //if length(nv) = length(st) then begin
                   tlm := false;
                   p := pos('(Message direct)', st);
                   if p > 0   then begin
                      secret := true;
                      nv := copy(st, 1, pos(char(195) + char(160), st) -1) + 'SECRET :' + rightstr(st, length(st) - p - 17);
                   end;
-               end;
+               end ;
+
                if tlm then inc(nb_mess_ph);
                if secret or tlm then begin
                   nv := remplace_caracteres_UTF8(nv);

@@ -42,12 +42,14 @@ type
     procedure Bselectfic_scnd_pcClick(Sender: TObject);
     procedure Bselectfic_localClick(Sender: TObject);
     procedure Efic_localChange(Sender: TObject);
+    procedure test_meme_codage;
     procedure FormShow(Sender: TObject);
     procedure FormCreate(Sender: TObject);
     procedure FormClose(Sender: TObject; var Action: TCloseAction);
     procedure FormDestroy(Sender: TObject);
     procedure Btest_mergeClick(Sender: TObject);
     procedure Bmemo2ficsClick(Sender: TObject);
+    function egalite(var st1, st2 : string) : boolean;
   private
     { Déclarations privées }
   public
@@ -56,13 +58,16 @@ type
      mx, my : integer ;
      en_deplacement : boolean;
      sl_local, sl_2pc, slcfg_l, slcfg_2 : tstringlist;
+     offset : integer;
+     b_offst : boolean ;
   end;
   
 
 
 var
   Fmerge: TFmerge;
-
+  offset : integer = 0;
+  b_offst : boolean = false;
 implementation
 
 {$R *.dfm}
@@ -173,8 +178,10 @@ begin
    OpenDialog1.Filter := 'Fichiers texte (*.txt)|*.TXT';
    OpenDialog1.Title := ' Fichier des messages Zoom du second PC';
    if OpenDialog1.Execute then begin
-      if OpenDialog1.FileName <> Efic_local.Text then
+      if OpenDialog1.FileName <> Efic_local.Text then begin
          Efic_scnd_pc.Text := OpenDialog1.FileName;
+         test_meme_codage;
+      end;
    end;
 end;
 
@@ -184,8 +191,10 @@ begin
    OpenDialog1.Filter := 'Fichiers texte (*.txt)|*.TXT';
    OpenDialog1.Title := ' Fichier des messages Zoom du PC local';
    if OpenDialog1.Execute then begin
-      if OpenDialog1.FileName <> Efic_scnd_pc.Text then
+      if OpenDialog1.FileName <> Efic_scnd_pc.Text then begin
          Efic_local.Text := OpenDialog1.FileName;
+         test_meme_codage;
+      end;
    end;
 end;
 
@@ -202,6 +211,8 @@ begin
    sl_2pc := tstringlist.Create;
    slcfg_l := tstringlist.Create;
    slcfg_2 := tstringlist.Create;
+   offset := 0;
+   b_offst := false;
 end;
 
 procedure TFmerge.FormDestroy(Sender: TObject);
@@ -245,25 +256,30 @@ end;
 function TFmerge.merge_details(sl1, sl2, slrslt : tstringlist) : boolean;
 var
    i, j, a , b : integer;
+   st1, st2 : string;
 begin
    i := 0;
    j := 0;
    result := true;
    while (i < sl1.Count) and (j < sl2.Count) do begin
-       if sl1.Strings[i] = '' then begin
+       st1 := sl1.Strings[i];
+       st2 := sl2.Strings[j];
+       if length(st1) < 8 then begin
           inc(i);
-       end else if sl2.Strings[j] = '' then begin
+       end else if length(st2) < 8  then begin
           inc(j);
-       end else if sl1.Strings[i] = sl2.Strings[j] then begin
-          slrslt.Add(sl1.Strings[i]);
-          inc(i);
-          inc(j);
-       end else if sl1.Strings[i] < sl2.Strings[j] then begin
-          slrslt.Add(sl1.Strings[i]);
-          inc(i);
-       end else begin // sl1.Strings[i] > sl2.Strings[j
-          slrslt.Add(sl2.Strings[j]);
-          inc(j);
+       end else begin
+          if egalite(st1, st2) then begin
+             slrslt.Add(st1);
+             inc(i);
+             inc(j);
+          end else if st1 < st2 then begin
+             slrslt.Add(st1);
+             inc(i);
+          end else begin // sl1.Strings[i] > sl2.Strings[j
+             slrslt.Add(st2);
+             inc(j);
+          end;
        end;
    end;
    if i < sl1.Count then begin
@@ -274,6 +290,58 @@ begin
       b := j;
       for j := b to sl2.Count - 1 do slrslt.Add(sl2.Strings[j]);
    end;
+end;
+
+function TFmerge.egalite(var  st1,  st2 : string) : boolean;
+var
+   s1, s2 : string;
+   h1, h2 : integer;
+   str_egal : boolean;
+function str2dt(st : string): integer;
+begin
+   if length(st) >= 8 then
+      result := strtointdef(copy(st, 7, 2), 0 ) + 60 *( strtointdef(copy(st, 4, 2), 0 ) + 60 *(strtointdef(copy(st, 1, 2), 0 )))
+   else
+      result := 0;
+end;
+function dt2str(dt : integer): string;
+var
+   h, m, s : integer;
+begin
+   s := dt mod 60;
+   m := dt div 60;
+   h := m div 60;
+   m := m mod 60;
+   result := format('%d:%d:%d', [h, m, s]);
+end;
+begin
+   h2 := -1;
+   if b_offst and (offset <> 0) then begin
+      //h1 := str2dt(st1);
+      h2 := str2dt(st2) + offset;
+      st2 := dt2str(h2 );
+   end ;
+   result := st1 = st2 ;
+   if  result then begin
+      if not b_offst then begin
+          b_offst := true;
+          offset := 0;
+      end;
+   end else begin
+      if copy(st1, 9, length(st1)) = copy(st2, 9, length(st2)) then begin
+         h1 := str2dt(st1);
+         if h2 = -1 then h2 := str2dt(st2);
+         if b_offst then begin
+            result := abs(h1 - h2 ) < 5;  // il peut y avoir une erreur de presque 1 sur l'offset , une erreur de presque 1 sur h1 , une erreur de presque 1 sur h1, une erreur due au resau internet de presque 1 (au pif)
+         end else if abs(h1 - h2 ) < 60 then begin
+            result := true;
+            b_offst := true;
+            offset := h1 - h2;
+            st2 := dt2str(  h2 + offset);
+         end;
+      end;
+   end
+
 end;
 {      if fileexists(fic) then begin
          try
@@ -332,5 +400,45 @@ begin
       Efic_scnd_pc.Text := Mtest.Lines[1];
    end;
 end;
+
+procedure TFmerge.test_meme_codage;
+var
+   tfl, tf2 : textfile;
+   sl, s2 : string;
+   p, q, r ,s : integer;
+begin
+   if fileexists(Efic_local.text) and FileExists(Efic_scnd_pc.text) then begin
+      try
+         assignfile(tfl,Efic_local.text);
+         Reset(tfl);
+         Readln(tfl, sl);
+         closefile(tfl);
+      except
+         //pour ne pas ajouter l'erreur à l'erreur
+      end;
+      try
+         assignfile(tf2,Efic_scnd_pc.text);
+         Reset(tf2);
+         Readln(tf2, s2);
+         closefile(tf2);
+      except
+         //pour ne pas ajouter l'erreur à l'erreur
+      end;
+      q := 0;
+      s := 0;
+      p := pos( 'Ã   Tout le monde:', sl ) ;
+      if p=0 then q := pos( 'à  Tout le monde:', sl ) ;
+      r := pos( 'Ã   Tout le monde:', s2 ) ;
+      if r=0 then s := pos( 'à  Tout le monde:', s2 ) ;
+      if ( (p > 0) and ( s > 0)) or ( (q > 0) and ( r > 0)) then show_message('Un fichier sur 2 en codage UTF-8)', mtError);
+
+
+      {if (length(sl) > 3) and (length(s2) > 3) then begin
+         if (copy(sl , 1 , 3) = #$EF#$BB#$BF ) <> (copy(s2 , 1 , 3) = #$EF#$BB#$BF ) then show_message('Un fichier sur 2 en codage UTF-8)', mtError);
+      end; }
+   end;  // '12:11:17 De  GÃ©rard Grandmougin  Ã   Tout le monde:'  '17:52:15 De  Gérard Grandmougin  à  Tout le monde:'
+end; // 'E:\GitHub\Analyse_vote_zoom\cas_tests\6\meeting_saved_chat_260421_hp.txt' '17:52:15 De  Gérard Grandmougin  à  Tout le monde:'
+     // 'E:\GitHub\Analyse_vote_zoom\cas_tests\6\meeting_saved_chat_270421_hp.txt' '14:48:24 De  VOTE SECRET  Ã   Tout le monde:'
+
 
 end.

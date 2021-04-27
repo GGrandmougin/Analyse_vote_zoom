@@ -90,7 +90,7 @@ var
    lconfig: tstringlist;
    depart_trtmnt : int64;
    duree_trtmnt : int64;
-   votants_limites : boolean = false;
+   votants_limites : boolean = true;
    cb_votants_lim : TCheckBox;
    config_nv_scrutin : integer = 0;
    ENoVote_ : tedit;
@@ -100,19 +100,27 @@ implementation
 
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
 var
-   i, n : integer;
+   i, n, l : integer;
    lmessages: tstringlist;
 function entete_message( j : integer) : string;
 var
    p : integer;
+   ok : boolean;
 begin
-   if ((length(lmessages.Strings[j - 1]) < 13 ) or (lmessages.Strings[j - 1][3] <> ':') or (lmessages.Strings[j - 1][6] <> ':')) and (j > 0)  then begin
+   l := length(lmessages.Strings[j - 1]);
+   if (( l < 13 ) or (lmessages.Strings[j - 1][3] <> ':') or (lmessages.Strings[j - 1][6] <> ':')) and (j > 0)  then begin
       inc(n);
       result := entete_message( j- 1);
-      lmessages.Strings[j - 1] :=  result + lmessages.Strings[j - 1];
+      lmessages.Strings[j - 1] :=  result + stringreplace(lmessages.Strings[j - 1], #9 , '  ' , []);     // remplace tabulation
     end else begin
-       p := posex(': ', lmessages.Strings[j - 1], 9 );
-       if p > 0 then result := copy(lmessages.Strings[j - 1 ] , 1 , p + 1);
+       ok := lmessages.Strings[j - 1][l] = ':' ;
+       if ok  then begin
+          result := lmessages.Strings[j - 1 ];
+       end else begin
+          p:=  posex(':', lmessages.Strings[j - 1], 9 ) ;
+          if p > 0 then result := copy(lmessages.Strings[j - 1 ] , 1 , p + 1)
+          else result := lmessages.Strings[j - 1 ];
+       end;
     end;
 end;
 begin
@@ -125,8 +133,10 @@ begin
       l_cfg.Clear;
       for i := lmessages.Count - 1 downto 0  do begin
          if ((length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':')) and (i > 0 ) then begin
-            lmessages.Strings[i ] := entete_message( i) + lmessages.Strings[i] ;
+            lmessages.Strings[i ] := entete_message( i) + stringreplace(lmessages.Strings[i], #9 , '  ' , []) ; // remplace tabulation
             inc(n);
+         end else if lmessages.Strings[i][length(lmessages.Strings[i])] = ':' then begin
+            lmessages.Delete(i);
          end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
             l_cfg.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
             lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
