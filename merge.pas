@@ -49,7 +49,7 @@ type
     procedure FormDestroy(Sender: TObject);
     procedure Btest_mergeClick(Sender: TObject);
     procedure Bmemo2ficsClick(Sender: TObject);
-    function egalite(var st1, st2 : string) : boolean;
+    function egalite(var st1, st2 : string; var h1, h2 : integer) : boolean;
   private
     { Déclarations privées }
   public
@@ -270,20 +270,27 @@ end;
 function TFmerge.merge_details(sl1, sl2, slrslt : tstringlist) : boolean;
 var
    i, j, a , b : integer;
+   h1, h2 : integer;
    st1, st2 : string;
 begin
    i := 0;
    j := 0;
+   a := -1;
+   b := -1;
+   h1 := -1;
+   h2 := -1;
    result := true;
    while (i < sl1.Count) and (j < sl2.Count) do begin
-       st1 := sl1.Strings[i];
-       st2 := sl2.Strings[j];
+       if a <> i then  begin  st1 := sl1.Strings[i]; h1 := -1 end;
+       if b <> j then  begin  st2 := sl2.Strings[j]; h2 := -1 end;
+       a := i;
+       b := j;
        if length(st1) < 8 then begin
           inc(i);
        end else if length(st2) < 8  then begin
           inc(j);
        end else begin
-          if egalite(st1, st2) then begin
+          if egalite(st1, st2, h1, h2) then begin
              slrslt.Add(st1);
              inc(i);
              inc(j);
@@ -306,9 +313,10 @@ begin
    end;
 end;
 
-function TFmerge.egalite(var  st1,  st2 : string) : boolean;
+function TFmerge.egalite(var  st1,  st2 : string; var h1, h2 : integer) : boolean;
 var
-   h1, h2 : integer;
+   //h1, h2 : integer;
+   st2_ : string;
 function str2dt(st : string): integer;
 begin
    if length(st) >= 8 then
@@ -327,11 +335,12 @@ begin
    result := format('%d:%d:%d', [h, m, s]);
 end;
 begin
-   h2 := -1;
-   if b_offst and (offset <> 0) then begin
+   st2_ := '';
+   if (h2 = -1) and b_offst and (offset <> 0) then begin
       //h1 := str2dt(st1);
+      st2_ := copy(st2, 9, length(st2));
       h2 := str2dt(st2) + offset;
-      st2 := dt2str(h2 );
+      st2 := dt2str(h2 ) + st2_;
    end ;
    result := st1 = st2 ;
    if  result then begin
@@ -340,7 +349,8 @@ begin
           offset := 0;
       end;
    end else begin
-      if copy(st1, 9, length(st1)) = copy(st2, 9, length(st2)) then begin
+      if st2_ = '' then st2_ := copy(st2, 9, length(st2));
+      if copy(st1, 9, length(st1)) = st2_ then begin
          h1 := str2dt(st1);
          if h2 = -1 then h2 := str2dt(st2);
          if b_offst then begin
@@ -349,7 +359,8 @@ begin
             result := true;
             b_offst := true;
             offset := h1 - h2;
-            st2 := dt2str(  h2 + offset);
+            h2 := h2 + offset;
+            st2 := dt2str( h2 ) + st2_;
          end;
       end;
    end

@@ -675,6 +675,7 @@ begin
    end else if Rrejetes.Checked then begin
       //Lmessages. := 'Messages rejetés';
       //if sender <> nil then
+      set_efiltre_sans_aff('');
       Aux1.aff_messages(true, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
    end;
 end;

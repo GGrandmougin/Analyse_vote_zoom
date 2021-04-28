@@ -171,10 +171,13 @@ begin
       for i := lmessages.Count - 1 downto 0  do begin
          if ((length(lmessages.Strings[i]) < 13 ) or (lmessages.Strings[i][3] <> ':') or (lmessages.Strings[i][6] <> ':')) and (i > 0 ) then begin
             lmessages.Strings[i ] := entete_message( i) + stringreplace(lmessages.Strings[i], #9 , '  ' , []) ; // remplace tabulation
-            inc(n);
+            if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
+               l_cfg.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
+               lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
+            end else inc(n);
          end else if lmessages.Strings[i][length(lmessages.Strings[i])] = ':' then begin
             lmessages.Delete(i);
-         end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin
+         end else if pos(configuration_votes, lmessages.Strings[i]) > 0 then begin  // dans le cas de l'ancienne présentation du fichier de lessage
             l_cfg.Insert(0, lmessages.Strings[i]) ;  // parce que lmessages est parcurue à l'envers
             lmessages.Delete(i);  // les messages de configuration ne vont pas dans la liste des messages
          end;

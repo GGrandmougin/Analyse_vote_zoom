@@ -201,7 +201,6 @@ type
     est_vote : boolean;
     est_msg_nil : boolean;
     chaine_pv : tmessage;
-    
     Procedure propagation_errp(reinit, errpv : boolean);
     function analyse_nom_zoom(msg : string;  var regn : string; var num : integer) : ttbnoms;
     function valide(secret_ , secret_only_ : boolean) : boolean;
@@ -1552,6 +1551,8 @@ begin
    end;
 end;
 
+
+
 { telement_scrutin }
 
 procedure telement_scrutin.additionne(var pour, contre, abs, non_exp : integer);
@@ -1866,10 +1867,14 @@ var
    elem_scr : telement_scrutin;
    resultats_non_valides : boolean;
 procedure affecte;
+var
+   nb : integer;
 begin
-   if bpour then        part.rejets.nbrj_pour := min(mssge.nombre, part.pouvoirs)
-   else if bcontre then part.rejets.nbrj_contre := min(mssge.nombre, part.pouvoirs)
-   else if babs then    part.rejets.nbrj_abs := min(mssge.nombre, part.pouvoirs);
+   nb := min(mssge.nombre, part.pouvoirs);
+   part.rejets.nbrj_pour := 0; part.rejets.nbrj_contre := 0; part.rejets.nbrj_abs := 0; 
+   if bpour then        part.rejets.nbrj_pour := nb
+   else if bcontre then part.rejets.nbrj_contre := nb
+   else if babs then    part.rejets.nbrj_abs := nb;
    result := true;
 end;
 begin
@@ -1890,16 +1895,18 @@ begin
                bpour := (choix = 'pour') or (choix = 'oui');
                bcontre :=  (choix = 'contre') or (choix = 'non');
                babs := choix = 'abs' ;
-               part.rejets.msage.compte_rj := false;
-               if (part.rejets.msage <> message_nil) and (part.rejets.clne > 0) then
-                  tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne] := StringReplace(tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne], ',', '', [rfreplaceall] );
-                  //f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ] := StringReplace(f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ], ',', '', [rfreplaceall] );
-               part.rejets.msage := mssge; // donc le dernier
-               part.rejets.clne := col;
-               part.rejets.lgne := idx;
-               //mssge.compte_rj := true;   fait dans affichage_m
-               part.rejets.nbrj_pour := 0; part.rejets.nbrj_contre := 0; part.rejets.nbrj_abs := 0;
-               affecte;
+               if (bpour or bcontre or babs) then begin
+                  part.rejets.msage.compte_rj := false;
+                  if (part.rejets.msage <> message_nil) and (part.rejets.clne > 0) then
+                     tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne] := StringReplace(tsl_v[1, part.rejets.clne].Strings[part.rejets.lgne], ',', '', [rfreplaceall] );
+                     //f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ] := StringReplace(f1stringgrid.Cells[part.rejets.clne , part.rejets.lgne ], ',', '', [rfreplaceall] );
+                  part.rejets.msage := mssge; // donc le dernier
+                  //if (bpour or bcontre or babs) and (mssge.nombre <> 0) then  tsl_v[1,col].strings[idx] := ',' + tsl_v[1,col].strings[idx] + ',';
+                  part.rejets.clne := col;
+                  part.rejets.lgne := idx;
+                  //mssge.compte_rj := true;   fait dans affichage_m
+                  if mssge.nombre <> 0 then affecte;
+               end;
             end;
             if lpart_rejets.IndexOfObject(part) < 0 then lpart_rejets.AddObject('', part );
          end;
