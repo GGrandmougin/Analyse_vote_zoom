@@ -316,7 +316,6 @@ var
    Aux1 : taux;
    rep_msg_def: string;
    tb_regions : array of string ; //tb_regions_m =('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
-   f1stringgrid : tstringgrid;
    stringgrid1rowscount : integer;
    strgrd_colcount : integer;
    message_nil : tmessage;

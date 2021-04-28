@@ -224,6 +224,19 @@ begin
 end;
 
 function TFmerge.merge_fichiers(l_mess, l_cfg: tstringlist; memotst : tstrings; hfin : TDateTime): boolean;
+procedure enrmerge;
+var
+   fic : string;
+begin
+   liste_infos.Clear;
+   liste_infos.Add('_____________________________________________________________');
+   liste_infos.Add('programme = ' + tform(f1stringgrid.Owner).Caption);
+   liste_infos.Add('Fichier des messages = ' + Efic_local.Text);
+   liste_infos.Add('Fichier des messages second PC = ' + Efic_scnd_pc.Text);
+   fic := maintenant + '.txt';
+   enr_stringlist(l_mess, liste_infos, dir_trv + 'resultat_merge_msg_' + fic);
+   if l_cfg.Count > 0 then enr_stringlist(l_cfg, liste_infos, dir_trv + 'resultat_merge_cfg_' + fic);
+end;
 begin
    result := false;// FileDateToDateTime(FileAge(Efic_local.Text))
    if (frac(FileDateToDateTime(FileAge(Efic_local.Text))) < hfin) or (frac(FileDateToDateTime(FileAge(Efic_scnd_pc.Text))) < hfin) then show_message('L''heure d''un ou deux fichiers' + #13#10 + 'de message est inférieure' + #13#10 + 'à celle de la fin de la plage horaire', mtWarning);
@@ -247,6 +260,7 @@ begin
       pretraitement_lmsg(sl_2pc, slcfg_2,  memotst);
       merge_details(sl_local, sl_2pc, l_mess ) ;
       merge_details(slcfg_l, slcfg_2, l_cfg) ;
+      if enr_merge then enrmerge;
    end;
    //if debug then l_cfg.Text := slcfg_l.Text;
    //if debug then l_mess.Text := sl_local.Text;
@@ -294,9 +308,7 @@ end;
 
 function TFmerge.egalite(var  st1,  st2 : string) : boolean;
 var
-   s1, s2 : string;
    h1, h2 : integer;
-   str_egal : boolean;
 function str2dt(st : string): integer;
 begin
    if length(st) >= 8 then

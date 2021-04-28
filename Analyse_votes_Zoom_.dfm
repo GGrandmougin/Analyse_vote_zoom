@@ -3105,6 +3105,15 @@ object Form1: TForm1
       TabOrder = 20
       OnClick = Benregistremt_stringgridClick
     end
+    object enregistrement_merge: TCheckBox
+      Left = 0
+      Top = 144
+      Width = 137
+      Height = 17
+      Caption = 'enregistrement_merge'
+      TabOrder = 21
+      OnClick = enregistrement_mergeClick
+    end
   end
   object OpenDialog1: TOpenDialog
     Left = 416

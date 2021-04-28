@@ -6,7 +6,7 @@ interface
 
 Uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
-   Windows, graphics, strutils, Forms, SysUtils;
+   Windows, graphics, strutils, Forms, SysUtils, Grids;
 
 const
     //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
@@ -53,6 +53,8 @@ procedure setCbPouvoirschecked(ok : boolean = true) ;
 procedure setCb_enr_affchecked(ok : boolean = true) ;
 procedure show_message( texte : string; mtype :TMsgDlgType);
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
+function maintenant : string;
+function enr_stringlist( list_a_enr, list_infos : tstringlist; nom_fic :string) : boolean;
 
 var
    debug : boolean;
@@ -96,7 +98,42 @@ var
    ENoVote_ : tedit;
    nb_msg_affiches : integer = 0;
    Cbenraff  : TCheckBox ;
+   liste_infos : tstringlist;
+   enr_merge : boolean = false;
+   f1stringgrid : tstringgrid;
 implementation
+
+function maintenant : string;
+var
+   fs : TFormatSettings;
+begin
+   GetLocaleFormatSettings(SysLocale.DefaultLCID, fs);
+   fs.DateSeparator := '_';
+   fs.TimeSeparator := '_';
+   fs.ShortDateFormat := 'dd/mm/yy';
+   fs.ShortTimeFormat := 'hh:mm:ss';
+   result := DateTimeToStr(Now, fs) ;  //'12_04_21 12_15_15'
+   result[9] := '_';
+end;
+
+function enr_stringlist( list_a_enr, list_infos : tstringlist; nom_fic :string) : boolean;
+var
+   i : integer;
+begin
+   result := false;
+   for i := 0 to list_infos.Count - 1 do begin
+      list_a_enr.Add(list_infos.Strings[i]);
+   end;
+   try
+      list_a_enr.SaveToFile(nom_fic);
+      result := true;
+   except
+
+   end;
+   for i := 0 to list_infos.Count - 1 do begin
+      list_a_enr.delete(list_a_enr.Count - 1);
+   end;
+end;
 
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings );  // concaténation et recherche configuration
 var

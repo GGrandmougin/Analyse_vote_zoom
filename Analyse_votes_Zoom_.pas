@@ -168,6 +168,7 @@ type
     cb_votes_lim: TCheckBox;
     Benregistremt_stringgrid: TButton;
     Cb_enr_aff: TCheckBox;
+    enregistrement_merge: TCheckBox;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -246,6 +247,7 @@ type
     procedure cb_votes_limClick(Sender: TObject);
     procedure Benregistremt_stringgridClick(Sender: TObject);
     procedure Cb_enr_affClick(Sender: TObject);
+    procedure enregistrement_mergeClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -308,6 +310,7 @@ begin
    cb_votants_lim := cb_votes_lim ;
    ENoVote_ := ENoVote ;
    Cbenraff  := Cb_enr_aff;
+   liste_infos := tstringlist.Create;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -411,6 +414,7 @@ begin
    sl_v_p_util.Free ;
    sl_v_c_util.Free ;
    sl_v_a_util.Free ;
+   liste_infos.Free ;
 end;
 
 procedure TForm1.place_ifl_ext;
@@ -1104,5 +1108,10 @@ begin
    end;
 end;
 
+
+procedure TForm1.enregistrement_mergeClick(Sender: TObject);
+begin
+   enr_merge :=  enregistrement_merge.Checked ;
+end;
 
 end.
