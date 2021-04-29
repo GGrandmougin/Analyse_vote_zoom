@@ -2142,9 +2142,12 @@ begin
    if (ficp_local <> '') and not cbpouvoirs_Checked then begin
       bimp_differe := false;
       ficp_local := retrouve_param(ficp_local, import_differe, ficp_local, bimp_differe);
+      if (length(ficp_local) > 2 ) and  ((ficp_local[2] = ':') or ( copy(ficp_local, 1, 2) = '\\')) then
+          Fpouv_in.Cb_relatif.Checked := false
+      else Fpouv_in.Cb_relatif.Checked := true;
       Fpouv_in.Ech_local.Text := ficp_local;
       Fpouv_in.CbftpClick(Fpouv_in.Cblocal);
-      Fpouv_in.Cb_relatif.Checked := true;
+
       if bimp_differe then ficp_local := ficp_local + ' import différé ' else Fpouv_in.PImporterClick(nil);
       memo_tests.Add('configuration : fichier_pouvoirs_local , fichier = ' + ficp_local);
    end;
