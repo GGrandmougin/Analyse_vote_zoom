@@ -255,6 +255,7 @@ begin
       on E: Exception do log_infos('ERREUR: ' + E.Message + ' pour le fichier: ' + Efic_scnd_pc.Text); // log_infos dupplique l message dans memo_tests
    end;
    if result then begin
+      l_cfg.Clear;
       depart_trtmnt := GetTickCount;
       pretraitement_lmsg(sl_local, slcfg_l, memotst);
       pretraitement_lmsg(sl_2pc, slcfg_2,  memotst);

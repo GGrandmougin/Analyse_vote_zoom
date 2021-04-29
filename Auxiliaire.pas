@@ -658,7 +658,7 @@ begin
    //dans_grc := false;
    partage_nomembre := false;
    num_legitime := true;
-   if votants_limites then pouvoirs := 0 else pouvoirs := 1; 
+   if votants_limites then pouvoirs := 0 else pouvoirs := 1;
    chaine_meme_id := nil;
    {if msg <> '' then begin
       for i := 1 to length(msg) do begin
@@ -1125,7 +1125,7 @@ begin
       participant := cherche_participant(msg);  //tparticipant.create(msg );
       for i := 1 to min(mx, nbgrl) do begin
          //chx := ch[i];
-         chx := participant.recherche_choix(ch[i]);
+         chx := participant.recherche_choix(ch[i]); // pour option vote par mots aléatoires
          if chx = choix_nil then chx := ch[i];
          if length(chx) < 3 then dec(nbgrl);
          if (chx[1] = 'a') and ((chx = 'abstention') or (chx = 'absention') or (chx = 'abstentions')) then chx := 'abs';
@@ -1968,6 +1968,7 @@ begin
                if idx_id < 0 then begin
                   receveur := cherche_participant(l_champs.Strings[NomMandataire], l_champs.Strings[PrenomMandataire], l_champs.Strings[RegionMandataire], l_champs.Strings[IDMandataire], fichier); //strtointdef( l_champs.Strings[IDMandataire]), 0);
                   l_ID.AddObject(l_champs.Strings[IDMandataire], receveur);
+                  if votants_limites and ( receveur.pouvoirs = 0) then receveur.pouvoirs := 1;
                end else begin
                   receveur := tparticipant(l_ID.Objects[idx_id]);
                end ;
@@ -2237,7 +2238,7 @@ begin
       sl := decompose(params);
       num_srutin := 1;
       if sl.Count >= 3 then begin
-         nom := sl.Strings[0];
+         nom := Utf8ToAnsi(sl.Strings[0]); //ansi
          heure := sl.Strings[1];
          duree := sl.Strings[2];
          repeat

@@ -444,6 +444,15 @@ object Fpouv_in: TFpouv_in
       State = cbChecked
       TabOrder = 2
     end
+    object Bexplorer: TButton
+      Left = 496
+      Top = 80
+      Width = 25
+      Height = 25
+      Caption = '...'
+      TabOrder = 3
+      OnClick = BexplorerClick
+    end
   end
   object cbaucunpouvoirs: TCheckBox
     Left = 592
@@ -529,5 +538,9 @@ object Fpouv_in: TFpouv_in
     HTTPOptions = [hoForceEncodeParams]
     Left = 800
     Top = 600
+  end
+  object OpenDialog1: TOpenDialog
+    Left = 760
+    Top = 592
   end
 end

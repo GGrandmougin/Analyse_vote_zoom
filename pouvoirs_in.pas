@@ -52,6 +52,8 @@ type
     Epv_max: TEdit;
     Lpv_max1: TLabel;
     Lpv_max2: TLabel;
+    Bexplorer: TButton;
+    OpenDialog1: TOpenDialog;
     procedure place_ifl_ext;
     procedure recois_http;
     procedure IcroixMouseDown(Sender: TObject; Button: TMouseButton;
@@ -90,6 +92,7 @@ type
     procedure Button2Click(Sender: TObject);
     procedure PimporterClick(Sender: TObject);
     procedure Epv_maxChange(Sender: TObject);
+    procedure BexplorerClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -553,6 +556,15 @@ procedure TFpouv_in.Epv_maxChange(Sender: TObject);
 begin
    if strtointdef(Epv_max.Text, -1) < 1 then  Epv_max.Text := '20';
    nb_pouvoirs_max := strtoint(Epv_max.Text) + 1; // nb de pouvoirs confiés + la voix du mandataire
+end;
+
+procedure TFpouv_in.BexplorerClick(Sender: TObject);
+begin
+   OpenDialog1.FileName := '*.csv';
+   if OpenDialog1.Execute then begin
+      Ech_local.Text :=  OpenDialog1.FileName;
+      Cb_relatif.Checked := false;
+   end;
 end;
 
 end.
