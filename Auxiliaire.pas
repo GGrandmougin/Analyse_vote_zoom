@@ -270,6 +270,7 @@ type
     lscrutin : tstringlist;
     scrutin_encours : tscrutin;
     nb_pouvoirs : integer;
+    nb_voix : integer;
     fichier_sortie : string;
     fichier_sortie_ok : boolean;
     ligne_vide : string;
@@ -1938,6 +1939,7 @@ var
    l_csv, l_champs, l_ID  : tstringlist ;
    i, idx_id : integer;
    receveur, donneur : tparticipant;  //r = receveur, d= donneur
+   mode_convention : boolean;
 function trim_valide(pst : byte) : boolean ;
 var
    j : integer;
@@ -1958,9 +1960,12 @@ begin
    lfic_pouvoirs.Color := clyellow;
    tpanel(lfic_pouvoirs.Parent).Color := clyellow;
    lfic_pouvoirs.Parent.Refresh;
+   nb_voix := 0;
    //lfic_pouvoirs.Refresh;
    if l_csv.Count > 0 then begin
-      for i := 0 to l_csv.Count - 1 do begin
+      l_champs.Text := StringReplace(l_csv.Strings[0], ';' , #13#10 , [rfReplaceAll	]);   //
+      mode_convention := pos( 'voix' , lowercase( l_champs.Strings[MailMandataire])) > 0; // normalement Nb de voix
+      for i := 1 to l_csv.Count - 1 do begin
          try
             l_champs.Text := StringReplace(l_csv.Strings[i], ';' , #13#10 , [rfReplaceAll	]);
             if trim_valide(IDMandataire) then begin
@@ -1972,7 +1977,11 @@ begin
                end else begin
                   receveur := tparticipant(l_ID.Objects[idx_id]);
                end ;
-               if trim_valide(IDMandant) then begin
+               if mode_convention then begin
+                  receveur.pouvoirs := strtointdef(StringReplace(l_champs.Strings[MailMandataire], '"' , '' , [rfReplaceAll]), 1);
+                  setCbPouvoirschecked ;
+                  nb_voix := nb_voix + receveur.pouvoirs;
+               end else if trim_valide(IDMandant) then begin
                   idx_id := l_ID.IndexOf(l_champs.Strings[IDMandant]);
                   if idx_id >= 0 then begin
                      donneur := nil;
@@ -2001,8 +2010,13 @@ begin
    lfic_pouvoirs.Color := clBtnFace;
    tpanel(lfic_pouvoirs.Parent).Color := clBtnFace;
    if cb_pouv_val.Checked then begin
-      cb_pouv_val.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
+      if mode_convention then begin
+         cb_pouv_val.Caption := '  ' + inttostr(nb_voix) + ' voix distribuées';
+      end else begin
+         cb_pouv_val.Caption := '  ' + inttostr(nb_pouvoirs) + ' pouvoirs confiés';
+      end;
       lfic_pouvoirs.Caption := 'Fichier: ' + fichier;
+      lfic_pouvoirs.Hint := lfic_pouvoirs.Caption;
    end else lfic_pouvoirs.Caption := '';
 end;
 
