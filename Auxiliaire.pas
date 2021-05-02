@@ -206,6 +206,7 @@ type
     function valide(secret_ , secret_only_ : boolean) : boolean;
     function rejected : boolean;
     function affichage_m(ligne: tstrings; idx : integer; rejets, vnr : boolean; filtre: string = '') : boolean;
+    function aff_v_mult_m(ligne: tstrings; idx : integer;  vnr : boolean; filtre: string = ''): boolean;
     function cherche_participant(msg : string): tparticipant ;
     constructor create(idx_msg : integer; msg  : string; secret : boolean; lmsg : tliste_message = nil);
     destructor destroy;  override;
@@ -297,6 +298,7 @@ type
     procedure traitement_lvotes(lvotes: tliste_vote; lmsg : tliste_message  );
     function aff_messages( rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
     //procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
+    function aff_votes_multiples(vnr: boolean; filtre: string; lmsg: tliste_message; lvotes: tliste_vote): integer;
     function getversion: String;
     function get_fichier_msg(rep : string) : string;
     function charge_fic_msg(fic: string; lmsg : tliste_message ): boolean;
@@ -989,6 +991,34 @@ end;
 
 { tmessage }
 
+function tmessage.aff_v_mult_m(ligne: tstrings; idx : integer; vnr : boolean; filtre: string = ''): boolean;
+var
+   str_nb : string;
+   add_rj : boolean;
+   col_sgd : integer;
+
+begin
+   result := false;
+   try
+      result := (vnr or est_vote) ;
+      result := result and ((Aux1.scrutin_encours.scr_secret = m_secret) or ((not m_secret) and (not Aux1.scrutin_encours.secret_only)));
+      result := result and  participant.affichage_p(ligne,  filtre, idx) ;// il faut que affichage_p  soit appellé dans tous les cas
+      if result then begin
+         ligne[0] := texte;
+         if err_choix then ligne[col_choix] := 'X';
+         if err_nombre then ligne[col_nombre] := 'X';
+         if err_pouvoirs then ligne[col_err_pouvoirs] := 'X';
+         if err_choix or err_nombre or err_pouvoirs then ligne[col_suffrage] := 'X';  // sera peut-être rempli aussi par le controle des pouvoirs
+
+         //if col_sgd > 0 then ligne[col_sgd] := str_nb;
+      end;
+   except
+      on E: exception do
+         log_infos( 'Erreur dans aff_v_mult_m ' + inttostr(index) + ': ' + E.message);
+   end;
+end;
+
+
 function tmessage.affichage_m(ligne: tstrings; idx : integer; rejets, vnr : boolean; filtre: string = ''): boolean;
 var
    str_nb : string;
@@ -1330,6 +1360,46 @@ begin
    end;
 end;
 
+function taux.aff_votes_multiples(vnr: boolean; filtre: string; lmsg: tliste_message; lvotes: tliste_vote): integer;
+var
+   i , j : integer;
+   sl : tstringlist;
+   mssg : tmessage;
+   part_pre : tparticipant;
+   lmessages : TStringList;
+begin
+   j := 0;
+   if scrutin_encours.processed then begin
+      sl := tstringlist.Create;
+      sl.Sorted := true;
+      sl.Duplicates := dupAccept	;
+
+      for i := 0 to f1stringgrid.ColCount -1 do f1stringgrid.cols[i].Clear;
+      nb_msg_affiches := 0;
+      Cbenraff.Checked := false;
+      f1stringgrid.row := 0; f1stringgrid.col := 0;
+      lmessages := lmsg;
+      for i := lvotes.idx_deb to lvotes.idx_fin do begin
+         if lmessages.Objects[i] <> nil then begin
+            mssg := tmessage(lmessages.Objects[i]);
+            sl.AddObject(mssg.participant.texte, mssg);
+         end;
+      end;
+      part_pre := nil;
+      for i:= sl.Count - 1 downto 1 do begin  // suppression des messages venant de particpant qui ne se sont exprimés qu'une fois
+         mssg := tmessage(sl.Objects[i]);
+         if (mssg.participant <> part_pre) and (mssg.participant <> tmessage(sl.Objects[i - 1]).participant) then sl.Delete(i);
+         part_pre := mssg.participant;
+      end;
+      if (sl.Count > 0) and (tmessage(sl.Objects[0]).participant <> part_pre ) then sl.Delete(0);
+      for i:= 0 to sl.Count - 1 do begin
+         if tmessage(lmessages.Objects[i]).aff_v_mult_m(f1stringgrid.Rows[j], j,  true, filtre) then  inc(j);
+      end;
+      sl.free;
+      nb_msg_affiches := j;
+   end;
+   result := j ;
+end;
 
 
 function taux.aff_messages_( rejetes, vnr : boolean ;filtre: string; lmsg : tliste_message ; lvotes: tliste_vote ): integer;
@@ -1382,6 +1452,7 @@ begin
    result := j;
 
 end;
+
 
 function taux.aff_messages(rejetes, vnr: boolean; filtre: string; lmsg: tliste_message; lvotes: tliste_vote): integer;
 var
@@ -1667,7 +1738,7 @@ begin
    for i := 0 to aux1.lparticipants.Count - 1 do begin
       tparticipant(aux1.lparticipants.Objects[i]).additionne(v , ne);
    end;
-   ttl_votants := v;
+   if mode_convention then ttl_votants := v;
    ttl_exp := p + c + a;
    if ne + ttl_exp <> v then begin
       st1 := 'incohérence dans les résultats: ' + inttostr(ttl_exp) + ' suffrages exprimés + ';
@@ -1743,6 +1814,7 @@ procedure tscrutin.maj_resultats;
 var
    i : integer;
 begin
+   if mode_convention then Evotants_.text := inttostr(ttl_votants) else ttl_votants := strtointdef(Evotants_.Text, 0);
    if not processed  then begin
       Ep_ppc_exp_.text := '0' ; Ep_ppc_nbmb_.text := '0' ;
       Ec_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
@@ -1759,7 +1831,7 @@ begin
       Ea_ppc_exp_.text := inttostr((100 * ttl_abs) div max(ttl_exp,1)) ; Ea_ppc_nbmb_.text := inttostr((100 * ttl_abs) div nombre_membres) ;
       Ene_ppc_nbmb_.text := inttostr((100 * (ttl_votants - ttl_exp)) div nombre_membres) ; Ev_ppc_nbmb_.text := inttostr((100 * ttl_votants)div nombre_membres) ;
    end ;
-   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
+   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; //Evotants_.text := inttostr(ttl_votants) ;
 end;
 
 constructor tscrutin.create(num : integer; nm : string);
@@ -1939,7 +2011,6 @@ var
    l_csv, l_champs, l_ID  : tstringlist ;
    i, idx_id : integer;
    receveur, donneur : tparticipant;  //r = receveur, d= donneur
-   mode_convention : boolean;
 function trim_valide(pst : byte) : boolean ;
 var
    j : integer;
@@ -1965,6 +2036,7 @@ begin
    if l_csv.Count > 0 then begin
       l_champs.Text := StringReplace(l_csv.Strings[0], ';' , #13#10 , [rfReplaceAll	]);   //
       mode_convention := pos( 'voix' , lowercase( l_champs.Strings[MailMandataire])) > 0; // normalement Nb de voix
+      if mode_convention then Evotants_.ReadOnly := true;
       for i := 1 to l_csv.Count - 1 do begin
          try
             l_champs.Text := StringReplace(l_csv.Strings[i], ';' , #13#10 , [rfReplaceAll	]);

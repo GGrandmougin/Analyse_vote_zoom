@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 520
-  Top = 319
+  Left = 375
+  Top = 140
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -243,6 +243,23 @@ object Form1: TForm1
       TabOrder = 7
       WordWrap = True
       OnClick = BMergeClick
+    end
+    object Cbanalysevisible: TCheckBox
+      Left = 288
+      Top = 8
+      Width = 97
+      Height = 17
+      Caption = 'Analyse visible'
+      Checked = True
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      State = cbChecked
+      TabOrder = 8
+      OnClick = CbanalysevisibleClick
     end
   end
   object PAction: TPanel
@@ -704,9 +721,8 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
-        ReadOnly = True
         TabOrder = 0
-        Text = '4132'
+        Text = '0'
       end
       object Edit9: TEdit
         Left = 32
@@ -738,6 +754,14 @@ object Form1: TForm1
         Text = '49'
       end
     end
+  end
+  object RichEdit1: TRichEdit
+    Left = 12
+    Top = 229
+    Width = 1237
+    Height = 488
+    Color = clBtnFace
+    TabOrder = 7
   end
   object PRejets: TPanel
     Left = 12
@@ -2607,6 +2631,21 @@ object Form1: TForm1
         TabOrder = 28
         OnClick = RtousmsgClick
       end
+      object Rvotes_multiples: TRadioButton
+        Left = 0
+        Top = 368
+        Width = 137
+        Height = 17
+        Caption = 'Votes multiples'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -15
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+        TabOrder = 29
+        OnClick = Rvotes_multiplesClick
+      end
     end
     object Pmasque_totaux: TPanel
       Left = 860
@@ -2766,100 +2805,100 @@ object Form1: TForm1
       Height = 4
       TabOrder = 5
     end
-    object Pinformations: TPanel
-      Left = 4
-      Top = 4
-      Width = 97
-      Height = 57
-      BevelWidth = 3
-      TabOrder = 6
-      OnClick = LinformationClick
-      object Linformation: TLabel
-        Left = 8
-        Top = 8
-        Width = 13
-        Height = 25
-        Caption = '?'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -20
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        OnClick = LinformationClick
-      end
-      object LUtilisation: TLabel
-        Left = 28
-        Top = 20
-        Width = 45
-        Height = 13
-        Caption = 'Utilisation'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = []
-        ParentFont = False
-        OnClick = LinformationClick
-      end
-    end
-    object Ppouvoirs: TPanel
-      Left = 100
-      Top = 4
-      Width = 301
-      Height = 57
-      BevelWidth = 3
-      TabOrder = 7
-      object Lfichier_pouvoirs: TLabel
-        Left = 16
-        Top = 32
-        Width = 3
-        Height = 13
-      end
-      object Cbpouvoirs: TCheckBox
-        Left = 16
-        Top = 8
-        Width = 257
-        Height = 17
-        Caption = 'Pouvoirs'
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentFont = False
-        TabOrder = 0
-        OnClick = CbpouvoirsClick
-      end
-      object cb_votes_lim: TCheckBox
-        Left = 188
-        Top = 8
-        Width = 105
-        Height = 41
-        Caption = 'Vote limit'#233' aux participants inscrits'
-        Checked = True
-        Color = clBtnShadow
-        Font.Charset = DEFAULT_CHARSET
-        Font.Color = clWindowText
-        Font.Height = -11
-        Font.Name = 'MS Sans Serif'
-        Font.Style = [fsBold]
-        ParentColor = False
-        ParentFont = False
-        State = cbChecked
-        TabOrder = 1
-        WordWrap = True
-        OnClick = cb_votes_limClick
-      end
-    end
     object Cb_enr_aff: TCheckBox
       Left = 1056
       Top = 516
       Width = 169
       Height = 17
       Caption = 'Enregistrement de l'#39'afffichage'
-      TabOrder = 8
+      TabOrder = 6
       OnClick = Cb_enr_affClick
+    end
+  end
+  object Pinformations: TPanel
+    Left = 16
+    Top = 172
+    Width = 97
+    Height = 57
+    BevelWidth = 3
+    TabOrder = 6
+    OnClick = LinformationClick
+    object Linformation: TLabel
+      Left = 8
+      Top = 8
+      Width = 13
+      Height = 25
+      Caption = '?'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -20
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      OnClick = LinformationClick
+    end
+    object LUtilisation: TLabel
+      Left = 28
+      Top = 20
+      Width = 45
+      Height = 13
+      Caption = 'Utilisation'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = []
+      ParentFont = False
+      OnClick = LinformationClick
+    end
+  end
+  object Ppouvoirs: TPanel
+    Left = 112
+    Top = 172
+    Width = 301
+    Height = 57
+    BevelWidth = 3
+    TabOrder = 5
+    object Lfichier_pouvoirs: TLabel
+      Left = 16
+      Top = 32
+      Width = 3
+      Height = 13
+    end
+    object Cbpouvoirs: TCheckBox
+      Left = 16
+      Top = 8
+      Width = 257
+      Height = 17
+      Caption = 'Pouvoirs'
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentFont = False
+      TabOrder = 0
+      OnClick = CbpouvoirsClick
+    end
+    object cb_votes_lim: TCheckBox
+      Left = 188
+      Top = 8
+      Width = 105
+      Height = 41
+      Caption = 'Vote limit'#233' aux participants inscrits'
+      Checked = True
+      Color = clBtnShadow
+      Font.Charset = DEFAULT_CHARSET
+      Font.Color = clWindowText
+      Font.Height = -11
+      Font.Name = 'MS Sans Serif'
+      Font.Style = [fsBold]
+      ParentColor = False
+      ParentFont = False
+      State = cbChecked
+      TabOrder = 1
+      WordWrap = True
+      OnClick = cb_votes_limClick
     end
   end
   object Pdebug: TPanel
@@ -3116,7 +3155,7 @@ object Form1: TForm1
     end
   end
   object OpenDialog1: TOpenDialog
-    Left = 416
-    Top = 160
+    Left = 360
+    Top = 152
   end
 end

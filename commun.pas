@@ -101,7 +101,10 @@ var
    liste_infos : tstringlist;
    enr_merge : boolean = false;
    f1stringgrid : tstringgrid;
+   mode_convention : boolean = false;
 implementation
+
+
 
 function maintenant : string;
 var
@@ -198,6 +201,8 @@ begin
       cb_pouv_val.Tag := 0;
    end;
 end;
+
+
 
 procedure setCb_enr_affchecked(ok : boolean = true) ;
 begin

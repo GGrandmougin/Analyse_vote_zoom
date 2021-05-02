@@ -169,6 +169,9 @@ type
     Benregistremt_stringgrid: TButton;
     Cb_enr_aff: TCheckBox;
     enregistrement_merge: TCheckBox;
+    Cbanalysevisible: TCheckBox;
+    RichEdit1: TRichEdit;
+    Rvotes_multiples: TRadioButton;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -248,6 +251,10 @@ type
     procedure Benregistremt_stringgridClick(Sender: TObject);
     procedure Cb_enr_affClick(Sender: TObject);
     procedure enregistrement_mergeClick(Sender: TObject);
+    procedure CbanalysevisibleClick(Sender: TObject);
+    procedure set_listbox(scr_secret, secret_only : boolean);
+    function get_lb_topindex : integer;
+    procedure Rvotes_multiplesClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -390,12 +397,17 @@ var
 begin
    lettre := tbutton(sender).Caption;
    //RtousmsgClick(nil); // nil -> aff_messages non lancé
-   setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
-   Ltous_mess.caption := 'Messages "' + lettre + '"';
-   set_Efiltre_sans_aff(lettre);
-   Aux1.aff_messages(false, Cbvnreconnus.Checked, lettre, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
-   //casse sans importance pour filtre
-
+   if Rvotes_multiples.Checked then begin
+      Ltous_mess.caption := 'Messages "' + lettre + '"';
+      set_Efiltre_sans_aff(lettre);
+      Aux1.aff_votes_multiples(Cbvnreconnus.Checked, lettre,  Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+   end else begin
+      setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
+      Ltous_mess.caption := 'Messages "' + lettre + '"';
+      set_Efiltre_sans_aff(lettre);
+      Aux1.aff_messages(false, Cbvnreconnus.Checked, lettre, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+      //casse sans importance pour filtre
+   end;
    {Erjpour.Text := '';
    Erjcontre.Text := '';
    Erjlabs.Text := ''; }
@@ -658,6 +670,21 @@ begin
    end;
 end;
 
+procedure TForm1.Rvotes_multiplesClick(Sender: TObject);
+begin
+   Pmasque_totaux_Visible(false, false);
+   Ptous_msg.Visible := true;
+   LTous_mess.Caption := 'Messages';
+   setCb_enr_affchecked(false);
+   if tag = tag_stop then begin
+      tag := 0;
+   end else if Rvotes_multiples.Checked then begin
+      set_Efiltre_sans_aff('');
+      aux1.aff_votes_multiples(Cbvnreconnus.Checked, '',  Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+      //Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+   end;
+end;
+
 procedure TForm1.set_Efiltre_sans_aff( texte : string);
 begin
    Efiltre.Tag := tag_stop;
@@ -718,10 +745,16 @@ procedure TForm1.EfiltreChange(Sender: TObject);
 begin
    if efiltre.Tag <> tag_stop then begin   // sender <> Efiltre then begin (n'est pas bon : c'est le message de efiiltre qui a été changé)
       //RtousmsgClick(nil); // nil -> aff_messages non lancé
-      setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
-      Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
-      Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
-      //casse sans importance pour filtre
+      if Rvotes_multiples.Checked then begin
+         Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
+         aux1.aff_votes_multiples(Cbvnreconnus.Checked, Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+      end else begin
+         setchecked(Rtousmsg); //change le positionnement sans lancer un nouvel affichage
+
+         Ltous_mess.caption := 'Messages "' + Efiltre.text + '"';
+         Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+         //casse sans importance pour filtre
+      end;
    end;
 end;
 
@@ -777,9 +810,8 @@ begin
    ME_duree.Text := Aux1.scrutin_encours.duree;
    Efic_msg.Text := Aux1.scrutin_encours.fichier_message;
    Enb_membres.Text := inttostr(Aux1.scrutin_encours.nombre_membres);
-   if Aux1.scrutin_encours.scr_secret then begin
-      if Aux1.scrutin_encours.secret_only then ListBox1.TopIndex := lb_secret_s else ListBox1.TopIndex := lb_secret_t  ;
-   end else ListBox1.TopIndex := lb_n_secret;
+   set_listbox(Aux1.scrutin_encours.scr_secret, Aux1.scrutin_encours.scr_secret);
+
 end;
 
 procedure TForm1.trf_entrees;
@@ -820,7 +852,7 @@ begin
       end;
       aux1.scrutin_encours.nom := Enomvote.Text;;
       aux1.scrutin_encours.nombre_membres := strtointdef(Enb_membres.Text, 1);
-      aux1.scrutin_encours.set_secret( ListBox1.TopIndex);
+      aux1.scrutin_encours.set_secret( get_lb_topindex);//ListBox1.TopIndex);
       aux1.traitement;
    end else begin
       show_message( 'N° incorrect pour "Vote N°', mtError);
@@ -954,7 +986,8 @@ end;
 
 procedure TForm1.CbvnreconnusClick(Sender: TObject);
 begin
-   Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.Text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   if not Cbvnreconnus.Checked then
+      Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.Text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
 procedure TForm1.Efic_msgChange(Sender: TObject);
@@ -969,9 +1002,11 @@ end;
 
 procedure TForm1.RVoix_dispoClick(Sender: TObject);
 begin
-   setCb_enr_affchecked(false);
-   Pmasque_totaux_Visible(RVoix_utilisees.Checked, false);
-   Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   if not Rvotes_multiples.Checked then begin
+      setCb_enr_affchecked(false);
+      Pmasque_totaux_Visible(RVoix_utilisees.Checked, false);
+      Aux1.aff_messages(false, Cbvnreconnus.Checked,Efiltre.text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
+   end;
 end;
 
 procedure TForm1.LTous_msgClick(Sender: TObject);
@@ -1011,11 +1046,13 @@ procedure TForm1.ListBox1KeyUp(Sender: TObject; var Key: Word;
   Shift: TShiftState);
 begin
   //Mtest.Lines.Add(inttostr(ListBox1.TopIndex));
+  
 end;
 
 procedure TForm1.ListBox1Click(Sender: TObject);
 begin
    Mtest.Lines.Add(inttostr(ListBox1.TopIndex));
+
 end;
 
 procedure TForm1.Button1Click(Sender: TObject);
@@ -1113,6 +1150,25 @@ end;
 procedure TForm1.enregistrement_mergeClick(Sender: TObject);
 begin
    enr_merge :=  enregistrement_merge.Checked ;
+end;
+
+procedure TForm1.CbanalysevisibleClick(Sender: TObject);
+begin
+   PRejets.Visible := Cbanalysevisible.checked;
+end;
+
+procedure TForm1.set_listbox(scr_secret, secret_only : boolean);
+begin
+   if scr_secret then begin
+      if secret_only then ListBox1.TopIndex := lb_secret_s else ListBox1.TopIndex := lb_secret_t  ;
+      Cbanalysevisible.Checked := false;
+   end else ListBox1.TopIndex := lb_n_secret;
+end;
+
+function TForm1.get_lb_topindex: integer;
+begin
+   result := ListBox1.TopIndex;
+   if result <> lb_n_secret then Cbanalysevisible.Checked := false;
 end;
 
 end.
