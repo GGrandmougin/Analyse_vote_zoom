@@ -69,7 +69,7 @@ var
    cb_pouv_val : TCheckBox;
    cbpouvoirs_Checked : boolean = false;
    //nbPouvoirsConfies : TCheckBox;
-   lfic_pouvoirs : tlabel;
+   lfic_pouvoirs, lvotesprecfg, La_remplir : tlabel;
    titre_reunion : string;
    fichier_message_defaut : string;
    source_pouvoirs : string;

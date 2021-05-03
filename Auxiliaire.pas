@@ -175,7 +175,7 @@ type
     function compare(nm, prenm, regn, fic_csv : string; part_initial : tparticipant): tparticipant;  overload;
     function compare(txte, regn :string;  const tab : ttbnoms; part_initial : tparticipant): tparticipant; overload;
     function rejected : boolean;
-    function affichage_p(ligne : tstrings; filtre : string; lgn : integer) : boolean;
+    function affichage_p(ligne : tstrings; filtre : string; lgn : integer; aff_n_expr : boolean = true) : boolean;
     procedure additionne(var votants, non_exp : integer);
     //constructor create(msg  : string);overload;
     constructor create(msg, regn  : string; num : integer; const tab : ttbnoms);overload;
@@ -278,6 +278,7 @@ type
     tickcountpre : cardinal;
     efiltrepre : string;
     nb_mess_ph : integer;
+    votes_pre_cfg : integer;
     configurateur : string; // le premier particpant qui envoie un message de configation este le seul à la possibité d'agir sur la configuration ultérieurement
     //lremplacement: tstringlist;
     procedure clear_l_votes;
@@ -426,6 +427,7 @@ begin
     repere_lcongig := 0;
     set_tb_regions(tb_regions_m);
     nb_pouvoirs := 0;
+    votes_pre_cfg := 0;
 end;
 
 destructor taux.destroy;
@@ -824,7 +826,7 @@ begin
   inherited;
 end;
 
-function tparticipant.affichage_p(ligne: tstrings; filtre: string; lgn : integer): boolean;
+function tparticipant.affichage_p(ligne: tstrings; filtre: string; lgn : integer; aff_n_expr : boolean = true): boolean;
 var
    flt, symb : string;
 begin
@@ -837,13 +839,15 @@ begin
    end;
    if result then begin
       //ligne[col_pouvoirs] := symb + inttostr(pouvoirs) + symb;
-      tsl_v[1, col_pouvoirs].Strings[lgn] := symb + inttostr(pouvoirs) + symb;
-      if elem_scrutin <> nil then begin
-         ligne[col_nonexpr] := inttostr(elem_scrutin.suff_n_exp);
-         tsl_v[2, col_pouvoirs].Strings[lgn] := inttostr(pouvoirs - elem_scrutin.suff_n_exp);
-      end else begin
-         ligne[col_nonexpr] := inttostr(pouvoirs);
-         tsl_v[2, col_pouvoirs].Strings[lgn] := '0';
+      if aff_n_expr then begin;
+         tsl_v[1, col_pouvoirs].Strings[lgn] := symb + inttostr(pouvoirs) + symb;
+         if elem_scrutin <> nil then begin
+            ligne[col_nonexpr] := inttostr(elem_scrutin.suff_n_exp);
+            tsl_v[2, col_pouvoirs].Strings[lgn] := inttostr(pouvoirs - elem_scrutin.suff_n_exp);
+         end else begin
+            ligne[col_nonexpr] := inttostr(pouvoirs);
+            tsl_v[2, col_pouvoirs].Strings[lgn] := '0';
+         end;
       end;
       if err_nom then ligne[col_nom] := 'X';
       if err_prenom then ligne[col_prenom] := 'X';
@@ -992,17 +996,13 @@ end;
 { tmessage }
 
 function tmessage.aff_v_mult_m(ligne: tstrings; idx : integer; vnr : boolean; filtre: string = ''): boolean;
-var
-   str_nb : string;
-   add_rj : boolean;
-   col_sgd : integer;
 
 begin
    result := false;
    try
       result := (vnr or est_vote) ;
       result := result and ((Aux1.scrutin_encours.scr_secret = m_secret) or ((not m_secret) and (not Aux1.scrutin_encours.secret_only)));
-      result := result and  participant.affichage_p(ligne,  filtre, idx) ;// il faut que affichage_p  soit appellé dans tous les cas
+      result := result and  participant.affichage_p(ligne,  filtre, idx, false) ;// il faut que affichage_p  soit appellé dans tous les cas
       if result then begin
          ligne[0] := texte;
          if err_choix then ligne[col_choix] := 'X';
@@ -1159,7 +1159,7 @@ begin
          chx := participant.recherche_choix(ch[i]); // pour option vote par mots aléatoires
          if chx = choix_nil then chx := ch[i];
          if length(chx) < 3 then dec(nbgrl);
-         if (chx[1] = 'a') and ((chx = 'abstention') or (chx = 'absention') or (chx = 'abstentions')) then chx := 'abs';
+         if (chx[1] = 'a') and ((chx = 'abstention') or (chx = 'absention') or (chx = 'abstentions') or (chx = 'abst')) then chx := 'abs';
          if (choix = '') and ((chx = 'pour') or (chx = 'contre') or (chx = 'abs') or (chx = 'oui') or (chx = 'non')) then choix := chx
          else if (choix <> '') and ((chx = 'pour') or (chx = 'contre') or (chx = 'abs') or (chx = 'oui') or (chx = 'non')) then choix_alt := chx; // pour éviter double choix , ex: "pour 3 contre" (influence dans comptage des rejetés )}
          {if (choix = '') and (length(ch[i]) in [3 , 4, 6, 10]) then choix := ch[i] else if (choix <> '') and (length(ch[i]) in [3 , 4, 6, 10]) then choix_alt := ch[i]; // pour éviter double choix , ex: "pour 3 contre" (influence dans comptage des rejetés )}
@@ -1362,13 +1362,14 @@ end;
 
 function taux.aff_votes_multiples(vnr: boolean; filtre: string; lmsg: tliste_message; lvotes: tliste_vote): integer;
 var
-   i , j : integer;
-   sl : tstringlist;
+   i , j, n,  i_ref : integer;
+   sl, sl_tri : tstringlist;
    mssg : tmessage;
-   part_pre : tparticipant;
+   part_pre, part : tparticipant;
    lmessages : TStringList;
 begin
-   j := 0;
+   j := 0; n := 0;
+   sl_tri := tstringlist.Create;  // pour heure croissante pour un même participant
    if scrutin_encours.processed then begin
       sl := tstringlist.Create;
       sl.Sorted := true;
@@ -1392,13 +1393,31 @@ begin
          part_pre := mssg.participant;
       end;
       if (sl.Count > 0) and (tmessage(sl.Objects[0]).participant <> part_pre ) then sl.Delete(0);
+      part_pre := nil;
+      i_ref := 0;
+      n := 0;
       for i:= 0 to sl.Count - 1 do begin
-         if tmessage(lmessages.Objects[i]).aff_v_mult_m(f1stringgrid.Rows[j], j,  true, filtre) then  inc(j);
+         part := tmessage(sl.Objects[i]).participant;
+         if part = part_pre then begin
+            sl_tri.InsertObject(i_ref , '', sl.Objects[i]);
+         end else begin
+            i_ref := i ;
+            sl_tri.AddObject( '', sl.Objects[i]);
+            inc(n);
+         end;
+         part_pre := part;
+      end;
+      j := 0;
+      for i:= 0 to sl_tri.Count - 1 do begin
+         if tmessage(sl_tri.Objects[i]).aff_v_mult_m(f1stringgrid.Rows[j], j,  true, filtre) then  inc(j);
       end;
       sl.free;
       nb_msg_affiches := j;
    end;
    result := j ;
+   LNb_msg_.Caption := inttostr(j) + ' messages affichés';
+   if filtre = '' then LNb_msg_.Caption := LNb_msg_.Caption + #13#10 + inttostr(n) + ' participants';
+   sl_tri.free;
 end;
 
 
@@ -2036,7 +2055,7 @@ begin
    if l_csv.Count > 0 then begin
       l_champs.Text := StringReplace(l_csv.Strings[0], ';' , #13#10 , [rfReplaceAll	]);   //
       mode_convention := pos( 'voix' , lowercase( l_champs.Strings[MailMandataire])) > 0; // normalement Nb de voix
-      if mode_convention then Evotants_.ReadOnly := true;
+      if mode_convention then begin Evotants_.ReadOnly := true; La_remplir.visible := false end;
       for i := 1 to l_csv.Count - 1 do begin
          try
             l_champs.Text := StringReplace(l_csv.Strings[i], ';' , #13#10 , [rfReplaceAll	]);
@@ -2317,10 +2336,11 @@ var
    params: string;
    heure, duree, nom : string;
    sl : tstringlist;
-   num_srutin, i, j : integer;
+   num_srutin, i, j, nb_nouv : integer;
    ok : boolean;
    scrutin : tscrutin;
 begin
+   nb_nouv := 0;
    for j := 0 to l_nouv_scrutin.Count - 1 do begin
       params := l_nouv_scrutin.Strings[j];
       ok := false;
@@ -2347,11 +2367,13 @@ begin
             config_nv_scrutin := num_srutin;
             ENoVote_.Text := inttostr(num_srutin);
          end;
+         inc(nb_nouv);
          memo_tests.Add('configuration : ' + nom_heure_duree + ' ' + inttostr(num_srutin) + ' ' + nom + ' ' + heure + ' ' + duree);
       end else begin
          memo_tests.Add('configuration rejetée : ' + params);
       end;
    end;
+   if nb_nouv > 0 then begin votes_pre_cfg := votes_pre_cfg + nb_nouv; lvotesprecfg.Caption := inttostr(votes_pre_cfg)+ ' votes pré-configurés' ; end;
 end;
 
 procedure taux.remplit_fic_sortie(scrutin : tscrutin; nb_m_ph : integer);

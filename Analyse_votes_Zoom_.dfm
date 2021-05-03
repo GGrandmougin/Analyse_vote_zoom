@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 375
-  Top = 140
+  Left = 353
+  Top = 174
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
@@ -300,9 +300,15 @@ object Form1: TForm1
       Height = 13
       Caption = 'Nom du vote:'
     end
+    object Lvotes_precfg: TLabel
+      Left = 8
+      Top = 120
+      Width = 3
+      Height = 13
+    end
     object BTraitement: TButton
       Left = 24
-      Top = 96
+      Top = 88
       Width = 89
       Height = 25
       Caption = 'Traitement'
@@ -365,7 +371,6 @@ object Form1: TForm1
     BevelWidth = 3
     BorderWidth = 3
     BorderStyle = bsSingle
-    Enabled = False
     TabOrder = 2
     object LResultats: TLabel
       Left = 300
@@ -438,6 +443,7 @@ object Form1: TForm1
       Width = 89
       Height = 113
       BevelOuter = bvNone
+      Enabled = False
       TabOrder = 0
       object Label11: TLabel
         Left = 24
@@ -502,6 +508,7 @@ object Form1: TForm1
       Width = 89
       Height = 113
       BevelOuter = bvNone
+      Enabled = False
       TabOrder = 1
       object Label12: TLabel
         Left = 24
@@ -566,6 +573,7 @@ object Form1: TForm1
       Width = 89
       Height = 113
       BevelOuter = bvNone
+      Enabled = False
       TabOrder = 2
       object Label16: TLabel
         Left = 24
@@ -630,6 +638,7 @@ object Form1: TForm1
       Width = 89
       Height = 113
       BevelOuter = bvNone
+      Enabled = False
       TabOrder = 3
       object Label17: TLabel
         Left = 0
@@ -710,6 +719,19 @@ object Form1: TForm1
         Font.Style = [fsBold]
         ParentFont = False
       end
+      object Laremplir: TLabel
+        Left = 16
+        Top = 56
+        Width = 72
+        Height = 20
+        Caption = 'A remplir'
+        Font.Charset = DEFAULT_CHARSET
+        Font.Color = clWindowText
+        Font.Height = -16
+        Font.Name = 'MS Sans Serif'
+        Font.Style = [fsBold]
+        ParentFont = False
+      end
       object Evotants: TEdit
         Left = 24
         Top = 24
@@ -750,6 +772,7 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        ReadOnly = True
         TabOrder = 2
         Text = '49'
       end
@@ -762,6 +785,16 @@ object Form1: TForm1
     Height = 488
     Color = clBtnFace
     TabOrder = 7
+  end
+  object Bvotes_multiples: TButton
+    Left = 424
+    Top = 172
+    Width = 145
+    Height = 25
+    Caption = 'Affichage des votes multiples'
+    TabOrder = 8
+    Visible = False
+    OnClick = Bvotes_multiplesClick
   end
   object PRejets: TPanel
     Left = 12
@@ -1803,7 +1836,7 @@ object Form1: TForm1
       Left = 152
       Top = 488
       Width = 150
-      Height = 13
+      Height = 26
       AutoSize = False
       Caption = '0 messages affich'#233's'
     end
@@ -2124,26 +2157,13 @@ object Form1: TForm1
       TabOrder = 0
       OnMouseDown = StringGrid1MouseDown
     end
-    object StaticText1: TStaticText
-      Left = 400
-      Top = 72
-      Width = 4
-      Height = 4
-      Font.Charset = DEFAULT_CHARSET
-      Font.Color = clWindowText
-      Font.Height = -21
-      Font.Name = 'MS Sans Serif'
-      Font.Style = []
-      ParentFont = False
-      TabOrder = 1
-    end
     object Pchoix_msg: TPanel
       Left = 8
       Top = 112
       Width = 145
       Height = 393
       BevelOuter = bvNone
-      TabOrder = 2
+      TabOrder = 1
       object LRejetes: TLabel
         Left = 24
         Top = 12
@@ -2653,7 +2673,7 @@ object Form1: TForm1
       Width = 80
       Height = 52
       BevelOuter = bvNone
-      TabOrder = 3
+      TabOrder = 2
       object Ltotaux: TLabel
         Left = 15
         Top = 28
@@ -2734,7 +2754,7 @@ object Form1: TForm1
       Font.Name = 'MS Sans Serif'
       Font.Style = []
       ParentFont = False
-      TabOrder = 4
+      TabOrder = 3
       Visible = False
       object Ltous_mess: TLabel
         Left = 384
@@ -2798,20 +2818,13 @@ object Form1: TForm1
         OnClick = RVoix_dispoClick
       end
     end
-    object StaticText2: TStaticText
-      Left = 16
-      Top = 16
-      Width = 4
-      Height = 4
-      TabOrder = 5
-    end
     object Cb_enr_aff: TCheckBox
       Left = 1056
       Top = 516
       Width = 169
       Height = 17
       Caption = 'Enregistrement de l'#39'afffichage'
-      TabOrder = 6
+      TabOrder = 4
       OnClick = Cb_enr_affClick
     end
   end
@@ -2868,7 +2881,7 @@ object Form1: TForm1
     object Cbpouvoirs: TCheckBox
       Left = 16
       Top = 8
-      Width = 257
+      Width = 153
       Height = 17
       Caption = 'Pouvoirs'
       Font.Charset = DEFAULT_CHARSET
@@ -3152,6 +3165,15 @@ object Form1: TForm1
       Caption = 'enregistrement_merge'
       TabOrder = 21
       OnClick = enregistrement_mergeClick
+    end
+    object Brepli: TButton
+      Left = 344
+      Top = 232
+      Width = 33
+      Height = 17
+      Caption = 'Repli'
+      TabOrder = 22
+      OnClick = BrepliClick
     end
   end
   object OpenDialog1: TOpenDialog

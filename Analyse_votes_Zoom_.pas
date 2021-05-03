@@ -73,7 +73,6 @@ type
     Label21: TLabel;
     Enb_membres: TEdit;
     Image1: TImage;
-    StaticText1: TStaticText;
     Label3: TLabel;
     BEditer: TButton;
     Erjpour: TEdit;
@@ -148,7 +147,6 @@ type
     BExport_CSV_lparticpants: TButton;
     Bselectfic: TButton;
     OpenDialog1: TOpenDialog;
-    StaticText2: TStaticText;
     Ppouvoirs : tpanel;
     pinformations : tpanel;
     lcompte_partiellement : tlabel;
@@ -172,6 +170,10 @@ type
     Cbanalysevisible: TCheckBox;
     RichEdit1: TRichEdit;
     Rvotes_multiples: TRadioButton;
+    Lvotes_precfg: TLabel;
+    Brepli: TButton;
+    Bvotes_multiples: TButton;
+    Laremplir: TLabel;
     procedure setchecked(rb : TRadioButton); //change le positionnement sans lancer un nouvel affichage
     procedure maj_entrees;
     procedure trf_entrees;
@@ -255,6 +257,8 @@ type
     procedure set_listbox(scr_secret, secret_only : boolean);
     function get_lb_topindex : integer;
     procedure Rvotes_multiplesClick(Sender: TObject);
+    procedure BrepliClick(Sender: TObject);
+    procedure Bvotes_multiplesClick(Sender: TObject);
   private
     { Déclarations privées }
   public
@@ -318,6 +322,8 @@ begin
    ENoVote_ := ENoVote ;
    Cbenraff  := Cb_enr_aff;
    liste_infos := tstringlist.Create;
+   lvotesprecfg := Lvotes_precfg;
+   La_remplir := laremplir;
 end;
 
 procedure TForm1.init_tsl_votes;
@@ -516,6 +522,15 @@ begin
    end; }
 end;
 
+procedure TForm1.BrepliClick(Sender: TObject);
+begin
+   Pdebug.Width := 40;
+   pdebug.Height := 40;
+   pdebug.Left := pinformations.left;
+   pdebug.top := pinformations.Top + pinformations.Height;
+   place_ifl_ext;
+end;
+
 procedure TForm1.traite_params;
 var
    i : Integer;
@@ -683,6 +698,26 @@ begin
       aux1.aff_votes_multiples(Cbvnreconnus.Checked, '',  Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
       //Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
    end;
+end;
+
+procedure TForm1.Bvotes_multiplesClick(Sender: TObject);
+begin
+   {Pmasque_totaux_Visible(false, false);
+   Ptous_msg.Visible := true;
+   LTous_mess.Caption := 'Messages';
+   setCb_enr_affchecked(false);
+   if tag = tag_stop then begin
+      tag := 0;
+   end else if Rvotes_multiples.Checked then begin
+      set_Efiltre_sans_aff('');
+      aux1.aff_votes_multiples(Cbvnreconnus.Checked, '',  Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+      //Aux1.aff_messages(false, Cbvnreconnus.Checked, '', Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  );
+   end; }
+   Rvotes_multiples.Checked := true;
+   Rrejetes.Enabled := false;
+   Rtousmsg.Enabled := False;
+   //Rvotes_multiples.Enabled := false;
+   PRejets.Visible := true;
 end;
 
 procedure TForm1.set_Efiltre_sans_aff( texte : string);
@@ -862,7 +897,7 @@ end;
 
 procedure TForm1.clear_resultats;
 begin
-   Epour.Text       := '0'; Econtre.Text     := '0'; Eabs.Text        := '0' ; Enon_exp.Text    := '0'; Evotants.Text    := '0';
+   Epour.Text       := '0'; Econtre.Text     := '0'; Eabs.Text        := '0' ; Enon_exp.Text    := '0'; //Evotants.Text    := '0';
    Ep_ppc_exp.Text  := '0'; Ec_ppc_exp.Text  := '0'; Ea_ppc_exp.Text  := '0';
    Ep_ppc_nbmb.Text := '0'; Ec_ppc_nbmb.Text := '0'; Ea_ppc_nbmb.Text := '0'; Ene_ppc_nbmb.Text := '0'; Ev_ppc_nbmb.Text := '0';
    Erjpour.Text     := '';  Erjcontre.Text   := ''; Erjabs.Text      := '';
@@ -986,7 +1021,7 @@ end;
 
 procedure TForm1.CbvnreconnusClick(Sender: TObject);
 begin
-   if not Cbvnreconnus.Checked then
+   if not Rvotes_multiples.Checked then
       Aux1.aff_messages(false, Cbvnreconnus.Checked, Efiltre.Text, Aux1.scrutin_encours.liste_message, Aux1.scrutin_encours.liste_votes  )
 end;
 
@@ -1168,7 +1203,14 @@ end;
 function TForm1.get_lb_topindex: integer;
 begin
    result := ListBox1.TopIndex;
-   if result <> lb_n_secret then Cbanalysevisible.Checked := false;
+   if result <> lb_n_secret then begin
+      Cbanalysevisible.Checked := false;
+   end else begin
+      Rrejetes.Enabled := true; // inutile (bouton bvotes_ultiples invisible  fonction inactivée
+      Rtousmsg.Enabled := true;
+   end;
 end;
+
+
 
 end.
