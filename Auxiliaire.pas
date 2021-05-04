@@ -2024,7 +2024,7 @@ end;
     MailMandant = 8;
     RegionMandant = 9;
     DateEnvoisPouvoir = 10;
-    DateRéceptionPouvoir = 11;}
+    DateReceptionPouvoir = 11;}
 procedure taux.traite_pouvoirs(strl: Tstringlist; fichier : string);
 var
    l_csv, l_champs, l_ID  : tstringlist ;
@@ -2086,8 +2086,10 @@ begin
                   if donneur <> nil then begin
                      setCbPouvoirschecked ;  // au moins un pouvoir a été donné
                      donneur.pouvoirs := 0;
-                     receveur.pouvoirs := receveur.pouvoirs + 1;  // les pouvoirs confiés s'ajoute à la voix déjà détenue en propre par le participant
-                     inc(nb_pouvoirs);
+                     if (l_champs.Count > DateReceptionPouvoir ) and (trim(l_champs.Strings[DateReceptionPouvoir]) <> '') then begin
+                        receveur.pouvoirs := receveur.pouvoirs + 1;  // les pouvoirs confiés s'ajoute à la voix déjà détenue en propre par le participant
+                        inc(nb_pouvoirs);
+                     end;   
                   end;
                end;
             end;
