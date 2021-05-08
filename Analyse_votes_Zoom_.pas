@@ -983,9 +983,10 @@ procedure TForm1.BtestClick(Sender: TObject);
 begin
    //f1stringgrid.perform(WM_MBUTTONDOWN, 0, 0);
    //f1stringgrid.perform(WM_ACTIVATE, 0, 0);
-   StringGrid1.row := 0;
-   StringGrid1.col := 0;
+   //StringGrid1.row := 0;
+   //StringGrid1.col := 0;
    //memo_tests.Add(format('essai: %s', [booltostr(true)]));
+   memo_tests.add(aux1.mot_principal(Etests.Text));
 end;
 
 procedure TForm1.CbpouvoirsClick(Sender: TObject);

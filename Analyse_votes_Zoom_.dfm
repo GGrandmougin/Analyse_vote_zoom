@@ -1,6 +1,6 @@
 object Form1: TForm1
-  Left = 353
-  Top = 174
+  Left = 450
+  Top = 129
   Width = 1280
   Height = 768
   Caption = 'Analyse des votes  par ZOOM   v1.0'
