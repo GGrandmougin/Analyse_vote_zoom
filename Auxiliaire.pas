@@ -292,7 +292,7 @@ type
     procedure Export_CSV_lparticpants;
     procedure ptest(Sender: tobject);
     procedure traite_pouvoirs(strl: Tstringlist; fichier : string);
-    function mot_principal( nom : string) : string;
+    function mot_principal( nom : string) : string;   // prend le dernier mot
     function cherche_participant(nm, prenm, regn, ID, fic_csv: string) : tparticipant;
     procedure videlistes;
     procedure init_part_present(lpart : tliste_participant);
@@ -2065,7 +2065,7 @@ begin
                idx_id := l_ID.IndexOf(l_champs.Strings[IDMandataire]);
                if idx_id < 0 then begin
                   nommand := mot_principal(l_champs.Strings[NomMandataire]);
-                  prenommand := StringReplace(trim(l_champs.Strings[PrenomMandataire]), ' ', '-', [rfReplaceAll]) ;
+                  prenommand := mot_principal(l_champs.Strings[PrenomMandataire]);
                   receveur := cherche_participant(nommand, prenommand, l_champs.Strings[RegionMandataire], l_champs.Strings[IDMandataire], fichier); //strtointdef( l_champs.Strings[IDMandataire]), 0);
                   l_ID.AddObject(l_champs.Strings[IDMandataire], receveur);
                   if votants_limites and ( receveur.pouvoirs = 0) then receveur.pouvoirs := 1;
@@ -2527,29 +2527,18 @@ begin
    secret_only := lb_secret = lb_secret_s;
 end;
 
-function taux.mot_principal(nom: string): string;
+function taux.mot_principal(nom: string): string; // prend le dernier mot
 var
-   p, q, a, b, c : integer;
+   p, q : integer;
 begin
    result := trim(nom);
    p := pos(' ', result);
    if p > 0 then begin
-      q := posex(' ', result, p + 1);
-      if q > 0 then begin
-         a := p-1;
-         b := q - p - 1;
-         c := length(result) - q;
-         if a >= max(b, c) then
-            result := copy(result, 1 , a)
-         else if b > max (a, c) then
-            result := copy(result, p + 1, b)
-         else
-            result := RightStr(result, c);
-      end else if p > (length(result) div 2) then begin
-         result := copy(result, 1 , p-1);
-      end else begin
-         result := RightStr(result, length(result) -p);
+      while p > 0 do begin
+         q := p;
+         p := posex(' ', result, p + 1);
       end;
+      result := RightStr(result, length(result) - q);
    end;
 end;
 
