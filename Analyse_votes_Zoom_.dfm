@@ -175,7 +175,7 @@ object Form1: TForm1
       Font.Style = []
       ParentFont = False
       TabOrder = 3
-      Text = '   4278'
+      Text = '   4261'
       OnClick = Enb_membresClick
     end
     object BEditer: TButton
@@ -731,6 +731,7 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        Visible = False
       end
       object Evotants: TEdit
         Left = 24
@@ -743,6 +744,7 @@ object Form1: TForm1
         Font.Name = 'MS Sans Serif'
         Font.Style = [fsBold]
         ParentFont = False
+        ReadOnly = True
         TabOrder = 0
         Text = '0'
       end
@@ -784,6 +786,55 @@ object Form1: TForm1
     Width = 1237
     Height = 488
     Color = clBtnFace
+    Lines.Strings = (
+      
+        '#####1\fbidis\ansi\ansicpg1252\deff0\deflang1036{\fonttbl{\f0\fr' +
+        'oman\fprq2\fcharset0 Liberation Serif;}{\f1\froman\fprq2\fcharse' +
+        't128 Liberation Serif;}{\f2\fnil MS Sans Serif;}}'
+      '\viewkind4\uc1\pard\ltrpar\sa140\sl276\slmult1\f0\fs24 '
+      
+        '\par \pard\ltrpar\li4082\sl276\slmult1\b\f1\fs40 R\u233?sum\u233' +
+        '? utilisation\b0\f0\fs24 '
+      '\par \pard\ltrpar\sl276\slmult1\b\fs28 '
+      
+        '\par \pard\ltrpar\li1644\sl276\slmult1 Le nommage dans la r\'#39'e9u' +
+        'nion Zoom \b0\fs24 (l\rquote ordre de ces informations, la casse' +
+        ', les accents sont indiff\'#39'e9rents)'
+      
+        '\par \pard\ltrpar\li2268\sl276\slmult1 Doit figurer :   \b nom\b' +
+        '0 ,  \b pr\'#39'e9nom\b0  ,  code (3 lettres) de la \b r\'#39'e9gion\b0 ' +
+        ', et le \b num\'#39'e9ro\b0  de membre '
+      '\par \pard\ltrpar\sl276\slmult1\b\fs28 '
+      
+        '\par \pard\ltrpar\li1644\sl276\slmult1 Le vote se fait par les m' +
+        'essages Zoom\b0\fs24 '
+      
+        '\par \pard\ltrpar\li2268\sl276\slmult1 1 seule indication de cho' +
+        'ix par message'
+      '\par Si on a plusieurs voix , on peut indiquer plusieurs choix'
+      '\par \pard\ltrpar\sl276\slmult1 '
+      
+        '\par \pard\ltrpar\li1644\sl276\slmult1\b\fs28 Choix possibles et' +
+        ' nombre  \b0\fs24 (l\rquote ordre de ces informations, la casse,' +
+        ' les accents sont indiff\'#39'e9rents)'
+      
+        '\par \pard\ltrpar\li2268\sl276\slmult1\b pour\b0 , \b contre \b0' +
+        ' et abstention (que l\rquote on peut abr\'#39'e9ger en \b abs\b0  ou' +
+        '  abst )'
+      
+        '\par dans le m\'#39'eame message, on indique le \b nombre \b0 de voi' +
+        'x qu\rquote on attribue \'#39'e0 ce choix '
+      '\par le nombre peut \'#39'eatre omis pour au maximum un choix'
+      '\par \pard\ltrpar\sl276\slmult1\fs28 '
+      '\par \pard\ltrpar\li1644\sl276\slmult1\b Corrections\b0\fs24 '
+      
+        '\par \pard\ltrpar\li2268\sl276\slmult1 pour un choix donn\'#39'e9 c\' +
+        'rquote est le dernier message envoy\'#39'e9 qui compte, si on ne don' +
+        'ne plus aucune voix \'#39'e0 ce choix , indiquez 0  (chiffre z\'#39'e9ro' +
+        ')'
+      '\par \pard\ltrpar\'#39'b0\f2\fs16 '
+      '\par }')
+    ReadOnly = True
     TabOrder = 7
   end
   object Bvotes_multiples: TButton
@@ -2805,9 +2856,9 @@ object Form1: TForm1
         ParentFont = False
       end
       object Erjpour: TEdit
-        Left = 4
+        Left = 0
         Top = 4
-        Width = 24
+        Width = 28
         Height = 21
         Hint = 
           'prend en compte  le contexte  (pouvoirs  , message  plus r'#233'cent ' +

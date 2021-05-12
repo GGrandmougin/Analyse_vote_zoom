@@ -4,25 +4,8 @@ interface
 
 uses
   Windows, Messages, SysUtils, Variants, Classes, Graphics, Controls, Forms,
-  Dialogs, StdCtrls, ComCtrls, ExtCtrls;
+  Dialogs, StdCtrls, ComCtrls, ExtCtrls, commun;
 
-const
-protocole  = '	protocole' + #13#10
-+'   le membre doit indiquer comme nom dans ZOOM un texte comportant au moins son prénom, son nom, son N° de membre'
-+'et les 3 lettres de sa région. L''ordre , la casse et l''accentuation sont indifférents' + #13#10
-+'   Un message est pris en compte uniquement s’il comporte:' + #13#10
-+'·	un et un seul groupe de lettres contiguës formant un des 4 mots "pour" , "contre" , "abs" ou "abstention" peu'
-+'importe la casse' + #13#10
-+'·	 un groupe au maximum de chiffres contigus (indiquant le nombre de voix)( si le groupe de chiffres est absent,'
-+'cela vaut pour 1)  ("0" , "00"  sont admis indiquant 0 voix pour ce choix, utile pour une correction)' + #13#10
-+'·	l''ordre est de ces groupes est indifférent' + #13#10
-+'·	la présence de caractères autres que des lettres ou chiffres est admise et ces caractères sont ignorés  (exemples'
-+'valides "Pour: 10." , "10 POUR" , "5 -> contre")' + #13#10
-+'   Le membre peut envoyer un nombre quelconque de messages valides, seul comptera  le dernier message pour un choix'
-+'donné (pour, contre ou abstention)' + #13#10
-+'   Dans le cas ou un membre envoie plus de voix que le nombre de pouvoirs qu''il possède:' + #13#10
-+'·	s''il n''exprime qu''un seul choix , le nombre de voix est limité au nombre de pouvoirs qu''il possède'  + #13#10
-+'·	s''il exprime plusieurs choix, le vote est déclaré nul (non exprimé)'+ #13#10 ;
 
 
 type
@@ -52,26 +35,12 @@ implementation
 {$R *.dfm}
 
 procedure TFinformation.FormCreate(Sender: TObject);
-var
-   fic : string;
 begin
-   //strl := tstringlist.Create;
-   fic := extractfilepath (paramstr(0)) + 'protocole.rtf' ;
-   if FileExists(fic) then begin
-       try
-          RichEdit1.Lines.LoadFromFile( fic);
-       except
-       end;
-   end;
-   if RichEdit1.Lines.Count < 3 then begin
-      richedit1.Lines.Append(protocole);
-   end;
    P_debug.Top := 0;
    P_debug.Width := ClientWidth - P_debug.Left;
    P_debug.Height := ClientHeight;
    P_debug.Visible := fi_debug ;
-   //strl.Assign(RichEdit1.Lines);
-   //strl.SaveToFile('E:\GitHub\Analyse_vote_zoom\infos\protocole_richedit.rtf');
+   richedit_self_5car( RichEdit1);
 end;
 
 procedure TFinformation.FormDestroy(Sender: TObject);

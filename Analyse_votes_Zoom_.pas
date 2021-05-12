@@ -324,6 +324,7 @@ begin
    liste_infos := tstringlist.Create;
    lvotesprecfg := Lvotes_precfg;
    La_remplir := laremplir;
+   richedit_self_5car( RichEdit1);
 end;
 
 procedure TForm1.init_tsl_votes;

@@ -1758,7 +1758,8 @@ begin
    for i := 0 to aux1.lparticipants.Count - 1 do begin
       tparticipant(aux1.lparticipants.Objects[i]).additionne(v , ne);
    end;
-   if mode_convention then ttl_votants := v;
+   //if mode_convention or  then
+   ttl_votants := v;
    ttl_exp := p + c + a;
    if ne + ttl_exp <> v then begin
       st1 := 'incohérence dans les résultats: ' + inttostr(ttl_exp) + ' suffrages exprimés + ';
@@ -1834,7 +1835,7 @@ procedure tscrutin.maj_resultats;
 var
    i : integer;
 begin
-   if mode_convention then Evotants_.text := inttostr(ttl_votants) else ttl_votants := strtointdef(Evotants_.Text, 0);
+   //if mode_convention or votants_limites then Evotants_.text := inttostr(ttl_votants) else ttl_votants := strtointdef(Evotants_.Text, 0);
    if not processed  then begin
       Ep_ppc_exp_.text := '0' ; Ep_ppc_nbmb_.text := '0' ;
       Ec_ppc_exp_.text := '0' ; Ec_ppc_nbmb_.text := '0' ;
@@ -1851,7 +1852,7 @@ begin
       Ea_ppc_exp_.text := inttostr((100 * ttl_abs) div max(ttl_exp,1)) ; Ea_ppc_nbmb_.text := inttostr((100 * ttl_abs) div nombre_membres) ;
       Ene_ppc_nbmb_.text := inttostr((100 * (ttl_votants - ttl_exp)) div nombre_membres) ; Ev_ppc_nbmb_.text := inttostr((100 * ttl_votants)div nombre_membres) ;
    end ;
-   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; //Evotants_.text := inttostr(ttl_votants) ;
+   Epour_.text := inttostr(ttl_pour) ; Econtre_.text := inttostr(ttl_contre) ; Eabs_.text := inttostr(ttl_abs) ; Enon_exp_.text := inttostr(ttl_votants - ttl_exp) ; Evotants_.text := inttostr(ttl_votants) ;
 end;
 
 constructor tscrutin.create(num : integer; nm : string);
@@ -2029,7 +2030,7 @@ end;
 procedure taux.traite_pouvoirs(strl: Tstringlist; fichier : string);
 var
    l_csv, l_champs, l_ID  : tstringlist ;
-   i, idx_id : integer;
+   i, idx_id, v, ne : integer;
    receveur, donneur : tparticipant;  //r = receveur, d= donneur
    nommand, prenommand : string;
 function trim_valide(pst : byte) : boolean ;
@@ -2057,7 +2058,7 @@ begin
    if l_csv.Count > 0 then begin
       l_champs.Text := StringReplace(l_csv.Strings[0], ';' , #13#10 , [rfReplaceAll	]);   //
       mode_convention := pos( 'voix' , lowercase( l_champs.Strings[MailMandataire])) > 0; // normalement Nb de voix
-      if mode_convention then begin Evotants_.ReadOnly := true; La_remplir.visible := false end;
+      //if mode_convention then begin Evotants_.ReadOnly := true; La_remplir.visible := false end;
       for i := 1 to l_csv.Count - 1 do begin
          try
             l_champs.Text := StringReplace(l_csv.Strings[i], ';' , #13#10 , [rfReplaceAll	]);
@@ -2115,6 +2116,14 @@ begin
       lfic_pouvoirs.Caption := 'Fichier: ' + fichier;
       lfic_pouvoirs.Hint := lfic_pouvoirs.Caption;
    end else lfic_pouvoirs.Caption := '';
+   if mode_convention or votants_limites then begin
+      v := 0;
+      ne := 0;
+      for i := 0 to aux1.lparticipants.Count - 1 do begin
+         tparticipant(aux1.lparticipants.Objects[i]).additionne(v , ne);
+      end;
+      Evotants_.Text := inttostr(v);
+   end;
 end;
 
 function taux.cherche_participant(nm, prenm, regn, ID, fic_csv: string): tparticipant;
@@ -2532,6 +2541,7 @@ var
    p, q : integer;
 begin
    result := trim(nom);
+   q := 0;
    p := pos(' ', result);
    if p > 0 then begin
       while p > 0 do begin

@@ -6,7 +6,7 @@ interface
 
 Uses
    ExtCtrls, types, StdCtrls, Classes, Math, Dialogs,
-   Windows, graphics, strutils, Forms, SysUtils, Grids;
+   Windows, graphics, strutils, Forms, SysUtils, Grids, ComCtrls;
 
 const
     //Voir aussi : Convertit une chaîne codée en Ansi vers UTF-8.
@@ -55,6 +55,7 @@ procedure show_message( texte : string; mtype :TMsgDlgType);
 procedure pretraitement_lmsg( lmsg, l_cfg : tliste_message; mtests : tstrings); // concaténation et recherche configuration
 function maintenant : string;
 function enr_stringlist( list_a_enr, list_infos : tstringlist; nom_fic :string) : boolean;
+procedure richedit_self_5car(richedit: trichedit);
 
 var
    debug : boolean;
@@ -241,13 +242,29 @@ begin
  mtCustom	      Une boîte de message ne contenant pas d'image. Le titre de la boîte de dialogue est le nom du fichier exécutable de l'application.}
 
 end;
-{17:52:15 De  Gérard Grandmougin  à  Tout le monde:
-	re-bonjour
-18:15:24 De  VOTE SECRET  à  Tout le monde:
-	pour
-18:17:14 De  gg xxxx als 5668  à  Tout le monde:
-	contre
-18:17:36 De  machin prénom IDF 2858  à  Tout le monde:
-	abs} // tabulations
+
+procedure richedit_self_5car(richedit: trichedit);
+const
+   mx = 32768;
+var
+   strm : TMemoryStream;
+   pba : pbytearray; //PByteArray = ^TByteArray; TByteArray = array[0..32767] of Byte;
+begin
+   strm := TMemoryStream.Create;
+   richedit.PlainText := true;
+   richedit.Lines.SaveToStream(strm);
+   richedit.Lines.clear;
+   strm.Position := 0;
+   pba := strm.memory;
+   pba^[0] := ord('{');
+   pba^[1] := ord('\');
+   pba^[2] := ord('r');
+   pba^[3] := ord('t');
+   pba^[4] := ord('f');
+   strm.Position := 0;
+   richedit.PlainText := false;
+   RichEdit.Lines.LoadFromStream(strm);
+   strm.Free;
+end;
 
 end.
