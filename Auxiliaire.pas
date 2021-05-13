@@ -1497,30 +1497,32 @@ begin
       params_lmsg_pre := params_lmsg;
    end;
    params_lmsg_pre.nb_affiches := result;
-   for i := 1 to 4 do begin
-      f1stringgrid.Cols[i].Text := tsl_v[dp_ut, i].text;
-   end;
-   if (dp_ut = 2)  then begin
-      // affichage des totaux utilisés
-      for i := 2 to 4 do begin
-         if (filtre = '') then begin
-            sl := tsl_v[2, i];
-            ttl := 0;
-            for j := 0 to sl.Count -1 do begin
-               ttl := ttl + strtointdef(sl[j],0);
-            end;
-            st := inttostr(ttl);
-         end else st := '';
-         case i of
-            col_pour : erj_pour.Text := st;
-            col_contre : erj_contre.Text := st;
-            col_abs : erj_abs.Text := st;
-         end;
+   if aux1.scrutin_encours.processed then begin
+      for i := 1 to 4 do begin
+         f1stringgrid.Cols[i].Text := tsl_v[dp_ut, i].text;
       end;
-      if (filtre = '') and ( (erj_pour.Text <> Epour_.Text) or (erj_contre.Text <> Econtre_.Text) or (erj_abs.Text <> Eabs_.Text)) then begin
-         show_message('Incohérence des résultats entre les totaux' + #13#10 + 'des colonnes "pour", "contre" ou "abs" '
-                      + #13#10 + 'et les résultats', mtError);
-         log_infos('incohérence des résultats entre les totaux des colonnes "pour", "contre" ou "abs" et les résultats, pour: ' + erj_pour.Text + '<>' + Epour_.Text + ' contre: ' + erj_contre.Text + '<>' + Econtre_.Text + ' abs: ' + erj_abs.Text + '<>' + Eabs_.Text);
+      if (dp_ut = 2) then begin
+         // affichage des totaux utilisés
+         for i := 2 to 4 do begin
+            if (filtre = '') then begin
+               sl := tsl_v[2, i];
+               ttl := 0;
+               for j := 0 to sl.Count -1 do begin
+                  ttl := ttl + strtointdef(sl[j],0);
+               end;
+               st := inttostr(ttl);
+            end else st := '';
+            case i of
+               col_pour : erj_pour.Text := st;
+               col_contre : erj_contre.Text := st;
+               col_abs : erj_abs.Text := st;
+            end;
+         end;
+         if (filtre = '') and ( (erj_pour.Text <> Epour_.Text) or (erj_contre.Text <> Econtre_.Text) or (erj_abs.Text <> Eabs_.Text)) then begin
+            show_message('Incohérence des résultats entre les totaux' + #13#10 + 'des colonnes "pour", "contre" ou "abs" '
+                         + #13#10 + 'et les résultats', mtError);
+            log_infos('incohérence des résultats entre les totaux des colonnes "pour", "contre" ou "abs" et les résultats, pour: ' + erj_pour.Text + '<>' + Epour_.Text + ' contre: ' + erj_contre.Text + '<>' + Econtre_.Text + ' abs: ' + erj_abs.Text + '<>' + Eabs_.Text);
+         end;
       end;
    end;
    if debug then begin
