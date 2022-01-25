@@ -81,6 +81,7 @@ lib/
 *.zip
 *.gif
 _*.*
+*.lnk
 tests/
 essais/
 infos/
