@@ -122,7 +122,7 @@ const
     col_err_pouvoirs = 12;
     col_nombre = 13;
     col_choix = 14;
-    tb_regions_m : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
+    tb_regions_m : array[0.. 21] of string = ('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Morg
     idx_msg_nil = -2;
     max_tch = 5;
     choix_nil = '--';
@@ -319,7 +319,7 @@ type
 var
    Aux1 : taux;
    rep_msg_def: string;
-   tb_regions : array of string ; //tb_regions_m =('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Mensa
+   tb_regions : array of string ; //tb_regions_m =('fra', 'etr', 'als', 'aqi', 'auv', 'bfc', 'bre', 'cen', 'cha', 'caz', 'fla', 'idf', 'lan', 'lor', 'mip', 'nmd', 'plf', 'plo', 'pch', 'prv', 'ral', 'run');    // specifique Morg
    stringgrid1rowscount : integer;
    strgrd_colcount : integer;
    message_nil : tmessage;
@@ -613,7 +613,7 @@ begin
       if nb <> '' then numero := strtoint(nb);
       err_ID := nbgrl < 3 ;
       for i := 0 to high(tbnom) do begin
-         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
+         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Morg
             j := 0;
             while (j <= high(tb_regions)) and err_region do begin
                err_region := not (tbnom[i] = tb_regions[j]);
@@ -689,7 +689,7 @@ begin
       if nb <> '' then numero := strtoint(nb);
       err_ID := nbgrl < 3 ;
       for i := 0 to high(tbnom) do begin
-         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Mensa
+         if (length(tbnom[i]) = 3) and err_region then begin    // specifique Morg
             j := 0;
             while (j <= high(tb_regions)) and err_region do begin
                err_region := not (tbnom[i] = tb_regions[j]);
@@ -797,7 +797,7 @@ begin
       if (nbgrc <>  1) then num := 0;
       for i := 0 to high(result) do begin
          reg := StringReplace(result[i], '-', '',  [rfreplaceall]);
-         if (length(reg) = 3) and err_region then begin    // specifique Mensa
+         if (length(reg) = 3) and err_region then begin    // specifique Morg
             j := 0;
             while (j <= high(tb_regions)) and err_region do begin
                err_region := not (reg = tb_regions[j]);

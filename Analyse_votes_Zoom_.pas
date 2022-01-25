@@ -6,7 +6,7 @@ unit Analyse_votes_Zoom_;
 
 ]
 
-{$DEFINE Mensa } //aide: compilation conditionnelle
+{$DEFINE Morg } //aide: compilation conditionnelle
 
 interface
 
